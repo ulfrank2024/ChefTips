@@ -1,0 +1,50 @@
+.pool-details-container {
+    flex: 1;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px; /* Ajouté pour un peu d'espace en bas */
+    min-height: 100vh; /* Assure que le conteneur prend au moins toute la hauteur de la vue */
+}
+
+.header-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #ad9407ff; /* Couleur de la barre de titre */
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.header-bar .MuiTypography-h5 {
+    margin-left: 10px;
+}
+
+/* Styles pour les éléments de liste des employés */
+.MuiListItem-root {
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background-color: #2a2a3e; /* Couleur de fond des éléments de liste */
+    border: 1px solid #1b2646ff;
+}
+
+.MuiListItemText-primary {
+    color: #fff; /* Couleur du texte principal */
+}
+
+.MuiListItemText-secondary {
+    color: #ccc; /* Couleur du texte secondaire */
+}
+
+/* Ajustements pour les boutons et autres éléments si nécessaire */
+.MuiButton-contained {
+    background-color: #ad9407ff;
+}
+
+.MuiButton-contained:hover {
+    background-color: #9a8406;
+}
+
+.MuiButton-contained.Mui-disabled {
+    background-color: #555;
+}

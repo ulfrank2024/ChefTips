@@ -1,0 +1,15 @@
+{
+  "overview": "Overview",
+  "profile": "Profile",
+  "myReceivedTips": "My Received Tips",
+  "userIdNotFound": "User ID not found.",
+  "noReceivedTips": "No tips received yet.",
+  "profileTitle": "My Profile",
+  "title": "Employee Dashboard",
+  "totalCurrentMonth": "Total This Month",
+  "totalLastMonth": "Total Last Month",
+  "totalCurrentYear": "Total This Year",
+  "viewAllTips": "View All Tips",
+  "statistics": "Statistics",
+  "tipDetailsTitle": "Tip Details"
+}

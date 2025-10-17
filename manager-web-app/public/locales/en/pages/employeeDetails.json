@@ -1,0 +1,10 @@
+{
+  "employeeDetailsTitle": "Employee Details",
+  "joinedCompany": "Joined Company on",
+  "receivedTipsHistory": "Received Tips History",
+  "noReceivedTips": "No tips received for this employee.",
+  "employeeNotFound": "Employee not found.",
+  "noEmployeeData": "No employee data available.",
+  "department": "Department",
+  "hoursWorked": "Hours Worked"
+}

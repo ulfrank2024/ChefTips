@@ -1,0 +1,9 @@
+{
+  "allFieldsRequired": "Tous les champs sont requis.",
+  "selectDepartment": "Sélectionner un Département",
+  "generateReport": "Générer le Rapport",
+  "reportSummary": "Résumé du Rapport",
+  "totalTipOutAmount": "Montant Total des Tip-Outs",
+  "category": "Catégorie",
+  "amount": "Montant"
+}

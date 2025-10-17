@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 
 const ChangePasswordModal = ({ isVisible, onClose, onChangePassword }) => {
     const { t } = useTranslation();
@@ -39,6 +39,9 @@ const ChangePasswordModal = ({ isVisible, onClose, onChangePassword }) => {
         >
             <View style={styles.centeredView}>
                 <View style={styles.modalView}>
+                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                        <Ionicons name="close-circle" size={24} color="#666" />
+                    </TouchableOpacity>
                     <Text style={styles.modalTitle}>
                         {t("profileScreen.changePassword")}
                     </Text>
@@ -167,6 +170,13 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
         width: "95%",
+        position: "relative",
+    },
+    closeButton: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        zIndex: 1,
     },
     modalTitle: {
         fontSize: 20,

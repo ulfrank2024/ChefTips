@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, Image, Modal, ScrollView, Dimensions } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    Button,
+    StyleSheet,
+    Alert,
+    ActivityIndicator,
+    TouchableOpacity,
+    Image,
+    Modal,
+    ScrollView,
+    Dimensions,
+    FlatList,
+} from "react-native";
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
@@ -12,6 +26,7 @@ import i18n from '../../i18n/i18n';
 
 import EditEmployeeModal from '../../components/EditEmployeeModal';
 import CategorySelectionModal from '../../components/CategorySelectionModal';
+import AllEmployeesModal from '../../components/AllEmployeesModal';
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -37,6 +52,7 @@ const DashboardScreen = ({ navigation }) => {
   const [isEditEmployeeModalVisible, setIsEditEmployeeModalVisible] = useState(false);
   const [editingEmployeeDetails, setEditingEmployeeDetails] = useState(null);
   const [isCategorySelectionModalVisible, setIsCategorySelectionModalVisible] = useState(false);
+  const [isAllEmployeesModalVisible, setIsAllEmployeesModalVisible] = useState(false);
 
   const [latestTip, setLatestTip] = useState(null);
   const [chartData, setChartData] = useState(null);
@@ -287,6 +303,23 @@ const DashboardScreen = ({ navigation }) => {
     );
   };
 
+  const renderEmployeeListItem = ({ item: emp }) => (
+    <View key={emp.id} style={styles.employeeListItem}>
+        <View style={styles.employeeInfoContainer}>
+            <Ionicons name="person" size={20} color="#2a2a3e" style={styles.employeeIcon} />
+            <Text style={styles.employeeListItemText}>{emp.first_name} {emp.last_name} ({emp.category_name || "N/A"})</Text>
+        </View>
+        <View style={styles.employeeActionsContainer}>
+            <TouchableOpacity onPress={() => handleEditEmployee(emp)} style={styles.editButton}>
+                <Ionicons name="create-outline" size={20} color="#ad9407ff" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDeleteEmployee(emp)} style={styles.deleteButton}>
+                <Ionicons name="trash-outline" size={20} color="#dc3545" />
+            </TouchableOpacity>
+        </View>
+    </View>
+  );
+
   if (loadingRole) {
     return <View style={styles.centered}><ActivityIndicator size="large" color="#ad9407ff" /></View>;
   }
@@ -324,10 +357,7 @@ const DashboardScreen = ({ navigation }) => {
         <Image source={require("../../../assets/logo/logoversion5.png")} style={styles.headerLogo} />
         {userRole === "employee" && <Text style={styles.greeting}>{t("dashboardScreen.hello")} {userName}!</Text>}
         {userRole === "manager" && (
-          <TouchableOpacity style={styles.addEmployeeButton} onPress={toggleInviteModal}>
-            <Ionicons name="person-add-outline" size={24} color="#fff" />
-            <Text style={styles.addEmployeeButtonText}>{t("dashboardScreen.addEmployee")}</Text>
-          </TouchableOpacity>
+          <></>
         )}
       </View>
 
@@ -338,7 +368,8 @@ const DashboardScreen = ({ navigation }) => {
             {latestTip ? (
               <View style={styles.tipDetailsContainer}>
                 <Text style={styles.tipAmount}>{latestTip.distributed_amount || "N/A"} $</Text>
-                <Text style={styles.tipDate}>{t("dashboardScreen.receivedOn")} {new Date(latestTip.calculated_at).toLocaleDateString()}</Text>
+                                <Text style={styles.tipDate}>{t("dashboardScreen.receivedOn")}</Text>
+                <Text style={styles.tipDate}>{new Date(latestTip.calculated_at).toLocaleDateString()}</Text>
                 <View style={styles.separator} />
                 <Text style={styles.poolInfoText}><Text style={{fontWeight: 'bold'}}>{t("poolHistoryScreen.pool")}</Text> {latestTip.pool_name}</Text>
                 <Text style={styles.poolInfoText}><Text style={{fontWeight: 'bold'}}>{t("poolHistoryScreen.period")}</Text> {new Date(latestTip.start_date).toLocaleDateString()} {t("poolHistoryScreen.to")} {new Date(latestTip.end_date).toLocaleDateString()}</Text>
@@ -411,38 +442,44 @@ const DashboardScreen = ({ navigation }) => {
           )}
           <View style={styles.card}>
             <Text style={styles.subtitle}>{t("dashboardScreen.tipPoolManagement")}</Text>
-            <View style={styles.buttonGroup}>
-              <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("MainTabs", { screen: "CreatePoolTab" })}>
-                <Ionicons name="add-circle-outline" size={20} color="#fff" style={styles.buttonIcon} />
-                <Text style={styles.secondaryButtonText}>{t("dashboardScreen.createPoolButton")}</Text>
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.buttonGroupGrid}>
+              <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate("MainTabs", { screen: "CreatePoolTab" })}>
+                <Ionicons name="add-circle-outline" size={30} color="#fff" />
+                <Text style={styles.gridButtonText}>{t("dashboardScreen.createPoolButton")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.navigate("MainTabs", { screen: "PoolHistoryTab" })}>
-                <Ionicons name="time-outline" size={20} color="#fff" style={styles.buttonIcon} />
-                <Text style={styles.secondaryButtonText}>{t("dashboardScreen.viewPoolHistoryButton")}</Text>
+              <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate("MainTabs", { screen: "PoolHistoryTab" })}>
+                <Ionicons name="time-outline" size={30} color="#fff" />
+                <Text style={styles.gridButtonText}>{t("dashboardScreen.viewPoolHistoryButton")}</Text>
               </TouchableOpacity>
-            </View>
+              <TouchableOpacity style={styles.gridButton} onPress={toggleInviteModal}>
+                <Ionicons name="person-add-outline" size={30} color="#fff" />
+                <Text style={styles.gridButtonText}>{t("dashboardScreen.addEmployee")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.gridButton} onPress={() => navigation.navigate("EmployeeTotalTips")}>
+                <Ionicons name="people-outline" size={30} color="#fff" />
+                <Text style={styles.gridButtonText}>{t("bottomTabs.employeeTotalTips")}</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
           <View style={styles.card}>
             <Text style={styles.subtitle}>{t("dashboardScreen.employeeList")}</Text>
             {employees.length === 0 ? (
               <Text style={styles.noEmployeesText}>{t("dashboardScreen.noEmployeesFound")}</Text>
             ) : (
-              employees.map((emp) => (
-                <View key={emp.id} style={styles.employeeListItem}>
-                    <View style={styles.employeeInfoContainer}>
-                        <Ionicons name="person" size={20} color="#2a2a3e" style={styles.employeeIcon} />
-                        <Text style={styles.employeeListItemText}>{emp.first_name} {emp.last_name} ({emp.category_name || "N/A"})</Text>
-                    </View>
-                    <View style={styles.employeeActionsContainer}>
-                        <TouchableOpacity onPress={() => handleEditEmployee(emp)} style={styles.editButton}>
-                            <Ionicons name="create-outline" size={20} color="#ad9407ff" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDeleteEmployee(emp)} style={styles.deleteButton}>
-                            <Ionicons name="trash-outline" size={20} color="#dc3545" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-              ))
+              <>
+                <FlatList
+                  data={employees.slice(0, 2)} // Limit to first 2 employees
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={renderEmployeeListItem}
+                  contentContainerStyle={styles.listContent}
+                  scrollEnabled={false} // Disable FlatList's own scrolling if it's nested in ScrollView
+                />
+                {employees.length > 2 && ( // Only show "Voir plus" if there are more than 2 employees
+                  <TouchableOpacity style={styles.viewDetailsButton} onPress={() => setIsAllEmployeesModalVisible(true)}>
+                    <Text style={styles.viewDetailsButtonText}>{t("common.seeMore")}</Text>
+                  </TouchableOpacity>
+                )}
+              </>
             )}
           </View>
         </>
@@ -534,6 +571,7 @@ const DashboardScreen = ({ navigation }) => {
       </Modal>
 
       <EditEmployeeModal isVisible={isEditEmployeeModalVisible} onClose={() => setIsEditEmployeeModalVisible(false)} employeeDetails={editingEmployeeDetails} onSave={handleSaveEmployeeCategory} categories={categories} />
+      <AllEmployeesModal isVisible={isAllEmployeesModalVisible} onClose={() => setIsAllEmployeesModalVisible(false)} employees={employees} renderEmployeeListItem={renderEmployeeListItem} />
     </ScrollView>
   );
 };
@@ -713,6 +751,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f0f0f0",
         borderRadius: 5,
         marginBottom: 10,
+        width: "100%", // Ensure full width
     },
     employeeInfoContainer: {
         flexDirection: "row",
@@ -725,8 +764,11 @@ const styles = StyleSheet.create({
     },
     employeeListItemText: {
         fontSize: 16,
-        color: "#333",
+        color: "#333", // Reverted to original dark color
         flex: 1,
+        flexShrink: 1,
+        numberOfLines: 1,
+        ellipsizeMode: 'tail',
     },
     employeeIcon: {
         marginRight: 8,
@@ -927,7 +969,31 @@ const styles = StyleSheet.create({
     addEmployeeButtonText: {
         color: "#ffffff",
         fontWeight:"bold"
-    }
+    },
+    buttonGroupGrid: {
+        flexDirection: "row",
+        flexWrap: "nowrap",
+        justifyContent: "flex-start", // Align items to the start for scrolling
+        marginTop: 10,
+        marginBottom: 10,
+    },
+    gridButton: {
+        backgroundColor: "#1b2646ff",
+        padding: 15,
+        borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        margin: 5,
+        width: "22%", // Adjust as needed for 4 items per row
+        height: 70,
+    },
+    gridButtonText: {
+        color: "#fff",
+        fontSize: 14,
+        fontWeight: "bold",
+        marginTop: 5,
+        textAlign: "center",
+    },
 });
 
 export default DashboardScreen;

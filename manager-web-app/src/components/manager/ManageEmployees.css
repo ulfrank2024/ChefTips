@@ -1,0 +1,127 @@
+.manage-employees-container {
+    background-color: #ffffff; /* Fond blanc */
+    color: #000; /* Texte noir */
+    min-height: calc(100vh - 80px); /* Ajuster pour la barre fixe */
+    padding: 20px;
+}
+
+.MuiTypography-h5,
+.MuiTypography-h6 {
+    color: #ad9407ff; /* Couleur d'accentuation pour les titres */
+}
+
+.MuiTypography-body1,
+.MuiTypography-body2 {
+    color: #000; /* Texte noir */
+}
+
+.MuiPaper-root {
+    background-color: #f0f0f0 !important; /* Fond des cartes/dialogues */
+    color: #000 !important;
+    border: 1px solid #cccccc; /* Bordure subtile */
+}
+
+/* Styles pour les TextField */
+.MuiTextField-root .MuiInputLabel-root {
+    color: #ad9407ff; /* Couleur du label */
+}
+
+.MuiTextField-root .MuiInputBase-input {
+    color: #000; /* Couleur du texte saisi */
+}
+
+.MuiTextField-root .MuiOutlinedInput-notchedOutline {
+    border-color: #cccccc; /* Couleur de la bordure du TextField */
+}
+
+.MuiTextField-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au survol */
+}
+
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au focus */
+}
+
+/* Styles pour les Select (FormControl) */
+.MuiFormControl-root .MuiInputLabel-root {
+    color: #ad9407ff; /* Couleur du label */
+}
+
+.MuiFormControl-root .MuiInputBase-input {
+    color: #000; /* Couleur du texte sélectionné */
+}
+
+.MuiFormControl-root .MuiOutlinedInput-notchedOutline {
+    border-color: #cccccc; /* Couleur de la bordure du Select */
+}
+
+.MuiFormControl-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au survol */
+}
+
+.MuiFormControl-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au focus */
+}
+
+.MuiSelect-icon {
+    color: #000; /* Couleur de l'icône de la flèche du Select */
+}
+
+.MuiPaper-root.MuiMenu-paper { /* Pour le menu déroulant du Select */
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+.MuiMenuItem-root {
+    color: #000;
+}
+
+.MuiMenuItem-root:hover {
+    background-color: rgba(173, 148, 7, 0.1);
+}
+
+/* Styles pour les boutons */
+.MuiButton-contained {
+    background-color: #ad9407ff !important;
+    color: #fff !important;
+}
+
+.MuiButton-contained:hover {
+    background-color: #9a8406 !important;
+}
+
+.MuiButton-contained.Mui-disabled {
+    background-color: #cccccc !important;
+    color: #666 !important;
+}
+
+.MuiButton-outlined {
+    color: #ad9407ff !important;
+    border-color: #ad9407ff !important;
+}
+
+.MuiButton-outlined:hover {
+    background-color: rgba(173, 148, 7, 0.1) !important;
+}
+
+/* Styles pour les ListItem (liste des employés) */
+.MuiListItem-root {
+    background-color: #f0f0f0; /* Fond des éléments de liste */
+    border: 1px solid #cccccc; /* Bordure subtile */
+    margin-bottom: 8px;
+    border-radius: 10px;
+}
+
+.MuiListItemText-primary,
+.MuiListItemText-secondary {
+    color: #000 !important; /* Texte noir */
+}
+
+/* Styles pour les icônes d'action */
+.MuiIconButton-root {
+    color: #ad9407ff; /* Couleur par défaut pour les icônes d'action */
+}
+
+.MuiIconButton-root.Mui-disabled {
+    color: #cccccc;
+}

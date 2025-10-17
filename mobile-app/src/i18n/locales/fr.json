@@ -76,7 +76,8 @@
     "november": "Novembre",
     "december": "Décembre",
     "year": "Année",
-    "month": "Mois"
+    "month": "Mois",
+    "seeMore": "Voir plus"
   },
   "setupPassword": {
     "title": "Définir Votre Mot de Passe",
@@ -155,9 +156,11 @@
     "period": "Période : ",
     "to": " au ",
     "calculatedOn": "Calculé le : ",
+    "totalTips": "Pourboires totaux",
     "myTipHistory": "Mon Historique de Pourboires",
     "noTipsRecorded": "Aucun pourboire enregistré pour le moment.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "filterTitle": "Filtrer par date"
   },
   "dashboardScreen": {
     "hello": "Bonjour",
@@ -303,14 +306,23 @@
       "viewDetails": "Voir les détails",
       "latestPool": "Dernier Pool de Pourboires",
       "pool": "Pool  ",
-      "calculatedOn": "Calculé le  "
+      "calculatedOn": "Calculé le  ",
+      "totalPools": "Total des cagnottes"
+  },
+  "employeeTotalTipsScreen": {
+    "title": "Total des pourboires des employés",
+    "failedToLoadTips": "Échec du chargement du total des pourboires des employés : ",
+    "totalReceived": "Total reçu",
+    "noEmployeesFound": "Aucun employé trouvé.",
+    "searchPlaceholder": "Rechercher un employé par nom"
   },
   "bottomTabs": {
     "dashboard": "Tableau de bord",
     "profile": "Profil",
     "createPool": "Créer un Pool",
     "poolHistory": "Historique des Pools",
-    "myTips": "Mes Pourboires"
+    "myTips": "Mes Pourboires",
+    "employeeTotalTips": "Pourboires des employés"
   },
   "profileScreen": {
     "profileTitle": "Profil Utilisateur",

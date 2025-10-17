@@ -23,6 +23,7 @@ import DashboardScreen from '../screens/gestion/DashboardScreen';
 import CreatePoolScreen from '../screens/manager/CreatePoolScreen';
 import PoolHistoryScreen from '../screens/manager/PoolHistoryScreen';
 import PoolDetailsScreen from '../screens/manager/PoolDetailsScreen';
+import EmployeeTotalTipsScreen from '../screens/manager/EmployeeTotalTipsScreen';
 import EmployeeTipHistoryScreen from '../screens/employee/EmployeeTipHistoryScreen';
 import ProfileScreen from '../screens/auth/ProfileScreen'; // Assuming ProfileScreen is a main tab
 
@@ -63,8 +64,14 @@ const MainTabs = () => {
       try {
         const userString = await AsyncStorage.getItem('user');
         if (userString) {
-          const user = JSON.parse(userString);
-          setUserRole(user.role);
+          try {
+            const user = JSON.parse(userString);
+            setUserRole(user.role);
+          } catch (parseError) {
+            console.error("Failed to parse user data from AsyncStorage:", parseError);
+            // Optionally, set a default role or handle the error state
+            setUserRole(null); 
+          }
         }
       } catch (e) {
         console.error("Failed to load user role from AsyncStorage in MainTabs:", e);
@@ -169,6 +176,7 @@ const AppNavigator = () => {
 
         {/* These screens might be accessed from within tabs, so keep them as Stack.Screens */}
         <Stack.Screen name="PoolDetails" component={PoolDetailsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="EmployeeTotalTips" component={EmployeeTotalTipsScreen} options={{ headerShown: false }} />
            </Stack.Navigator>
     </NavigationContainer>
   );

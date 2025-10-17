@@ -1,0 +1,12 @@
+{
+  "title": "S'inscrire",
+  "firstNamePlaceholder": "Prénom",
+  "lastNamePlaceholder": "Nom",
+  "companyNamePlaceholder": "Nom de l'entreprise",
+  "email": "Adresse e-mail",
+  "password": "Mot de passe",
+  "confirmPassword": "Confirmer le mot de passe",
+  "signingUp": "Inscription en cours...",
+  "button": "S'inscrire",
+  "alreadyAccount": "Déjà un compte ? Se connecter"
+}

@@ -1,0 +1,47 @@
+
+{
+    "family": "auth-service-task",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "executionRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "name": "auth-service",
+            "image": "946358504020.dkr.ecr.us-east-1.amazonaws.com/auth-service:latest",
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+                { "name": "DB_HOST", "value": "auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
+                { "name": "DB_USER", "value": "tips_ulrich_2025" },
+                { "name": "DB_PASSWORD", "value": "123qweJesus" },
+                { "name": "DB_NAME", "value": "auth_service_db" },
+                { "name": "DB_PORT", "value": "5432" },
+                { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
+                { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
+                { "name": "SMTP_PORT", "value": "465" },
+                { "name": "SMTP_SECURE", "value": "true" },
+                { "name": "SMTP_USER", "value": "frranklinlontsi99@gmail.com" },
+                { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
+                { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/auth-service",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ]
+}

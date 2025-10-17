@@ -1,0 +1,9 @@
+{
+  "title": "Vérifiez votre compte",
+  "instruction": "Un code a été envoyé à votre adresse e-mail : {{email}}. Veuillez le saisir ci-dessous.",
+  "otpPlaceholder": "Saisir le code",
+  "verifyButton": "Vérifier",
+  "resendButton": "Renvoyer le code",
+  "successMessage": "Compte vérifié avec succès ! Vous pouvez maintenant vous connecter.",
+  "resendSuccessMessage": "Un nouveau code a été envoyé à votre adresse e-mail."
+}

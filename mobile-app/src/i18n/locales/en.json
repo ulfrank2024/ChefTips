@@ -76,7 +76,8 @@
     "november": "November",
     "december": "December",
     "year": "Year",
-    "month": "Month"
+    "month": "Month",
+    "seeMore": "See more"
   },
   "setupPassword": {
     "title": "Set Up Your Password",
@@ -155,9 +156,11 @@
     "period": "Period: ",
     "to": " to ",
     "calculatedOn": "Calculated on: ",
+    "totalTips": "Total Tips",
     "myTipHistory": "My Tip History",
     "noTipsRecorded": "No tips recorded yet.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "filterTitle": "Filter by Date"
   },
   "dashboardScreen": {
     "hello": "Hello",
@@ -302,14 +305,23 @@
       "viewDetails": "View Details",
       "latestPool": "Latest Tip Pool",
       "pool": "Pool  ",
-      "calculatedOn": "Calculated on "
+      "calculatedOn": "Calculated on ",
+      "totalPools": "Total Pools"
+  },
+  "employeeTotalTipsScreen": {
+    "title": "Employee Total Tips",
+    "failedToLoadTips": "Failed to load employee total tips: ",
+    "totalReceived": "Total Received",
+    "noEmployeesFound": "No employees found.",
+    "searchPlaceholder": "Search employee by name"
   },
   "bottomTabs": {
     "dashboard": "Dashboard",
     "profile": "Profile",
     "createPool": "Create Pool",
     "poolHistory": "Pool History",
-    "myTips": "My Tips"
+    "myTips": "My Tips",
+    "employeeTotalTips": "Employee Tips"
   },
   "profileScreen": {
     "profileTitle": "User Profile",

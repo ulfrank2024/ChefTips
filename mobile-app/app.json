@@ -1,12 +1,11 @@
 {
   "expo": {
-    "name": "mobile-app",
+    "name": "ChefTips",
     "slug": "mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -20,11 +19,18 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "usesCleartextTraffic": true,
+      "edgeToEdgeEnabled": true,
+      "package": "com.ulrich_app.mobileapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "tips-app"
+    "scheme": "tips-app",
+    "extra": {
+      "eas": {
+        "projectId": "be1aaf01-5e81-4abc-809b-9346eef32d50"
+      }
+    }
   }
 }

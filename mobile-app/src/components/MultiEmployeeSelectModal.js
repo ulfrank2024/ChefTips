@@ -42,6 +42,9 @@ const MultiEmployeeSelectModal = ({ isVisible, onClose, availableEmployees, init
         >
             <View style={styles.centeredView}>
                 <View style={styles.modalView}>
+                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                        <Ionicons name="close-circle" size={24} color="#ccc" />
+                    </TouchableOpacity>
                     <Text style={styles.modalTitle}>{t('createPoolScreen.selectEmployees')}</Text>
 
                     <TextInput
@@ -111,6 +114,13 @@ const styles = StyleSheet.create({
         elevation: 5,
         width: '90%',
         maxHeight: '80%',
+        position: "relative",
+    },
+    closeButton: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        zIndex: 1,
     },
     modalTitle: {
         fontSize: 20,

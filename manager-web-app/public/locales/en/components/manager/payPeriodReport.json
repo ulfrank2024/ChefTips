@@ -1,0 +1,9 @@
+{
+  "allFieldsRequired": "All fields are required.",
+  "selectDepartment": "Select Department",
+  "generateReport": "Generate Report",
+  "reportSummary": "Report Summary",
+  "totalTipOutAmount": "Total Tip-Out Amount",
+  "category": "Category",
+  "amount": "Amount"
+}

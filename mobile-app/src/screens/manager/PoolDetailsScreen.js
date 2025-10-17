@@ -242,8 +242,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     notAvailableText: {
-        backgroundColor: '#555',
-        color: '#ccc',
+        backgroundColor: "#555",
+        color: "#ccc",
     },
     errorText: {
         color: "#dc3545",
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         padding: 12,
-        backgroundColor: "rgba(27, 38, 70, 0.7)",
+        backgroundColor: "#ad9407ff",
         borderRadius: 50,
         height: 50,
         width: 80,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     detailConteneur: {
         backgroundColor: "rgba(27, 38, 70, 0.7)",
         padding: 10,
-        borderRadius:10,
+        borderRadius: 10,
     },
 });
 

@@ -261,6 +261,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#ad9407ff",
         marginTop: 5,
+        flex: 1,
     },
     picker: {
         height: 50,

@@ -18,6 +18,8 @@ services:
     container_name: tip-service
     depends_on:
       - tip_postgres
+    volumes:
+      - ./tip-service/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   postgres:
     image: postgres:13

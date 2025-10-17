@@ -1,0 +1,6 @@
+{
+  "cluster": "tips-app-cluster",
+  "service": "tip-service",
+  "taskDefinition": "arn:aws:ecs:us-east-1:946358504020:task-definition/tip-service-task:16",
+  "forceNewDeployment": true
+}

@@ -1,0 +1,19 @@
+{
+  "overview": "Vue d'ensemble",
+  "profile": "Profil",
+  "myReceivedTips": "Mes pourboires reçus",
+  "userIdNotFound": "ID utilisateur non trouvé.",
+  "noReceivedTips": "Aucun pourboire reçu pour le moment.",
+  "profileTitle": "Mon Profil",
+  "title": "Tableau de Bord Employé",
+  "totalCurrentMonth": "Total ce mois-ci",
+  "totalLastMonth": "Total le mois dernier",
+  "totalCurrentYear": "Total cette année",
+  "viewAllTips": "Voir tous les pourboires",
+  "statistics": "Statistiques",
+  "tipDetailsTitle": "Détails du pourboire",
+  "latestPoolSummary": "Résumé du Dernier Pool",
+  "noPoolsYet": "Aucun pool reçu pour le moment.",
+  "yourDistributedAmount": "Votre Montant Distribué",
+  "totalPoolAmount": "Montant Total du Pool"
+}

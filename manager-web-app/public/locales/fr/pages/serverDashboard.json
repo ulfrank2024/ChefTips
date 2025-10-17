@@ -1,0 +1,13 @@
+{
+  "selectYourCategory": "Sélectionnez votre fonction",
+  "confirmSelection": "Confirmer la sélection",
+  "selectYourRoleForTheDayHelpText": "Choisissez votre rôle pour commencer votre service et enregistrer vos pourboires.",
+  "changeCategory": "Changer de rôle",
+  "serviceEndTime": "Heure de fin de service",
+  "netTips": "Pourboires Nets",
+  "reportHistory": "Historique des Rapports",
+  "applyFilters": "Appliquer les filtres",
+  "reports": "Rapports",
+  "noReportsFound": "Aucun rapport trouvé pour cette période.",
+  "serviceDate": "Date du service"
+}

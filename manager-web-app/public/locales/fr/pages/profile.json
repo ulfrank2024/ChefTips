@@ -1,0 +1,15 @@
+{
+  "updateProfileSuccess": "Profil mis à jour avec succès !",
+  "passwordMismatch": "Le nouveau mot de passe et la confirmation ne correspondent pas.",
+  "changePasswordSuccess": "Mot de passe changé avec succès !",
+  "languageChangeSuccess": "Langue mise à jour avec succès !",
+  "editProfile": "Modifier le profil",
+  "firstName": "Prénom",
+  "lastName": "Nom",
+  "email": "E-mail",
+  "changePassword": "Changer le mot de passe",
+  "currentPassword": "Mot de passe actuel",
+  "newPassword": "Nouveau mot de passe",
+  "confirmNewPassword": "Confirmer le nouveau mot de passe",
+  "language": "Langue"
+}

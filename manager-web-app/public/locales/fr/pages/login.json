@@ -1,0 +1,14 @@
+{
+  "title": "Connexion",
+  "email": "Adresse e-mail",
+  "password": "Mot de passe",
+  "button": "Se connecter",
+  "noAccount": "Pas encore de compte ? S'inscrire",
+  "forgotPassword": "Mot de passe oublié ?",
+  "loggingIn": "Connexion en cours...",
+  "selectCompanyTitle": "Sélectionner une entreprise",
+  "selectCompanyMessage": "Vous appartenez à plusieurs entreprises. Veuillez en sélectionner une pour continuer.",
+  "selectCompanyRequired": "Veuillez sélectionner une entreprise.",
+  "company": "Entreprise",
+  "joinTeam":"Rejoindre une équipe"
+}

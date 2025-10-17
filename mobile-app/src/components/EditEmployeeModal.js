@@ -37,6 +37,9 @@ const EditEmployeeModal = ({
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContainer}>
+                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                            <Ionicons name="close-circle" size={24} color="#666" />
+                        </TouchableOpacity>
                         <ScrollView style={{ width: "100%", flex: 1 }} pointerEvents="box-none">
                             <Text style={styles.modalTitle}>
                                 {t("dashboardScreen.editEmployee")}
@@ -127,6 +130,13 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 20,
         alignItems: "center",
+        position: "relative",
+    },
+    closeButton: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        zIndex: 1,
     },
     modalTitle: {
         fontSize: 22,

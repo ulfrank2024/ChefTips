@@ -1,0 +1,10 @@
+{
+  "employeeDetailsTitle": "Détails de l'employé",
+  "joinedCompany": "A rejoint l'entreprise le",
+  "receivedTipsHistory": "Historique des pourboires reçus",
+  "noReceivedTips": "Aucun pourboire reçu pour cet employé.",
+  "employeeNotFound": "Employé non trouvé.",
+  "noEmployeeData": "Aucune donnée d'employé disponible.",
+  "department": "Département",
+  "hoursWorked": "Heures travaillées"
+}

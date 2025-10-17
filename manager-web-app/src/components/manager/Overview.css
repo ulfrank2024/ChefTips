@@ -1,0 +1,30 @@
+.overview-container {
+    padding: 0;
+    color: black;
+    margin: 0;
+  
+}
+
+.MuiPaper-root {
+    background-color: #fff !important; /* Fond des cartes */
+    color: black !important;
+    border: 1px solid #1b2646ff; /* Bordure subtile */
+}
+
+
+
+
+
+.MuiButton-outlined {
+    color: #ad9407ff !important;
+    border-color: #ad9407ff !important;
+}
+
+.MuiButton-outlined:hover {
+    background-color: rgba(173, 148, 7, 0.1) !important; /* Léger fond au survol */
+}
+
+.MuiListItemText-primary,
+.MuiListItemText-secondary {
+    color: black !important;
+}

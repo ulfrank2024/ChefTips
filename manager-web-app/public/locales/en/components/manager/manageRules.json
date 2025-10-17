@@ -1,0 +1,19 @@
+{
+  "title": "Manage Tip-Out Rules",
+  "createRule": "Create Tip-Out Rule",
+  "editRule": "Edit Tip-Out Rule",
+  "ruleList": "Tip-Out Rule List",
+  "ruleNamePlaceholder": "Rule Name (e.g., Kitchen Tip-Out)",
+  "destinationDepartment": "Destination Department (who receives)",
+  "sourceCategory": "Source Category (who pays)",
+  "calculationBasis": "Calculation Basis",
+  "grossTips": "Gross Tips",
+  "totalSales": "Total Sales",
+  "percentage": "Percentage",
+  "percentagePlaceholder": "e.g., 2.5 for 2.5%",
+  "flatAmount": "Flat Amount",
+  "flatAmountPlaceholder": "e.g., 5.00 for $5.00",
+  "confirmDeleteTitle": "Confirm Deletion",
+  "confirmDeleteMessage": "Are you sure you want to delete the rule '{{ruleName}}'?",
+  "noRules": "No tip-out rules found."
+}

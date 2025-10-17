@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     View,
     Text,
@@ -9,13 +9,13 @@ import {
     TouchableOpacity,
     Image,
     Dimensions,
-    Modal,
 } from "react-native";
 import { getPoolHistory } from "../../api/tip/tipApi";
 import { useIsFocused } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LoadingOverlay from "../../components/LoadingOverlay";
 import { LineChart } from "react-native-chart-kit";
+import FilterModal from "../../components/FilterModal";
 
 const PoolHistoryScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -24,41 +24,11 @@ const PoolHistoryScreen = ({ navigation }) => {
     const [error, setError] = useState("");
     const isFocused = useIsFocused();
 
-    const currentYear = new Date().getFullYear();
-    const [selectedYear, setSelectedYear] = useState(currentYear);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(null);
-    const [availableYears, setAvailableYears] = useState([]);
-    const [availableMonths, setAvailableMonths] = useState([]);
+    const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
-    const [isModalVisible, setModalVisible] = useState(false);
-    const [pickerType, setPickerType] = useState(null);
-    const [pickerData, setPickerData] = useState([]);
     const [isChartVisible, setChartVisible] = useState(false);
-
-    useEffect(() => {
-        const years = [];
-        for (let i = 0; i < 6; i++) {
-            years.push(currentYear - i);
-        }
-        setAvailableYears(years);
-
-        const months = [
-            { label: t("common.allMonths"), value: null },
-            { label: t("common.january"), value: 1 },
-            { label: t("common.february"), value: 2 },
-            { label: t("common.march"), value: 3 },
-            { label: t("common.april"), value: 4 },
-            { label: t("common.may"), value: 5 },
-            { label: t("common.june"), value: 6 },
-            { label: t("common.july"), value: 7 },
-            { label: t("common.august"), value: 8 },
-            { label: t("common.september"), value: 9 },
-            { label: t("common.october"), value: 10 },
-            { label: t("common.november"), value: 11 },
-            { label: t("common.december"), value: 12 },
-        ];
-        setAvailableMonths(months);
-    }, [t]);
 
     const fetchPools = async () => {
         setLoading(true);
@@ -86,36 +56,45 @@ const PoolHistoryScreen = ({ navigation }) => {
         }
     }, [isFocused]);
 
-    const openPicker = (type) => {
-        setPickerType(type);
-        setPickerData(type === 'year' ? availableYears.map(y => ({label: String(y), value: y})) : availableMonths);
-        setModalVisible(true);
-    };
-
-    const onSelectItem = (item) => {
-        if (pickerType === 'year') {
-            setSelectedYear(item.value);
-        } else {
-            setSelectedMonth(item.value);
+    const { filteredPools, totalAmount } = useMemo(() => {
+        let filtered = pools;
+        if (selectedYear) {
+            filtered = filtered.filter(pool => new Date(pool.start_date).getFullYear() === selectedYear);
         }
-        setModalVisible(false);
-    };
+        if (selectedMonth) {
+            filtered = filtered.filter(pool => new Date(pool.start_date).getMonth() + 1 === selectedMonth);
+        }
+        const total = filtered.reduce((sum, pool) => sum + parseFloat(pool.total_amount), 0);
+        return { filteredPools: filtered.sort((a, b) => new Date(b.start_date) - new Date(a.start_date)), totalAmount: total };
+    }, [pools, selectedYear, selectedMonth]);
 
-    const filteredPools = pools.filter(pool => {
-        const poolDate = new Date(pool.start_date);
-        const yearMatches = selectedYear ? poolDate.getFullYear() === selectedYear : true;
-        const monthMatches = selectedMonth !== null ? poolDate.getMonth() + 1 === selectedMonth : true;
-        return yearMatches && monthMatches;
-    }).sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+    const years = useMemo(() => {
+        const yearsSet = new Set(pools.map(pool => new Date(pool.start_date).getFullYear()));
+        return Array.from(yearsSet).sort((a, b) => b - a);
+    }, [pools]);
+
+    const months = [
+        { label: t("common.allMonths"), value: null },
+        { label: t("common.january"), value: 1 },
+        { label: t("common.february"), value: 2 },
+        { label: t("common.march"), value: 3 },
+        { label: t("common.april"), value: 4 },
+        { label: t("common.may"), value: 5 },
+        { label: t("common.june"), value: 6 },
+        { label: t("common.july"), value: 7 },
+        { label: t("common.august"), value: 8 },
+        { label: t("common.september"), value: 9 },
+        { label: t("common.october"), value: 10 },
+        { label: t("common.november"), value: 11 },
+        { label: t("common.december"), value: 12 },
+    ];
 
     const renderPoolItem = ({ item }) => {
         const formattedStartDate = new Date(
             item.start_date
         ).toLocaleDateString();
         const formattedEndDate = new Date(item.end_date).toLocaleDateString();
-        const formattedTotalAmount = `${Number(item.total_amount).toFixed(
-            2
-        )} $`;
+        const formattedTotalAmount = `${Number(item.total_amount).toFixed(2)} $`;
 
         return (
             <TouchableOpacity
@@ -201,25 +180,15 @@ const PoolHistoryScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Modal
-                transparent={true}
-                visible={isModalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <FlatList
-                            data={pickerData}
-                            keyExtractor={(item) => item.value}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity style={styles.modalItem} onPress={() => onSelectItem(item)}>
-                                    <Text style={styles.modalItemText}>{item.label}</Text>
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </View>
-                </View>
-            </Modal>
+            <FilterModal
+                isVisible={isFilterModalVisible}
+                onClose={() => setIsFilterModalVisible(false)}
+                years={years}
+                months={months}
+                selectedYear={selectedYear}
+                onSelectYear={setSelectedYear}
+                onSelectMonth={setSelectedMonth}
+            />
 
             <View style={styles.headerContainer}>
                 <Image
@@ -227,22 +196,17 @@ const PoolHistoryScreen = ({ navigation }) => {
                     style={styles.logo}
                 />
                 <Text style={styles.title}>
-                    {t("poolHistoryScreen.title")} ({filteredPools.length})
+                    {t("poolHistoryScreen.title")}
                 </Text>
             </View>
 
-            <View style={styles.filtersContainer}>
-                <View style={styles.pickerContainer}>
-                    <TouchableOpacity style={styles.pickerWrapper} onPress={() => openPicker('year')}>
-                        <Text style={styles.pickerText}>{selectedYear}</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.pickerContainer}>
-                    <TouchableOpacity style={styles.pickerWrapper} onPress={() => openPicker('month')}>
-                        <Text style={styles.pickerText}>{selectedMonth ? availableMonths.find(m => m.value === selectedMonth).label : t('common.allMonths')}</Text>
-                    </TouchableOpacity>
-                </View>
+            <View style={styles.totalContainer}>
+                <Text style={styles.totalText}>{t('poolHistoryScreen.totalPools')}: {totalAmount.toFixed(2)} $</Text>
             </View>
+
+            <TouchableOpacity style={styles.filterButton} onPress={() => setIsFilterModalVisible(true)}>
+                <Text style={styles.filterButtonText}>{t('employeeTipHistory.filterTitle')}</Text>
+            </TouchableOpacity>
 
             {isChartVisible ? (
                 <View style={styles.chartContainer}>
@@ -489,35 +453,32 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
     },
-    filtersContainer: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        backgroundColor: "#2a2a3e",
+    totalContainer: {
+        backgroundColor: '#1b2646ff',
+        padding: 15,
         borderRadius: 10,
-        paddingVertical: 4,
-        paddingHorizontal: 4,
+        marginBottom: 10,
+        alignItems: 'center',
     },
-    pickerContainer: {
-        flex: 1,
-        alignItems: "center",
-        marginHorizontal: 5,
+    totalText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
     },
-    filterLabel: {
-        color: "#eee",
-        fontSize: 15,
-        marginBottom: 5,
+    filterButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ad9407ff',
+        padding: 10,
+        borderRadius: 5,
+        marginBottom: 10,
     },
-    pickerWrapper: {
-        width: "100%",
-        borderRadius: 8,
-        backgroundColor: "#1b2646ff",
-        height: 45,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    pickerText: {
-        color: "#fff",
+    filterButtonText: {
+        color: '#fff',
         fontSize: 16,
+        fontWeight: 'bold',
+        marginLeft: 10,
     },
     chartContainer: {
         marginVertical: 15,
@@ -551,29 +512,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#2a2a3e",
         borderRadius: 8,
         fontWeight: "bold",
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    modalContent: {
-        backgroundColor: "#2a2a3e",
-        borderRadius: 10,
-        padding: 20,
-        width: "80%",
-        maxHeight: "80%",
-    },
-    modalItem: {
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: "#1b2646ff",
-    },
-    modalItemText: {
-        color: "#fff",
-        fontSize: 18,
-        textAlign: "center",
     },
     showChartButton: {
         backgroundColor: "#ad9407ff",

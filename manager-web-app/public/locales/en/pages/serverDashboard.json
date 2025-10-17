@@ -1,0 +1,15 @@
+{
+  "selectYourCategory": "Select Your Role for the Day",
+  "confirmSelection": "Confirm Selection",
+  "selectYourRoleForTheDayHelpText": "Choose your role to start your shift and record your tips.",
+  "changeCategory": "Change Role",
+  "serviceEndTime": "End of Shift Time",
+  "netTips": "Net Tips",
+  "reportHistory": "Report History",
+  "applyFilters": "Apply Filters",
+  "reports": "Reports",
+  "noReportsFound": "No reports found for this period.",
+  "serviceDate": "Service Date"
+},
+  "declareNewTip": "Declare Daily Report"
+}

@@ -1,0 +1,51 @@
+.profile-container {
+    color: #fff;
+    padding: 20px;
+}
+
+.MuiTypography-h5,
+.MuiTypography-h6 {
+    color: #ad9407ff; /* Couleur d'accentuation pour les titres */
+}
+
+.MuiTypography-body1,
+.MuiTypography-body2 {
+    color: #fff;
+}
+
+.MuiFormControl-root .MuiInputLabel-root {
+    color: #ad9407ff; /* Couleur du label */
+}
+
+.MuiFormControl-root .MuiInputBase-input {
+    color: #fff; /* Couleur du texte saisi */
+}
+
+.MuiFormControl-root .MuiOutlinedInput-notchedOutline {
+    border-color: #1b2646ff; /* Couleur de la bordure du Select */
+}
+
+.MuiFormControl-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au survol */
+}
+
+.MuiFormControl-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au focus */
+}
+
+.MuiSelect-icon {
+    color: #fff; /* Couleur de l'icône de la flèche du Select */
+}
+
+.MuiPaper-root.MuiMenu-paper {
+    background-color: #2a2a3e; /* Fond du menu déroulant */
+    color: #fff;
+}
+
+.MuiMenuItem-root {
+    color: #fff;
+}
+
+.MuiMenuItem-root:hover {
+    background-color: rgba(173, 148, 7, 0.1);
+}

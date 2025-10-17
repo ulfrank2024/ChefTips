@@ -1,0 +1,15 @@
+{
+  "profileInfo": "Profile Information",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "email": "Email",
+  "changePassword": "Change Password",
+  "currentPassword": "Current Password",
+  "newPassword": "New Password",
+  "confirmNewPassword": "Confirm New Password",
+  "passwordMismatch": "New passwords do not match.",
+  "changePasswordSuccess": "Password changed successfully.",
+  "changePasswordButton": "Change Password",
+  "languageChangeSuccess": "Language changed successfully.",
+  "profileUpdateSuccess": "Profile updated successfully."
+}

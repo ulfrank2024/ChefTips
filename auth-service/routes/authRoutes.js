@@ -1,64 +1,54 @@
 const express = require('express');
 const router = express.Router();
-const AuthController = require('../controllers/authController');
+const { signup, login, selectCompany, inviteEmployee, removeEmployee, getCompanyEmployees, verifyOtp, resendOtp, updateLanguagePreference, changePassword, updateProfile, updateMembership, verifyInvitation, setupPassword } = require('../controllers/authController');
 const { authenticateToken } = require("../middleware/authMiddleware");
 
-// Route for a manager to sign up and create a company
-router.post("/signup", AuthController.signup);
+// --- User Account Routes ---
+// User signs up, creates a company, and becomes its manager
+router.post("/signup", signup);
+// User logs in. Can return a final token or a list of companies.
+router.post("/login", login);
+// After login, if user has multiple companies, they select one to get a session token.
+router.post("/select-company", selectCompany);
 
-// Route for a manager to invite an employee
-router.post("/invite-employee", authenticateToken, AuthController.inviteEmployee);
+// --- Password and Verification Routes ---
+// router.post('/forgot-password', forgotPassword);
+// router.post('/reset-password', resetPassword);
+router.post("/verify-otp", verifyOtp);
+router.post("/resend-otp", resendOtp);
+router.post("/verify-invitation", verifyInvitation);
+router.post("/setup-password", setupPassword);
 
-// Route for an employee to set up their password
-router.post("/setup-password", AuthController.setupPassword);
+// --- Authenticated User Routes ---
+router.put("/profile/language", authenticateToken, updateLanguagePreference);
+// User changes their own password
+router.post("/change-password", authenticateToken, changePassword);
+// User updates their own profile (name)
+router.put("/profile", authenticateToken, updateProfile);
 
-// Route to create a company (for admins)
-router.post("/companies", AuthController.createCompany);
+// --- Manager: Employee Management Routes ---
+// Manager invites a user to their company
+router.post("/invite-employee", authenticateToken, inviteEmployee);
+// Manager updates a user's membership (e.g., category)
+router.put("/memberships/:membershipId", authenticateToken, updateMembership);
+// Manager removes a user from their company (deletes the membership)
+router.delete("/memberships/:membershipId", authenticateToken, removeEmployee);
+// Manager gets all employees in their company
+router.get("/employees", authenticateToken, getCompanyEmployees);
 
-// Route for user login
-router.post("/login", AuthController.login);
+// --- Manager: Category Management Routes ---
+// router.post("/categories", authenticateToken, createCategory);
+// router.get("/categories", authenticateToken, getCompanyCategories);
+// router.get("/categories/:categoryId", authenticateToken, getCategoryById);
+// router.put("/categories/:categoryId", authenticateToken, updateCategory);
+// router.delete("/categories/:categoryId", authenticateToken, deleteCategory);
+// // Manager updates an employee's category within their company
+// router.put("/memberships/:membershipId/category", authenticateToken, updateUserCategory);
 
-// Route for forgot password
-router.post('/forgot-password', AuthController.forgotPassword);
 
-// Route for reset password
-router.post('/reset-password', AuthController.resetPassword);
+// --- Inter-service Communication Routes ---
+// Used by other services to get user details
+// router.get('/users/:userId/details', authenticateToken, getUserDetails);
 
-// Route for OTP verification
-router.post("/verify-otp", AuthController.verifyOtp);
-
-// Route for resending OTP
-router.post("/resend-otp", AuthController.resendOtp);
-
-// Route to verify an invitation code
-router.post("/verify-invitation", AuthController.verifyInvitation);
-
-// Get user email by ID (protected route)
-router.get("/users/:userId/email", authenticateToken, AuthController.getUserEmail);
-
-// Get all employees for a specific company (protected route)
-router.get("/companies/:companyId/employees", authenticateToken, AuthController.getCompanyEmployees);
-
-// Route for authenticated user to change their password
-router.post("/change-password", authenticateToken, AuthController.changePassword);
-
-// Route for authenticated user to update their profile (first_name, last_name)
-router.put("/profile", authenticateToken, AuthController.updateProfile);
-
-// Category Management Routes (Protected for managers)
-router.post("/categories", authenticateToken, AuthController.createCategory);
-router.get("/categories", authenticateToken, AuthController.getCompanyCategories);
-router.get("/categories/:categoryId", authenticateToken, AuthController.getCategoryById);
-router.put("/categories/:categoryId", authenticateToken, AuthController.updateCategory);
-router.delete("/categories/:categoryId", authenticateToken, AuthController.deleteCategory);
-
-// Route to update an employee's category (protected for managers)
-router.put("/users/:userId/category", authenticateToken, AuthController.updateUserCategory);
-
-// Route to get user details (first_name, last_name, category_name) by ID (protected route)
-router.get('/users/:userId/details', authenticateToken, AuthController.getUserDetails);
-
-// Route to unlink an employee from a company (soft delete)
-router.delete('/employees/:employeeId', authenticateToken, AuthController.unlinkEmployee);
 
 module.exports = router;

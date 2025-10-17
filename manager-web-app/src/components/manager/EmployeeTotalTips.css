@@ -1,0 +1,49 @@
+.employee-total-tips-container {
+   
+    color: #fff;
+    min-height: calc(100vh - 80px); /* Ajuster pour la barre fixe */
+    padding: 20px;
+}
+
+.MuiPaper-root {
+    background-color: #2a2a3e !important; /* Fond des cartes */
+    color: #fff !important;
+    border: 1px solid #1b2646ff; /* Bordure subtile */
+}
+
+.MuiTypography-h5,
+.MuiTypography-h6 {
+    color: #ad9407ff; /* Couleur d'accentuation pour les titres */
+}
+
+.MuiTextField-root .MuiInputLabel-root {
+    color: #ad9407ff; /* Couleur du label */
+}
+
+.MuiTextField-root .MuiInputBase-input {
+    color: #fff; /* Couleur du texte saisi */
+}
+
+.MuiTextField-root .MuiOutlinedInput-notchedOutline {
+    border-color: #1b2646ff; /* Couleur de la bordure du TextField */
+}
+
+.MuiTextField-root:hover .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au survol */
+}
+
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #ad9407ff !important; /* Couleur de la bordure au focus */
+}
+
+.MuiListItem-root {
+    background-color: #2a2a3e;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid #1b2646ff;
+}
+
+.MuiListItemText-primary,
+.MuiListItemText-secondary {
+    color: #fff !important;
+}

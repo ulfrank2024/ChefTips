@@ -1,0 +1,16 @@
+{
+  "title": "Manage Categories",
+  "createCategory": "Create New Category",
+  "editCategory": "Edit Category",
+  "categoryNamePlaceholder": "Category Name (e.g., Server, Cook)",
+  "department": "Department",
+  "isDualRoleLabel": "Enable dual-role mode for this category (e.g., for a Bartender who can be a Collector or a Recipient)",
+  "dualRole": "Dual Role",
+  "nameAndDepartmentRequired": "Category name and department are required.",
+  "categoryCreated": "Category created successfully!",
+  "categoryUpdated": "Category updated successfully!",
+  "categoryDeleted": "Category deleted successfully!",
+  "confirmDeleteTitle": "Confirm Deletion",
+  "confirmDeleteMessage": "Are you sure you want to delete the category '{{categoryName}}'?",
+  "noCategoriesInDept": "No categories in this department."
+}

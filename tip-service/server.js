@@ -1,10 +1,19 @@
 require("dotenv").config();
 console.log("TIP_SERVICE_JWT_SECRET:", process.env.JWT_SECRET); // Added for debugging
 const express = require("express");
+const cors = require('cors'); // Add this line
 const nodemailer = require("nodemailer");
 const tipRoutes = require("./routes/tipRoutes");
 
 const app = express();
+
+// Configure CORS to allow your web application's origin
+app.use(cors({
+    origin: 'http://localhost:5173', // Allow your web app's origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow necessary HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow necessary headers
+}));
+
 app.use(express.json());
 
 // Nodemailer transporter configuration

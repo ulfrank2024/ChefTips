@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = "https://vzdmttmqj3.us-east-1.awsapprunner.com/api/tips"; // Use localhost for iOS simulator to access host machine
+const API_BASE_URL = "http://10.0.0.230:4001/api/tips"; // Local tip-service endpoint
 
 const handleResponse = async (response) => {
     const data = await response.json();
@@ -82,6 +82,15 @@ export const getPoolSummaryByMonth = async (year, month) => {
         url += `&month=${month}`;
     }
     const response = await fetch(url, {
+        method: 'GET',
+        headers,
+    });
+    return handleResponse(response);
+};
+
+export const getEmployeesTotalTips = async () => {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${API_BASE_URL}/employees/total-tips`, {
         method: 'GET',
         headers,
     });

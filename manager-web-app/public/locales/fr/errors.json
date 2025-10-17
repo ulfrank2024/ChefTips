@@ -1,0 +1,26 @@
+{
+  "EMAIL_REQUIRED": "L'adresse e-mail est requise.",
+  "PASSWORD_REQUIRED": "Le mot de passe est requis.",
+  "PASSWORD_MISMATCH": "Les mots de passe ne correspondent pas.",
+  "LOGIN_FIELDS_REQUIRED": "L'e-mail et le mot de passe sont requis.",
+  "INVALID_CREDENTIALS": "E-mail ou mot de passe invalide.",
+  "INVALID_CREDENTIALS_OR_UNVERIFIED": "Identifiants invalides ou compte non vérifié.",
+  "SIGNUP_FIELDS_REQUIRED": "Tous les champs d'inscription sont requis.",
+  "EMAIL_ALREADY_IN_USE": "Cette adresse e-mail est déjà utilisée.",
+  "OTP_REQUIRED": "Le code OTP est requis.",
+  "INVALID_OR_EXPIRED_OTP": "Code invalide ou expiré.",
+  "USER_NOT_FOUND": "Utilisateur non trouvé.",
+  "NO_COMPANY_MEMBERSHIP": "Cet utilisateur n'est membre d'aucune entreprise.",
+  "USER_ALREADY_MEMBER_OF_COMPANY": "Cet utilisateur est déjà membre de cette entreprise.",
+  "UNAUTHORIZED": "Vous n'êtes pas autorisé à effectuer cette action.",
+  "INTERNAL_SERVER_ERROR": "Une erreur interne du serveur est survenue. Veuillez réessayer plus tard.",
+  "INVALID_EMAIL_FORMAT": "Veuillez saisir une adresse e-mail valide.",
+  "EMAIL_OTP_PASSWORD_REQUIRED": "L'e-mail, le code et le mot de passe sont requis.",
+  "COMPANY_ID_NOT_FOUND": "ID de l'entreprise introuvable. Veuillez vous reconnecter.",
+  "DATE_RANGE_REQUIRED": "La date de début et la date de fin sont requises.",
+  "HOURS_REQUIRED_FOR_SELECTED_EMPLOYEES": "Veuillez saisir les heures travaillées pour tous les employés sélectionnés.",
+  "TOTAL_HOURS_CANNOT_BE_ZERO": "Le total des heures travaillées ne peut pas être zéro.",
+  "DAILY_REPORT_ALREADY_EXISTS": "Un rapport existe déjà pour cette date et cette catégorie."
+},
+  "SELECT_CATEGORY_REQUIRED": "Veuillez sélectionner une catégorie."
+}

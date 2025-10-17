@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "a9e05705-cbc0-44f7-a26e-32e881acfca4"
+      }
+    },
+    "android": {
+      "package": "com.ulrich_app.tips_appmain"
+    }
+  }
+}
