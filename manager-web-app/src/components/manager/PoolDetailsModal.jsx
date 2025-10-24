@@ -21,11 +21,11 @@ const PoolDetailsModal = ({ open, onClose, pool, employees }) => {
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>Détails du Pool</DialogTitle>
+      <DialogTitle>Détails du Pool de Rôle</DialogTitle>
       <DialogContent>
         {pool ? (
           <Box>
-            <Typography variant="h6">{pool.department_name}</Typography>
+            <Typography variant="h6">Rôle de Destination: {pool.department_name}</Typography>
             <Typography variant="body1" sx={{ color: 'black' }}>Période: {dayjs(pool.start_date).format('YYYY-MM-DD')} au {dayjs(pool.end_date).format('YYYY-MM-DD')}</Typography>
             <Typography variant="body1" sx={{ color: 'black' }}>{t('creationDate', { ns: 'common' })}: {dayjs(pool.created_at).format('YYYY-MM-DD HH:mm')}</Typography>
             <Typography variant="body1" sx={{ color: 'black' }}>{t('recipientCount', { ns: 'common' })}: {pool.distributions.length}</Typography>

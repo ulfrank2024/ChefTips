@@ -15,5 +15,11 @@
   "latestPoolSummary": "Résumé du Dernier Pool",
   "noPoolsYet": "Aucun pool reçu pour le moment.",
   "yourDistributedAmount": "Votre Montant Distribué",
-  "totalPoolAmount": "Montant Total du Pool"
+  "totalPoolAmount": "Montant Total du Pool",
+  "myReports": "Mes Rapports",
+  "declareCashOut": "Déclarer l'Encaissement",
+  "myCashOutHistory": "Mon Historique de Déclarations",
+  "noRecentCashOuts": "Aucune déclaration récente trouvée.",
+  "declareTips": "Déclarer les Pourboires",
+  "viewCashOutHistory": "Voir l'Historique des Déclarations"
 }

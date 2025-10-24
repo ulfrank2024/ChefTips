@@ -151,7 +151,7 @@ const PoolHistory = () => {
                                   primary={
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                       <Typography variant="h6">
-                                          {pool.name}
+                                          {pool.department_name}
                                       </Typography>
                                       <Chip 
                                         label={pool.calculated_at ? t('poolHistory.statusCalculated') : t('poolHistory.statusNotCalculated')} 

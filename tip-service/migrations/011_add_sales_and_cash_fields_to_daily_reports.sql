@@ -1,5 +1,0 @@
-ALTER TABLE daily_reports
-ADD COLUMN food_sales NUMERIC(10, 2) DEFAULT 0,
-ADD COLUMN alcohol_sales NUMERIC(10, 2) DEFAULT 0,
-ADD COLUMN cash_difference NUMERIC(10, 2) DEFAULT 0,
-ADD COLUMN final_balance NUMERIC(10, 2) DEFAULT 0;

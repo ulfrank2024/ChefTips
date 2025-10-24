@@ -58,13 +58,12 @@ const LoginPage = () => {
       } else {
         // Direct login (single company)
         if (result.role === 'manager') {
-          navigate('/dashboard');
-        } else if (result.role === 'server') {
-          navigate('/server/dashboard');
-        } else if (result.role === 'employee') {
-          navigate('/employee/dashboard');
+          navigate('/dashboard', { replace: true });
+        } else if (result.role === 'SERVEUR' || result.role === 'BARMAN' || result.role === 'COMMIS' || result.role === 'HOTE' || result.role === 'CUISINIER') {
+          const employeeDashboardPath = result.can_cash_out ? '/employee/dashboard' : '/employee/dashboard/received-tips';
+          navigate(employeeDashboardPath, { replace: true });
         } else {
-          navigate('/login');
+          navigate('/login', { replace: true });
         }
       }
     } catch (err) {
@@ -84,13 +83,12 @@ const LoginPage = () => {
     try {
       const user = await selectCompanyAndLogin(tempUserId, selectedCompanyId);
       if (user.role === 'manager') {
-        navigate('/dashboard');
-      } else if (user.role === 'server') {
-        navigate('/server/dashboard');
-      } else if (user.role === 'employee') {
-        navigate('/employee/dashboard');
+        navigate('/dashboard', { replace: true });
+      } else if (user.role === 'SERVEUR' || user.role === 'BARMAN' || user.role === 'COMMIS' || user.role === 'HOTE' || user.role === 'CUISINIER') {
+        const employeeDashboardPath = user.can_cash_out ? '/employee/dashboard' : '/employee/dashboard/received-tips';
+        navigate(employeeDashboardPath, { replace: true });
       } else {
-        navigate('/login');
+        navigate('/login', { replace: true });
       }
       setIsCompanySelectOpen(false);
     } catch (err) {

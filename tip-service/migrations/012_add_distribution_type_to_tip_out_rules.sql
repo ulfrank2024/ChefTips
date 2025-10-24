@@ -1,2 +1,0 @@
-ALTER TABLE tip_out_rules
-ADD COLUMN distribution_type TEXT NOT NULL DEFAULT 'DEPARTMENT_POOL';

@@ -15,11 +15,12 @@ services:
       - "4001:4001"
     env_file:
       - ./tip-service/.env
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:3000
     container_name: tip-service
     depends_on:
       - tip_postgres
-    volumes:
-      - ./tip-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    
 
   postgres:
     image: postgres:13
@@ -59,3 +60,6 @@ services:
 volumes:
   postgres_data:
   tip_postgres_data:
+
+
+

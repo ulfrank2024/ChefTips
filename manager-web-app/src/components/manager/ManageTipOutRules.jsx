@@ -8,15 +8,12 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import { getCategories, getDepartments } from '../../api/tipApi';
 import { getTipOutRules, createTipOutRule, updateTipOutRule, deleteTipOutRule } from '../../api/tipApi';
 
 const ManageTipOutRules = () => {
   const { t } = useTranslation(['components/manager/manageRules', 'common', 'errors']);
 
   const [rules, setRules] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -24,13 +21,13 @@ const ManageTipOutRules = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [ruleName, setRuleName] = useState('');
-  const [destinationDepartmentId, setDestinationDepartmentId] = useState('');
-  const [sourceCategoryId, setSourceCategoryId] = useState('');
-  const [calculationBasis, setCalculationBasis] = useState('gross_tips');
+  const [destinationRole, setDestinationRole] = useState(''); // New state for destination role
+  const [calculationBasis, setCalculationBasis] = useState('total_sales');
   const [percentage, setPercentage] = useState('');
   const [flatAmount, setFlatAmount] = useState('');
   const [isPercentage, setIsPercentage] = useState(true);
-  const [distributionType, setDistributionType] = useState('DEPARTMENT_POOL'); // New state for distribution type
+  const [distributionType, setDistributionType] = useState('INDIVIDUAL_SELECTION'); // New state
+  const [individualRecipientRoles, setIndividualRecipientRoles] = useState([]); // New state for individual recipient roles
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState('');
 
@@ -38,17 +35,13 @@ const ManageTipOutRules = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState(null);
 
+  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [rulesData, categoriesData, departmentsData] = await Promise.all([
-        getTipOutRules(),
-        getCategories(),
-        getDepartments()
-      ]);
+      const rulesData = await getTipOutRules();
       setRules(rulesData);
-      setCategories(categoriesData);
-      setDepartments(departmentsData);
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -63,13 +56,12 @@ const ManageTipOutRules = () => {
   const resetModalState = () => {
     setEditingRule(null);
     setRuleName('');
-    setDestinationDepartmentId('');
-    setSourceCategoryId('');
-    setCalculationBasis('gross_tips');
+    setDestinationRole('');
+    setCalculationBasis('total_sales');
     setPercentage('');
     setFlatAmount('');
     setIsPercentage(true);
-    setDistributionType('DEPARTMENT_POOL'); // Reset distribution type
+    setIndividualRecipientRoles([]);
     setModalError('');
   }
 
@@ -82,9 +74,7 @@ const ManageTipOutRules = () => {
     resetModalState();
     setEditingRule(rule);
     setRuleName(rule.name);
-    setDestinationDepartmentId(rule.destination_department_id);
-    setSourceCategoryId(rule.source_category_id || '');
-    setCalculationBasis(rule.calculation_basis || 'gross_tips');
+    setCalculationBasis(rule.calculation_basis || 'total_sales');
     if (rule.percentage) {
       setIsPercentage(true);
       setPercentage(rule.percentage);
@@ -92,7 +82,18 @@ const ManageTipOutRules = () => {
       setIsPercentage(false);
       setFlatAmount(rule.flat_amount);
     }
-    setDistributionType(rule.distribution_type || 'DEPARTMENT_POOL'); // Set distribution type
+    setDistributionType(rule.distribution_type || 'INDIVIDUAL_SELECTION');
+    setDestinationRole(rule.destination_role || '');
+    let recipientRoles = rule.individual_recipient_roles;
+    if (typeof recipientRoles === 'string') {
+      try {
+        recipientRoles = JSON.parse(recipientRoles);
+      } catch (e) {
+        console.error("Failed to parse individual_recipient_roles as JSON:", recipientRoles, e);
+        recipientRoles = [];
+      }
+    }
+    setIndividualRecipientRoles(Array.isArray(recipientRoles) ? recipientRoles : []);
     setIsModalOpen(true);
   };
 
@@ -102,14 +103,53 @@ const ManageTipOutRules = () => {
     setModalLoading(true);
     setModalError('');
     try {
+      if (!ruleName) {
+        setModalError(t('ruleNameRequired', { ns: 'components/manager/manageRules' }));
+        setModalLoading(false);
+        return;
+      }
+
+      let finalDestinationRole = null;
+      let finalIndividualRecipientRoles = [];
+
+      if (distributionType === 'DEPARTMENT_POOL') {
+        if (!destinationRole) {
+          setModalError(t('destinationRoleRequired', { ns: 'components/manager/manageRules' }));
+          setModalLoading(false);
+          return;
+        }
+        finalDestinationRole = destinationRole;
+      } else { // INDIVIDUAL_SELECTION
+        if (individualRecipientRoles.length === 0) {
+          setModalError(t('selectRecipientRoles', { ns: 'components/manager/manageRules' }));
+          setModalLoading(false);
+          return;
+        }
+        finalIndividualRecipientRoles = individualRecipientRoles;
+      }
+
+      if (isPercentage) {
+        if (!percentage || isNaN(parseFloat(percentage))) {
+          setModalError(t('percentageRequired', { ns: 'components/manager/manageRules' }));
+          setModalLoading(false);
+          return;
+        }
+      } else {
+        if (!flatAmount || isNaN(parseFloat(flatAmount))) {
+          setModalError(t('flatAmountRequired', { ns: 'components/manager/manageRules' }));
+          setModalLoading(false);
+          return;
+        }
+      }
+
       const ruleData = {
         name: ruleName,
-        destination_department_id: destinationDepartmentId,
-        source_category_id: sourceCategoryId || null,
+        destination_role: finalDestinationRole,
         calculation_basis: calculationBasis,
         percentage: isPercentage ? parseFloat(percentage) : null,
         flat_amount: !isPercentage ? parseFloat(flatAmount) : null,
-        distribution_type: distributionType, // Include distribution type
+        distribution_type: distributionType,
+        individual_recipient_roles: finalIndividualRecipientRoles,
       };
 
       if (editingRule) {
@@ -144,25 +184,40 @@ const ManageTipOutRules = () => {
   };
 
   const getRuleDescription = (rule) => {
-    const destDepartment = departments.find(d => d.id === rule.destination_department_id)?.name || 'N/A';
-    let description = `To: ${destDepartment}`;
+    let targetName;
+    let roles = rule.individual_recipient_roles;
+
+    // Ensure roles is an array
+    if (typeof roles === 'string') {
+      try {
+        roles = JSON.parse(roles);
+      } catch (e) {
+        console.error("Failed to parse individual_recipient_roles:", e);
+        roles = [];
+      }
+    }
+    
+    if (rule.distribution_type === 'INDIVIDUAL_SELECTION' && Array.isArray(roles) && roles.length > 0) {
+      targetName = roles.map(role => t((role || '').toLowerCase(), { ns: 'components/manager/manageRules' })).join(', ');
+    } else if (rule.distribution_type === 'DEPARTMENT_POOL' && rule.destination_role) {
+      targetName = t((rule.destination_role || '').toLowerCase(), { ns: 'components/manager/manageRules' });
+    } else {
+      targetName = t('unspecifiedRecipients', { ns: 'components/manager/manageRules' }); // New translation key
+    }
+
+    let description = `${t('ruleDescriptionTo', { ns: 'components/manager/manageRules' })} ${targetName}`;
+
     if (rule.percentage) {
-        const basis = rule.calculation_basis === 'total_sales' ? 'Total Sales' : 'Gross Tips';
-        description += ` (${rule.percentage}% of ${basis})`;
+        const basis = rule.calculation_basis === 'total_sales' ? t('ruleDescriptionOfTotalSales', { ns: 'components/manager/manageRules' }) : t('ruleDescriptionOfGrossTips', { ns: 'components/manager/manageRules' });
+        description += ` (${rule.percentage}% ${t('ruleDescriptionOf', { ns: 'components/manager/manageRules' })} ${basis})`;
     } else if (rule.flat_amount) {
-        description += ` (${rule.flat_amount} flat)`;
+        description += ` (${rule.flat_amount} ${t('ruleDescriptionFlat', { ns: 'components/manager/manageRules' })})`;
     }
-    if (rule.source_category_id) {
-        const srcCategory = categories.find(c => c.id === rule.source_category_id)?.name || 'N/A';
-        description += ` from ${srcCategory} only`;
-    }
-    description += ` [Type: ${rule.distribution_type === 'INDIVIDUAL_SELECTION' ? 'Individual' : 'Department Pool'}]`; // Add distribution type
+    
     return description;
   }
   
-  const receiverDepartments = departments.filter(d => d.department_type === 'RECEIVER');
-  const collectorDepartments = departments.filter(d => d.department_type === 'COLLECTOR');
-  const collectorCategories = categories.filter(c => collectorDepartments.some(d => d.id === c.department_id));
+
 
   return (
     <Box>
@@ -202,28 +257,60 @@ const ManageTipOutRules = () => {
         <DialogContent>
           {modalError && <Alert severity="error" sx={{ mb: 2 }}>{modalError}</Alert>}
           <TextField autoFocus margin="dense" label={t('ruleNamePlaceholder')} type="text" fullWidth value={ruleName} onChange={(e) => setRuleName(e.target.value)} sx={{ mb: 2 }} />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>{t('destinationDepartment')}</InputLabel>
-            <Select value={destinationDepartmentId} label={t('destinationDepartment')} onChange={(e) => setDestinationDepartmentId(e.target.value)}>
-              {receiverDepartments.map((d) => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>{t('sourceCategory')} ({t('optional', { ns: 'common' })})</InputLabel>
-            <Select value={sourceCategoryId} label={`${t('sourceCategory')} (${t('optional', { ns: 'common' })})`} onChange={(e) => setSourceCategoryId(e.target.value)}>
-              <MenuItem value="">{t('all', { ns: 'common' })}</MenuItem>
-              {collectorCategories.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
-            </Select>
-          </FormControl>
           
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>{t('distributionType')}</InputLabel>
-            <Select value={distributionType} label={t('distributionType')} onChange={(e) => setDistributionType(e.target.value)}>
-              <MenuItem value="DEPARTMENT_POOL">{t('departmentPool')}</MenuItem>
-              <MenuItem value="INDIVIDUAL_SELECTION">{t('individualSelection')}</MenuItem>
+            <InputLabel id="distribution-type-label">{t('distributionType', { ns: 'components/manager/manageRules' })}</InputLabel>
+            <Select
+              labelId="distribution-type-label"
+              value={distributionType}
+              label={t('distributionType', { ns: 'components/manager/manageRules' })}
+              onChange={(e) => setDistributionType(e.target.value)}
+            >
+              <MenuItem value="INDIVIDUAL_SELECTION">{t('individualSelection', { ns: 'components/manager/manageRules' })}</MenuItem>
+              <MenuItem value="DEPARTMENT_POOL">{t('departmentPool', { ns: 'components/manager/manageRules' })}</MenuItem>
             </Select>
           </FormControl>
 
+          {distributionType === 'INDIVIDUAL_SELECTION' ? (
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="recipient-roles-select-label">{t('recipientRoles')}</InputLabel>
+              <Select
+                labelId="recipient-roles-select-label"
+                multiple
+                value={individualRecipientRoles}
+                onChange={(e) => {
+                  const { target: { value } } = e;
+                  setIndividualRecipientRoles(
+                    typeof value === 'string' ? value.split(',') : value,
+                  );
+                }}
+                label={t('recipientRoles')}
+              >
+                {predefinedRoles.filter(role => role !== 'SERVEUR').map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel id="destination-role-select-label">{t('destinationRole', { ns: 'components/manager/manageRules' })}</InputLabel>
+              <Select
+                labelId="destination-role-select-label"
+                value={destinationRole}
+                label={t('destinationRole', { ns: 'components/manager/manageRules' })}
+                onChange={(e) => setDestinationRole(e.target.value)}
+              >
+                {predefinedRoles.filter(role => role !== 'manager').map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+          
           <FormGroup row sx={{ alignItems: 'center', mb: 2 }}>
             <Typography color="text.secondary">{t('flatAmount')}</Typography>
             <Switch checked={isPercentage} onChange={(e) => setIsPercentage(e.target.checked)} />
@@ -231,13 +318,7 @@ const ManageTipOutRules = () => {
           </FormGroup>
           {isPercentage ? (
             <>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>{t('calculationBasis')}</InputLabel>
-                <Select value={calculationBasis} label={t('calculationBasis')} onChange={(e) => setCalculationBasis(e.target.value)}>
-                  <MenuItem value="gross_tips">{t('grossTips')}</MenuItem>
-                  <MenuItem value="total_sales">{t('totalSales')}</MenuItem>
-                </Select>
-              </FormControl>
+
               <TextField margin="dense" label={t('percentagePlaceholder')} type="number" fullWidth value={percentage} onChange={(e) => setPercentage(e.target.value)} />
             </>
           ) : (

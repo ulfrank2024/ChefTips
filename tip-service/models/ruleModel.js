@@ -3,13 +3,14 @@ const { pool } = require("../config/db");
 const RuleModel = {
     async createTipOutRule(ruleData) {
         const {
-            company_id, name, source_category_id = null, destination_department_id,
-            calculation_basis, percentage = null, flat_amount = null, distribution_type = 'DEPARTMENT_POOL'
+            company_id, name, destination_role = null,
+            calculation_basis, percentage = null, flat_amount = null, distribution_type = 'DEPARTMENT_POOL',
+            individual_recipient_roles = []
         } = ruleData;
         const result = await pool.query(
-            `INSERT INTO tip_out_rules (company_id, name, source_category_id, destination_department_id, calculation_basis, percentage, flat_amount, distribution_type)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [company_id, name, source_category_id, destination_department_id, calculation_basis, percentage, flat_amount, distribution_type]
+            `INSERT INTO tip_out_rules (company_id, name, destination_role, calculation_basis, percentage, flat_amount, distribution_type, individual_recipient_roles)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb) RETURNING *`,
+            [company_id, name, destination_role, calculation_basis, percentage, flat_amount, distribution_type, JSON.stringify(individual_recipient_roles)]
         );
         return result.rows[0];
     },
@@ -24,7 +25,11 @@ const RuleModel = {
         const values = [];
         let i = 1;
         for (const key in updates) {
-            if (updates[key] !== undefined) {
+            // Ensure individual_recipient_roles is handled as JSONB
+            if (key === 'individual_recipient_roles') {
+                setClauses.push(`${key} = $${i++}::jsonb`);
+                values.push(JSON.stringify(updates[key]));
+            } else if (updates[key] !== undefined) {
                 setClauses.push(`${key} = $${i++}`);
                 values.push(updates[key]);
             }

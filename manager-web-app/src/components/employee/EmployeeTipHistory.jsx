@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box, Typography, CircularProgress, Alert, Paper, Table, TableBody, TableCell, 
@@ -28,7 +28,7 @@ const EmployeeTipHistory = () => {
         const historyData = await getEmployeeTipHistory(user.id);
         setTipHistory(historyData);
       } catch (err) {
-        setError(t('common.somethingWentWrong'));
+        setError(t(err.message, { ns: 'errors' }) || t('common.somethingWentWrong'));
       } finally {
         setLoadingHistory(false);
       }

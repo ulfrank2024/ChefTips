@@ -23,8 +23,8 @@ CREATE TABLE company_memberships (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('manager', 'server', 'employee')),
-    category_id UUID,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('manager', 'CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE')),
+    can_cash_out BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (user_id, company_id) -- A user can only have one membership per company
 );

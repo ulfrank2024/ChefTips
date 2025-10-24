@@ -9,14 +9,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { getCategories, getDepartments, getPayPeriodSummary } from '../../api/tipApi';
+import { getPayPeriodSummary } from '../../api/tipApi';
 
 const PayPeriodReport = () => {
   const { t } = useTranslation(['common', 'pages/managerDashboard', 'components/manager/payPeriodReport']);
 
-  const [categories, setCategories] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedRole, setSelectedRole] = useState(''); // New state for selected role
   const [startDate, setStartDate] = useState(dayjs().startOf('month'));
   const [endDate, setEndDate] = useState(dayjs().endOf('month'));
   const [reportData, setReportData] = useState(null);
@@ -24,15 +22,12 @@ const PayPeriodReport = () => {
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
 
+  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [fetchedCategories, fetchedDepartments] = await Promise.all([
-          getCategories(),
-          getDepartments()
-        ]);
-        setCategories(fetchedCategories);
-        setDepartments(fetchedDepartments);
+        // No categories or departments to fetch anymore
       } catch (err) {
         setError(t(`errors.${err.message}`) || t('common.somethingWentWrong'));
       } finally {
@@ -43,7 +38,7 @@ const PayPeriodReport = () => {
   }, []);
 
   const handleGenerateReport = async () => {
-    if (!selectedDepartment || !startDate || !endDate) {
+    if (!selectedRole || !startDate || !endDate) {
       setFormError(t('allFieldsRequired', { ns: 'components/manager/payPeriodReport' }));
       return;
     }
@@ -52,19 +47,17 @@ const PayPeriodReport = () => {
     setError('');
     try {
       const data = await getPayPeriodSummary(
-        selectedDepartment,
+        selectedRole,
         startDate.format('YYYY-MM-DD'),
         endDate.format('YYYY-MM-DD')
       );
       setReportData(data);
     } catch (err) {
       setError(t(`errors.${err.message}`) || t('common.somethingWentWrong'));
-    } finally {
-      setLoading(false);
     }
   };
 
-  const receiverDepartments = departments.filter(d => d.department_type === 'RECEIVER');
+
 
   if (loading) {
     return (
@@ -87,21 +80,20 @@ const PayPeriodReport = () => {
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
         {formError && <Alert severity="warning" sx={{ mb: 2 }}>{formError}</Alert>}
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>{t('selectDepartment', { ns: 'components/manager/payPeriodReport' })}</InputLabel>
-              <Select
-                value={selectedDepartment}
-                label={t('selectDepartment', { ns: 'components/manager/payPeriodReport' })}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-              >
-                {receiverDepartments.map((dept) => (
-                  <MenuItem key={dept.id} value={dept.id}>{dept.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <FormControl fullWidth>
+                        <InputLabel>{t('selectRole', { ns: 'components/manager/payPeriodReport' })}</InputLabel>
+                        <Select
+                          value={selectedRole}
+                          label={t('selectRole', { ns: 'components/manager/payPeriodReport' })} 
+                          onChange={(e) => setSelectedRole(e.target.value)}
+                        >
+                          {predefinedRoles.map((role) => (
+                            <MenuItem key={role} value={role}>{t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>          <Grid item xs={12} sm={6} md={3}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 label={t('startDate', { ns: 'common' })}
@@ -155,7 +147,7 @@ const PayPeriodReport = () => {
                   const category = categories.find(c => c.id === categoryId);
                   return (
                     <TableRow key={categoryId}>
-                      <TableCell>{category ? category.name : 'Unknown'}</TableCell>
+                      <TableCell>{t(categoryId.toLowerCase(), { ns: 'components/manager/manageRules' })}</TableCell>
                       <TableCell align="right">{parseFloat(amount).toFixed(2)} $</TableCell>
                     </TableRow>
                   );

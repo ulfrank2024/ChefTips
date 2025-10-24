@@ -17,6 +17,7 @@
   "backToLogin": "Retour à la connexion",
   "next": "Suivant",
   "apply": "Appliquer",
+  "step": "Étape",
   "ok": "OK",
   "close": "Fermer",
   "loading": "Chargement...",
@@ -28,7 +29,8 @@
   "notAssigned": "Non assigné",
   "notAvailable": "N/A",
   "welcome": "Bienvenue",
-  "featureComingSoon": "Cette fonctionnalité est en cours de construction et sera bientôt disponible.",
+  "hello": "Bonjour",
+  "welcomeTo": "Bienvenue chez {{companyName}} !",
   "language": "Langue",
   "year": "Année",
   "month": "Mois",
@@ -54,6 +56,7 @@
   "department": "Département",
   "period": "Période",
   "totalPoolAmount": "Montant Total du Pool",
+  "totalAmount": "Montant Total",
   "amount": "Montant",
   "hoursWorked": "Heures Travaillées",
   "category": "Catégorie",
@@ -64,5 +67,5 @@
   "grossTips": "Pourboires Bruts",
   "declare": "Déclarer",
   "manualAdjustment": "Ajustement de Caisse / Dépôt",
-  "manualAdjustmentHelp": "Entrez un nombre négatif pour un dépôt, positif pour un retrait."
-}
+  "manualAdjustmentHelp": "Entrez un nombre négatif pour un dépôt, positif pour un retrait.",
+  "select": "Sélectionner",

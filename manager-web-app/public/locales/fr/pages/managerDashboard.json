@@ -3,8 +3,6 @@
   "overview": "Vue d'ensemble",
   "serverOverview": "Rapports des Serveurs",
   "manageEmployees": "Gérer les Employés",
-  "manageDepartments": "Gérer les Départements",
-  "manageCategories": "Gérer les Catégories",
   "manageRules": "Gérer les Règles",
   "payPeriodReport": "Rapport de Paie",
   "createPool": "Créer un Pool",
@@ -16,11 +14,14 @@
   "amount": "Montant",
   "noPoolsYet": "Aucun pool créé pour le moment.",
   "lastPoolCreated": "Dernier Pool Créé",
-  "department": "Département",
+  "role": "Rôle",
   "period": "Période",
-  "employeesByDepartment": "Employés par Département",
-  "noDepartmentsYet": "Aucun département trouvé.",
-  "noEmployeesInDepartment": "Aucun employé dans ce département.",
+  "employeesByRole": "Employés par Rôle",
+  "noRolesYet": "Aucun rôle trouvé.",
+  "noEmployeesInRole": "Aucun employé dans ce rôle.",
   "creationDate": "Date de création",
-  "unassignedEmployees": "Employés non assignés (collecteur)"
+  "tipOutRules": "Règles de Pourboires",
+  "noTipOutRules": "Aucune règle de pourboires trouvée.",
+  "ofTotalSales": "des Ventes Totales",
+  "ofGrossTips": "des Pourboires Bruts"
 }

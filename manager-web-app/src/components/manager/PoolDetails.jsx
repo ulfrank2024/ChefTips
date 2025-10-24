@@ -15,7 +15,7 @@ import {
   IconButton,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { getPoolDetails, calculateDistribution, getPoolReport } from '../../api/tipApi'; // Assurez-vous que ce chemin est correct
+import { getPools } from '../../api/tipApi';
 import { useAlert } from '../../context/AlertContext';
 import './PoolDetails.css'; // Pour les styles spécifiques
 
@@ -189,7 +189,7 @@ const PoolDetails = () => {
                                           sx={{ color: "white" }}
                                       >
                                           {item.first_name} {item.last_name} (
-                                          {item.category_name || "N/A"})
+                                          {item.role || "N/A"})
                                       </Typography>
                                   }
                                   secondary={

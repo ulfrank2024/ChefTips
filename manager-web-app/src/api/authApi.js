@@ -93,10 +93,10 @@ export const getCompanyEmployees = async () => {
     }
 };
 
-// Simplified inviteEmployee
-export const inviteEmployee = async (email, categoryId = null) => {
+// Updated inviteEmployee
+export const inviteEmployee = async (email, role, can_cash_out) => {
     try {
-        const response = await apiClient.post('/invite-employee', { email, categoryId });
+        const response = await apiClient.post('/invite-employee', { email, role, can_cash_out });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -112,16 +112,14 @@ export const removeEmployee = async (membershipId) => {
     }
 };
 
-export const updateEmployeeMembership = async (membershipId, categoryId) => {
+export const updateEmployeeMembership = async (membershipId, updateData) => {
     try {
-        const response = await apiClient.put(`/memberships/${membershipId}`, { categoryId });
+        const response = await apiClient.put(`/memberships/${membershipId}`, updateData);
         return response.data;
     } catch (error) {
         handleApiError(error);
     }
 };
-
-// --- Category Management is now in tipApi.js ---
 
 // --- User Profile & Password ---
 

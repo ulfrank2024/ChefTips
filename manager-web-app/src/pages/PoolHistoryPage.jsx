@@ -129,7 +129,7 @@ const PoolHistoryPage = () => {
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell>Département</TableCell>
+              <TableCell>Rôle de Destination</TableCell>
               <TableCell align="center">{t('startDate')}</TableCell>
               <TableCell align="center">{t('endDate')}</TableCell>
               <TableCell align="center">{t('creationDate')}</TableCell>

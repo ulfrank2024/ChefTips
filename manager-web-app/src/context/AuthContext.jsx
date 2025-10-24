@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { login as apiLogin, selectCompany, getCompanyEmployees } from '../api/authApi';
-import { getCategories } from '../api/tipApi';
+import { login as apiLogin, selectCompany } from '../api/authApi';
 import { jwtDecode } from "jwt-decode";
 import i18n from '../i18n';
 
@@ -16,64 +15,37 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const enrichUserAndSet = async (tokenToDecode) => {
-            try {
-                const decoded = jwtDecode(tokenToDecode);
-                const isExpired = decoded.exp * 1000 < Date.now();
+        const processToken = () => {
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token);
+                    const isExpired = decoded.exp * 1000 < Date.now();
 
-                if (isExpired) {
-                    console.log("Token expired.");
-                    logout();
-                    return;
-                }
-
-                if (decoded.preferred_language) {
-                    i18n.changeLanguage(decoded.preferred_language);
-                }
-
-                if (decoded.role !== 'employee') {
-                    setUser(decoded);
-                    console.log("Decoded user in AuthContext (manager):", decoded);
-                    setIsLoading(false);
-                    return;
-                }
-
-                const [employees, categories] = await Promise.all([
-                    getCompanyEmployees(),
-                    getCategories()
-                ]);
-
-                const currentUserMembership = employees.find(emp => emp.id === decoded.id);
-                
-                let departmentType = null;
-                if (currentUserMembership && currentUserMembership.category_id) {
-                    const assignedCategory = categories.find(cat => cat.id === currentUserMembership.category_id);
-                    if (assignedCategory) {
-                        departmentType = assignedCategory.department_type;
+                    if (isExpired) {
+                        console.log("Token expired.");
+                        logout();
+                        return;
                     }
+
+                    if (decoded.preferred_language) {
+                        i18n.changeLanguage(decoded.preferred_language);
+                    }
+                    
+                    setUser(decoded);
+                    console.log("Decoded user in AuthContext:", decoded);
+
+                } catch (error) {
+                    console.error("Failed to decode token:", error);
+                    logout();
+                } finally {
+                    setIsLoading(false);
                 }
-
-                const enrichedUser = {
-                    ...decoded,
-                    department_type: departmentType, // 'COLLECTOR', 'RECEIVER', or null
-                };
-                
-                setUser(enrichedUser);
-                console.log("Enriched user in AuthContext (employee):", enrichedUser);
-
-            } catch (error) {
-                console.error("Failed to enrich user or invalid token:", error);
-                logout();
-            } finally {
+            } else {
                 setIsLoading(false);
             }
         };
 
-        if (token) {
-            enrichUserAndSet(token);
-        } else {
-            setIsLoading(false);
-        }
+        processToken();
     }, [token]);
 
     const login = async (email, password) => {
@@ -98,6 +70,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setToken(null);
         localStorage.removeItem('userToken');
+        sessionStorage.removeItem('welcomeShown'); // Clear the welcome flag
     };
 
     const handleTokenUpdate = (newToken) => {

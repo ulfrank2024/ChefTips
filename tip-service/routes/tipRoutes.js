@@ -3,12 +3,10 @@ const router = express.Router();
 const { authenticateToken } = require("../middleware/authMiddleware");
 
 // Import functions from new controllers
-const { createDepartment, getDepartments, updateDepartment, deleteDepartment } = require("../controllers/departmentController");
-const { createCategory, getCategories, updateCategory, deleteCategory } = require("../controllers/categoryController");
 const { createTipOutRule, getTipOutRules, updateTipOutRule, deleteTipOutRule } = require("../controllers/ruleController");
-const { createDailyReport, getEmployeeDashboard, getTipsByCollector, createCollectedTip } = require("../controllers/reportController");
+const { createCashOutReport, getEmployeeCashOutDashboard, getCashOutsByCollector, createSimplifiedCashOut, calculateTipDistribution } = require("../controllers/reportController"); // Added calculateTipDistribution
 const { createPool, getPools, getPoolDetails, getPoolSummaryById, getEmployeeReceivedTips, getPayPeriodSummary } = require("../controllers/poolController");
-const { getCompanyEmployees } = require("../controllers/employeeController");
+const { getCompanyEmployees, getCollectorEmployees } = require("../controllers/employeeController");
 
 // Middleware to check if the user is a manager
 const isManager = (req, res, next) => {
@@ -22,18 +20,7 @@ const isManager = (req, res, next) => {
 
 // Employees
 router.get("/employees", authenticateToken, getCompanyEmployees);
-
-// Departments
-router.post("/departments", authenticateToken, isManager, createDepartment);
-router.get("/departments", authenticateToken, isManager, getDepartments);
-router.put("/departments/:departmentId", authenticateToken, isManager, updateDepartment);
-router.delete("/departments/:departmentId", authenticateToken, isManager, deleteDepartment);
-
-// Categories
-router.post("/categories", authenticateToken, isManager, createCategory);
-router.get("/categories", authenticateToken, getCategories);
-router.put("/categories/:categoryId", authenticateToken, isManager, updateCategory);
-router.delete("/categories/:categoryId", authenticateToken, isManager, deleteCategory);
+router.get("/collectors", authenticateToken, getCollectorEmployees); // New route for collectors
 
 // Tip-Out Rules
 router.post("/rules/tip-out", authenticateToken, isManager, createTipOutRule);
@@ -45,10 +32,13 @@ router.delete("/rules/tip-out/:ruleId", authenticateToken, isManager, deleteTipO
 // --- Operational Routes ---
 
 // Employee submits a daily report
-router.post("/reports", authenticateToken, createDailyReport);
+router.post("/cash-outs", authenticateToken, createCashOutReport);
+
+// New route to calculate tip distribution
+router.post("/cash-outs/calculate-distribution", authenticateToken, calculateTipDistribution);
 
 // Collector Specific Routes
-router.get("/tips/collector/:userId", authenticateToken, getTipsByCollector);
+router.get("/cash-outs/collector/:userId", authenticateToken, getCashOutsByCollector);
 
 // Manager creates a new tip pool
 router.post("/pools", authenticateToken, isManager, createPool);
@@ -62,7 +52,7 @@ router.get("/pools/:poolId/summary", authenticateToken, getPoolSummaryById);
 // --- Dashboard & Data Retrieval Routes ---
 
 // Employee gets their own dashboard data for a date range
-router.get("/dashboard/employee", authenticateToken, getEmployeeDashboard);
+router.get("/dashboard/employee", authenticateToken, getEmployeeCashOutDashboard);
 
 // Manager gets the total tip-out amount for a category over a pay period
 router.get("/dashboard/pay-period-summary", authenticateToken, isManager, getPayPeriodSummary);

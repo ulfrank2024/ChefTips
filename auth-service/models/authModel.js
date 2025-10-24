@@ -61,10 +61,10 @@ const AuthModel = {
     },
 
     // --- Membership Methods (Simplified) ---
-    async createMembership(userId, companyId, role, categoryId = null) {
+    async createMembership(userId, companyId, role, can_cash_out = false) {
         const result = await pool.query(
-            "INSERT INTO company_memberships (user_id, company_id, role, category_id) VALUES ($1, $2, $3, $4) RETURNING *",
-            [userId, companyId, role, categoryId]
+            "INSERT INTO company_memberships (user_id, company_id, role, can_cash_out) VALUES ($1, $2, $3, $4) RETURNING *",
+            [userId, companyId, role, can_cash_out]
         );
         return result.rows[0];
     },
@@ -74,6 +74,7 @@ const AuthModel = {
             `SELECT
                 cm.id as membership_id,
                 cm.role,
+                cm.can_cash_out,
                 c.id as company_id,
                 c.name as company_name
              FROM company_memberships cm
@@ -93,8 +94,31 @@ const AuthModel = {
         await pool.query("DELETE FROM company_memberships WHERE id = $1", [membershipId]);
     },
 
-    async updateMembership(membershipId, categoryId) {
-        await pool.query("UPDATE company_memberships SET category_id = $1 WHERE id = $2", [categoryId, membershipId]);
+    async updateMembership(membershipId, { role, can_cash_out }) {
+        let query = 'UPDATE company_memberships SET';
+        const values = [];
+        let setClauses = [];
+
+        if (role !== undefined) {
+            values.push(role);
+            setClauses.push(`role = $${values.length}`);
+        }
+
+        if (can_cash_out !== undefined) {
+            values.push(can_cash_out);
+            setClauses.push(`can_cash_out = $${values.length}`);
+        }
+
+        if (setClauses.length === 0) {
+            // Nothing to update
+            return;
+        }
+
+        query += ` ${setClauses.join(', ')}`;
+        values.push(membershipId);
+        query += ` WHERE id = $${values.length}`;
+
+        await pool.query(query, values);
     },
 
     async getCompanyEmployees(companyId) {
@@ -107,7 +131,7 @@ const AuthModel = {
                 u.created_at,
                 cm.id as membership_id,
                 cm.role,
-                cm.category_id
+                cm.can_cash_out
              FROM users u
              JOIN company_memberships cm ON u.id = cm.user_id
              WHERE cm.company_id = $1 AND cm.role != 'manager'

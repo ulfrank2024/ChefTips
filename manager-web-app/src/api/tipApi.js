@@ -37,85 +37,16 @@ const handleApiError = (error) => {
 // --- Employee/User Retrieval ---
 export const getCompanyEmployees = async () => {
     try {
-        const response = await apiClient.get('/employees'); // Assuming this endpoint exists in tip-service
+        const response = await apiClient.get('/employees');
         return response.data;
     } catch (error) {
         handleApiError(error);
     }
 };
 
-// --- Department Management ---
-export const getDepartments = async () => {
+export const getCollectorEmployees = async () => {
     try {
-        const response = await apiClient.get('/departments');
-        // Assuming the backend now returns department_type
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-export const createDepartment = async (departmentData) => {
-    try {
-        // departmentData should now include 'name' and 'department_type'
-        const response = await apiClient.post('/departments', departmentData);
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-// New function to update a department
-export const updateDepartment = async (departmentId, departmentData) => {
-    try {
-        const response = await apiClient.put(`/departments/${departmentId}`, departmentData);
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-// New function to delete a department
-export const deleteDepartment = async (departmentId) => {
-    try {
-        const response = await apiClient.delete(`/departments/${departmentId}`);
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-// --- Category Management ---
-export const getCategories = async () => {
-    try {
-        const response = await apiClient.get('/categories');
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-export const createCategory = async (categoryData) => {
-    try {
-        const response = await apiClient.post('/categories', categoryData);
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-export const updateCategory = async (categoryId, categoryData) => {
-    try {
-        const response = await apiClient.put(`/categories/${categoryId}`, categoryData);
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-export const deleteCategory = async (categoryId) => {
-    try {
-        const response = await apiClient.delete(`/categories/${categoryId}`);
+        const response = await apiClient.get('/collectors');
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -134,7 +65,6 @@ export const getTipOutRules = async () => {
 
 export const createTipOutRule = async (ruleData) => {
     try {
-        // The backend now expects destination_department_id
         const response = await apiClient.post('/rules/tip-out', ruleData);
         return response.data;
     } catch (error) {
@@ -144,7 +74,6 @@ export const createTipOutRule = async (ruleData) => {
 
 export const updateTipOutRule = async (ruleId, ruleData) => {
     try {
-        // The backend now expects destination_department_id
         const response = await apiClient.put(`/rules/tip-out/${ruleId}`, ruleData);
         return response.data;
     } catch (error) {
@@ -161,10 +90,20 @@ export const deleteTipOutRule = async (ruleId) => {
     }
 };
 
-// --- Daily Reports ---
-export const createDailyReport = async (reportData) => {
+// --- Cash Outs ---
+export const createCashOutReport = async (reportData) => {
     try {
-        const response = await apiClient.post('/reports', reportData);
+        const response = await apiClient.post('/cash-outs', reportData);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+export const calculateTipDistribution = async (calculationData) => {
+    try {
+        const response = await apiClient.post('/cash-outs/calculate-distribution', calculationData);
+        console.log('API Response for calculateTipDistribution (data):', response.data);
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -172,7 +111,7 @@ export const createDailyReport = async (reportData) => {
 };
 
 // --- Dashboards ---
-export const getEmployeeDashboard = async (startDate, endDate) => {
+export const getEmployeeCashOutDashboard = async (startDate, endDate) => {
     try {
         const response = await apiClient.get('/dashboard/employee', { params: { startDate, endDate } });
         return response.data;
@@ -181,9 +120,9 @@ export const getEmployeeDashboard = async (startDate, endDate) => {
     }
 };
 
-export const getPayPeriodSummary = async (destinationDepartmentId, startDate, endDate) => {
+export const getPayPeriodSummary = async (destinationRole, startDate, endDate) => { // Changed destinationDepartmentId to destinationRole
     try {
-        const response = await apiClient.get('/dashboard/pay-period-summary', { params: { destinationDepartmentId, startDate, endDate } });
+        const response = await apiClient.get('/dashboard/pay-period-summary', { params: { destinationRole, startDate, endDate } });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -237,12 +176,12 @@ export const getPoolSummary = async (poolId) => {
 };
 
 // --- Collector Specific APIs ---
-export const getTipsByCollector = async (userId, startDate, endDate) => {
-  const response = await apiClient.get(`/tips/collector/${userId}`, { params: { startDate, endDate } });
+export const getCashOutsByCollector = async (userId, startDate, endDate) => {
+  const response = await apiClient.get(`/cash-outs/collector/${userId}`, { params: { startDate, endDate } });
   return response.data;
 };
 
-export const submitDailyReport = async (reportData) => {
-  const response = await apiClient.post('/reports', reportData);
+export const submitCashOutReport = async (reportData) => {
+  const response = await apiClient.post('/cash-outs', reportData);
   return response.data;
 };

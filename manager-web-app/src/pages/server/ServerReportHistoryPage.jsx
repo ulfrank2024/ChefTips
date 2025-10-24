@@ -22,7 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { getTipsByCollector } from "../../api/tipApi";
+import { getCashOutsByCollector } from "../../api/tipApi";
 
 const ServerReportHistoryPage = () => {
     const { t } = useTranslation(["pages/serverDashboard", "common"]);
@@ -42,7 +42,7 @@ const ServerReportHistoryPage = () => {
                 setLoading(true);
                 if (user && user.id && start && end) {
                     // Utiliser les paramètres passés plutôt que l'état local (pour l'appel initial)
-                    const fetchedReports = await getTipsByCollector(
+                    const fetchedReports = await getCashOutsByCollector(
                         user.id,
                         start.toISOString(),
                         end.toISOString()
@@ -100,7 +100,7 @@ const ServerReportHistoryPage = () => {
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
-                {t("reportHistory", { ns: "pages/serverDashboard" })}
+                {t("cashOutHistory", { ns: "pages/serverDashboard" })}
             </Typography>
 
             <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
@@ -156,7 +156,7 @@ const ServerReportHistoryPage = () => {
                 <Grid item xs={12}>
                     <Paper elevation={3} sx={{ p: 2 }}>
                         <Typography variant="h6" sx={{ mb: 2 }}>
-                            {t("reports", { ns: "pages/serverDashboard" })}
+                            {t("cashOuts", { ns: "pages/serverDashboard" })}
                         </Typography>
                         <TableContainer>
                             <Table>
@@ -285,7 +285,7 @@ const ServerReportHistoryPage = () => {
                                                 colSpan={7}
                                                 align="center"
                                             >
-                                                {t("noReportsFound", {
+                                                {t("noCashOutsFound", {
                                                     ns: "pages/serverDashboard",
                                                 })}
                                             </TableCell>

@@ -26,6 +26,7 @@ import PoolDetailsScreen from '../screens/manager/PoolDetailsScreen';
 import EmployeeTotalTipsScreen from '../screens/manager/EmployeeTotalTipsScreen';
 import EmployeeTipHistoryScreen from '../screens/employee/EmployeeTipHistoryScreen';
 import ProfileScreen from '../screens/auth/ProfileScreen'; // Assuming ProfileScreen is a main tab
+import CategorySelectionScreen from '../screens/employee/CategorySelectionScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -54,22 +55,29 @@ const linking = {
 };
 
 // Main Tabs Navigator
-const MainTabs = () => {
+const MainTabs = ({ navigation }) => { // Add navigation prop
   const [userRole, setUserRole] = useState(null);
   const [loadingRole, setLoadingRole] = useState(true);
   const { t } = useTranslation();
 
   useEffect(() => {
-    const fetchUserRole = async () => {
+    const fetchUserAndRedirect = async () => {
       try {
         const userString = await AsyncStorage.getItem('user');
         if (userString) {
           try {
             const user = JSON.parse(userString);
             setUserRole(user.role);
+
+            // Check for employee collector without category_id
+            if (user.role === 'employee' && !user.category_id) {
+              // Redirect to CategorySelectionScreen
+              navigation.replace('CategorySelection');
+              return; // Stop further processing in this useEffect
+            }
+
           } catch (parseError) {
             console.error("Failed to parse user data from AsyncStorage:", parseError);
-            // Optionally, set a default role or handle the error state
             setUserRole(null); 
           }
         }
@@ -79,8 +87,8 @@ const MainTabs = () => {
         setLoadingRole(false);
       }
     };
-    fetchUserRole();
-  }, []);
+    fetchUserAndRedirect();
+  }, [navigation]); // Add navigation to dependency array
 
   if (loadingRole) {
     // You might want a loading screen here
@@ -177,6 +185,7 @@ const AppNavigator = () => {
         {/* These screens might be accessed from within tabs, so keep them as Stack.Screens */}
         <Stack.Screen name="PoolDetails" component={PoolDetailsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EmployeeTotalTips" component={EmployeeTotalTipsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CategorySelection" component={CategorySelectionScreen} options={{ headerShown: false }} />
            </Stack.Navigator>
     </NavigationContainer>
   );

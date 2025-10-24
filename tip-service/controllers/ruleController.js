@@ -5,7 +5,7 @@ const createTipOutRule = async (req, res) => {
     if (role !== 'manager') return res.status(403).json({ error: "UNAUTHORIZED" });
 
     try {
-        const newRule = await TipModel.createTipOutRule({ ...req.body, company_id });
+        const newRule = await RuleModel.createTipOutRule({ ...req.body, company_id });
         res.status(201).json(newRule);
     } catch (err) {
         console.error(err);
@@ -16,7 +16,7 @@ const createTipOutRule = async (req, res) => {
 const getTipOutRules = async (req, res) => {
     const { company_id } = req.user;
     try {
-        const rules = await TipModel.getTipOutRulesByCompany(company_id);
+        const rules = await RuleModel.getTipOutRulesByCompany(company_id);
         res.status(200).json(rules);
     } catch (err) {
         console.error(err);
@@ -30,7 +30,7 @@ const updateTipOutRule = async (req, res) => {
 
     const { ruleId } = req.params;
     try {
-        const updatedRule = await TipModel.updateTipOutRule(ruleId, req.body);
+        const updatedRule = await RuleModel.updateTipOutRule(ruleId, req.body);
         res.status(200).json(updatedRule);
     } catch (err) {
         console.error(err);
@@ -44,7 +44,7 @@ const deleteTipOutRule = async (req, res) => {
 
     const { ruleId } = req.params;
     try {
-        await TipModel.deleteTipOutRule(ruleId);
+        await RuleModel.deleteTipOutRule(ruleId);
         res.status(204).send();
     } catch (err) {
         console.error(err);

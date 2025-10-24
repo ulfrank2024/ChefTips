@@ -13,7 +13,7 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import SpeedIcon from '@mui/icons-material/Speed';
 import GroupIcon from '@mui/icons-material/Group'; // Icon for employees by department
 import { useAuth } from '../../context/AuthContext.jsx';
-import { getPools, getDepartments, getCategories } from '../../api/tipApi'; // Import getDepartments and getCategories
+import { getPools, getTipOutRules } from '../../api/tipApi'; // Import getTipOutRules
 import { getCompanyEmployees } from '../../api/authApi'; // Import getCompanyEmployees
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend,
@@ -33,15 +33,16 @@ const Overview = () => {
   const { user } = useAuth();
 
   const [pools, setPools] = useState([]);
-  const [departments, setDepartments] = useState([]); // New state for departments
   const [employees, setEmployees] = useState([]);     // New state for employees
-  const [categories, setCategories] = useState([]);   // New state for categories
+  const [rules, setRules] = useState([]);             // New state for tip-out rules
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(''); // Use empty string for "All Months"
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
 
   const { filteredPools, years, months } = React.useMemo(() => {
     let currentFilteredPools = pools;
@@ -80,18 +81,16 @@ const Overview = () => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const [poolsData, departmentsData, employeesData, categoriesData] = await Promise.all([
+        const [poolsData, employeesData, rulesData] = await Promise.all([
           getPools(),
-          getDepartments(),
           getCompanyEmployees(),
-          getCategories() // Fetch categories
+          getTipOutRules() // Fetch tip-out rules
         ]);
         // Sort pools by created_at for chronological display in chart and to get the last created
         const sortedPools = poolsData.sort((a, b) => dayjs(a.start_date).unix() - dayjs(b.start_date).unix());
         setPools(sortedPools);
-        setDepartments(departmentsData);
         setEmployees(employeesData);
-        setCategories(categoriesData); // Set categories state
+        setRules(rulesData);          // Set rules state
       } catch (err) {
         setError(err.message);
       } finally {
@@ -170,42 +169,33 @@ const Overview = () => {
 
   const lastPool = pools.length > 0 ? pools[pools.length - 1] : null; // Get the last created pool
 
-  // Group employees by department
-  const employeesByDepartment = {};
+  // Group employees by role
+  const employeesByRole = {};
 
-  // Initialize with all actual departments
-  departments.forEach(dept => {
-    employeesByDepartment[dept.id] = {
-      name: dept.name,
+  // Initialize with all predefined roles
+  predefinedRoles.forEach(role => {
+    employeesByRole[role] = {
+      name: t(role.toLowerCase(), { ns: 'components/manager/manageRules' }),
       employees: []
     };
   });
 
-  // Add a special entry for unassigned/collectors
-  employeesByDepartment['unassigned'] = {
-    name: t('unassignedEmployees', { ns: 'pages/managerDashboard' }), // Need translation key
-    employees: []
-  };
-
   employees.forEach(emp => {
-    if (emp.category_id) {
-      const employeeCategory = categories.find(cat => cat.id === emp.category_id);
-      if (employeeCategory && employeeCategory.department_id) {
-        if (employeesByDepartment[employeeCategory.department_id]) {
-          employeesByDepartment[employeeCategory.department_id].employees.push(emp);
-        } else {
-          // Category found but department not in current list (e.g., filtered out or inconsistent data)
-          employeesByDepartment['unassigned'].employees.push(emp);
-        }
-      }
-    } else {
-      // No category_id assigned (e.g., daily collectors)
-      employeesByDepartment['unassigned'].employees.push(emp);
+    if (emp.role && employeesByRole[emp.role]) {
+      employeesByRole[emp.role].employees.push(emp);
     }
   });
 
-  // Convert to an array for rendering, filtering out empty departments if desired
-  const departmentsWithEmployees = Object.values(employeesByDepartment).filter(dept => dept.employees.length > 0 || dept.id === 'unassigned'); // Keep unassigned even if empty
+  // Convert to an array for rendering, filtering out empty roles if desired
+  const rolesWithEmployees = Object.values(employeesByRole).filter(roleEntry => roleEntry.employees.length > 0);
+
+  const emptyStateStyle = {
+    p: 2,
+    backgroundColor: 'grey.200',
+    color: 'black',
+    borderRadius: 1,
+    textAlign: 'center',
+  };
 
   return (
     <Box>
@@ -236,7 +226,7 @@ const Overview = () => {
                         </Box>
                         <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1, color: 'black' }}>
                             <BusinessIcon sx={{ mr: 1, fontSize: 'small' }} />
-                            {t('department', { ns: 'pages/managerDashboard' })}: {lastPool.department_name}
+                            {t('role', { ns: 'pages/managerDashboard' })}: {t(lastPool.department_name.toLowerCase(), { ns: 'components/manager/manageRules' })}
                         </Typography>
                         <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1, color: 'black' }}>
                             <ScheduleIcon sx={{ mr: 1, fontSize: 'small' }} />
@@ -271,21 +261,21 @@ const Overview = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                         <GroupIcon sx={{ mr: 1 }} />
                         <Typography variant="h6" component="h2">
-                            {t('employeesByDepartment', { ns: 'pages/managerDashboard' })}
+                            {t('employeesByRole', { ns: 'pages/managerDashboard' })} {/* New translation key */}
                         </Typography>
                     </Box>
-                    {departments.length === 0 ? (
-                        <Typography variant="body1">{t('noDepartmentsYet', { ns: 'pages/managerDashboard' })}</Typography>
+                    {rolesWithEmployees.length === 0 ? (
+                        <Typography variant="body1" sx={emptyStateStyle}>{t('noRolesYet', { ns: 'pages/managerDashboard' })}</Typography> /* New translation key */
                     ) : (
                         <List>
-                            {departmentsWithEmployees.map(dept => (
-                                <Box key={dept.id} sx={{ mb: 2 }}>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{dept.name} ({dept.employees.length || 0} {t('employees', { ns: 'common', count: dept.employees.length || 0 })})</Typography>
+                            {rolesWithEmployees.map(roleEntry => (
+                                <Box key={roleEntry.name} sx={{ mb: 2 }}>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{roleEntry.name} ({roleEntry.employees.length || 0} {t('employees', { ns: 'common', count: roleEntry.employees.length || 0 })})</Typography>
                                     <List dense disablePadding sx={{ maxHeight: 150, overflow: 'auto' }}>
-                                        {dept.employees.length === 0 ? (
-                                            <ListItem><ListItemText primary={t('noEmployeesInDepartment', { ns: 'pages/managerDashboard' })} /></ListItem>
+                                        {roleEntry.employees.length === 0 ? (
+                                            <ListItem><ListItemText primary={t('noEmployeesInRole', { ns: 'pages/managerDashboard' })} /></ListItem> /* New translation key */
                                         ) : (
-                                            dept.employees.map(emp => (
+                                            roleEntry.employees.map(emp => (
                                                 <ListItem key={emp.id}>
                                                     <ListItemText primary={`${emp.first_name} ${emp.last_name}`} />
                                                 </ListItem>
@@ -293,6 +283,36 @@ const Overview = () => {
                                         )}
                                     </List>
                                 </Box>
+                            ))}
+                        </List>
+                    )}
+                </Paper>
+            </Grid>
+
+            <Grid item xs={12} md={6}> {/* New Grid item for Tip-Out Rules */}
+                <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <AttachMoneyIcon sx={{ mr: 1 }} />
+                        <Typography variant="h6" component="h2">
+                            {t('tipOutRules', { ns: 'pages/managerDashboard' })} {/* New translation key */}
+                        </Typography>
+                    </Box>
+                    {rules.length === 0 ? (
+                        <Typography variant="body1" sx={emptyStateStyle}>{t('noTipOutRules', { ns: 'pages/managerDashboard' })}</Typography> /* New translation key */
+                    ) : (
+                        <List>
+                            {rules.map(rule => (
+                                <ListItem key={rule.id} sx={{ backgroundColor: '#2a2a3e', padding: 2, borderRadius: '10px', mb: 1 }}>
+                                    <ListItemText
+                                        primary={<Typography sx={{ color: '#fff', fontWeight: 'bold' }}>{rule.name}</Typography>}
+                                        secondary={
+                                            <Typography sx={{ color: '#ccc' }}>
+                                                {rule.percentage ? `${rule.percentage}%` : `${rule.flat_amount}$`}
+                                                {rule.calculation_basis === 'total_sales' ? ` ${t('ofTotalSales', { ns: 'pages/managerDashboard' })}` : ` ${t('ofGrossTips', { ns: 'pages/managerDashboard' })}`}
+                                            </Typography>
+                                        }
+                                    />
+                                </ListItem>
                             ))}
                         </List>
                     )}
@@ -313,7 +333,7 @@ const Overview = () => {
                 </Button>
             </Box>
             {filteredPools.length === 0 ? (
-                <Typography variant="body1">{t('noPoolsYet', { ns: 'pages/managerDashboard' })}</Typography>
+                <Typography variant="body1" sx={emptyStateStyle}>{t('noPoolsYet', { ns: 'pages/managerDashboard' })}</Typography>
             ) : (
                 <Box sx={{ height: 400, width: '100%' }}>
                     <Line options={chartOptions} data={chartData} />

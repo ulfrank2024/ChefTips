@@ -1,28 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Typography, Box, Drawer, List, ListItem, ListItemIcon, ListItemText,
-  CssBaseline, useTheme, Fade
+  CssBaseline, useTheme
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import CategoryIcon from '@mui/icons-material/Category';
-import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import RuleIcon from '@mui/icons-material/Rule';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import PoolIcon from '@mui/icons-material/Pool';
 import HistoryIcon from '@mui/icons-material/History';
-import { useAuth } from '../context/AuthContext.jsx';
-import WelcomeModal from '../components/WelcomeModal';
-import './DashboardPage.css';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
+import WelcomeModal from '../WelcomeModal';
 
 const drawerWidth = 240;
 
-const DashboardPage = () => {
-  const { t } = useTranslation(['common', 'pages/managerDashboard']);
+const EmployeeDashboardLayout = () => {
+  const { t } = useTranslation(['common', 'pages/employeeDashboard']);
   const { user } = useAuth(); 
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
@@ -52,15 +45,15 @@ const DashboardPage = () => {
   };
 
   const menuItems = [
-    { text: t('overview', { ns: 'pages/managerDashboard' }), icon: <DashboardIcon />, path: '/dashboard' },
-    { text: t('serverOverview', { ns: 'pages/managerDashboard' }), icon: <AssessmentIcon />, path: '/dashboard/server-overview' },
-    { text: t('manageEmployees', { ns: 'pages/managerDashboard' }), icon: <PeopleIcon />, path: '/dashboard/manage-employees' },
-    { text: t('manageRules', { ns: 'pages/managerDashboard' }), icon: <RuleIcon />, path: '/dashboard/manage-rules' },
-    { text: t('payPeriodReport', { ns: 'pages/managerDashboard' }), icon: <ReceiptLongIcon />, path: '/dashboard/pay-period-report' },
-    { text: t('createPool', { ns: 'pages/managerDashboard' }), icon: <PoolIcon />, path: '/dashboard/create-pool' },
-    { text: t('poolHistory', { ns: 'pages/managerDashboard' }), icon: <HistoryIcon />, path: '/dashboard/pool-history' },
-    { text: t('profile', { ns: 'pages/managerDashboard' }), icon: <PersonIcon />, path: '/dashboard/profile' },
+    { text: t('overview', { ns: 'pages/employeeDashboard' }), icon: <DashboardIcon />, path: '/employee/dashboard' },
+    { text: t('myReceivedTips', { ns: 'pages/employeeDashboard' }), icon: <AttachMoneyIcon />, path: '/employee/dashboard/received-tips' },
+    { text: t('profile', { ns: 'pages/employeeDashboard' }), icon: <PersonIcon />, path: '/employee/dashboard/profile' },
   ];
+
+  // Add collector-specific items if can_cash_out is true
+  if (user?.can_cash_out) {
+    menuItems.splice(1, 0, { text: t('myCashOutHistory', { ns: 'pages/employeeDashboard' }), icon: <HistoryIcon />, path: '/employee/dashboard/cashout-history' });
+  }
 
   const drawer = (
       <Box
@@ -173,4 +166,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default EmployeeDashboardLayout;

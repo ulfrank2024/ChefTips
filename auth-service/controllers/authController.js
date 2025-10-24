@@ -87,10 +87,11 @@ const login = async (req, res) => {
                 email: user.email, 
                 first_name: user.first_name, 
                 last_name: user.last_name, 
-                preferred_language: user.preferred_language, // Add language
+                preferred_language: user.preferred_language,
                 company_id: membership.company_id, 
                 company_name: membership.company_name, 
-                role: membership.role 
+                                role: membership.role,
+                                can_cash_out: membership.can_cash_out
             };
             const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
             return res.status(200).json({ success_code: "LOGIN_SUCCESSFUL", token });
@@ -124,10 +125,11 @@ const selectCompany = async (req, res) => {
             email: user.email, 
             first_name: user.first_name, 
             last_name: user.last_name, 
-            preferred_language: user.preferred_language, // Add language
+            preferred_language: user.preferred_language,
             company_id: selectedMembership.company_id, 
             company_name: selectedMembership.company_name, 
-            role: selectedMembership.role 
+            role: selectedMembership.role, 
+            can_cash_out: selectedMembership.can_cash_out
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.status(200).json({ success_code: "COMPANY_SELECTED_SUCCESSFULLY", token });
@@ -143,8 +145,8 @@ const inviteEmployee = async (req, res) => {
     if (managerRole !== 'manager') {
         return res.status(403).json({ error: "UNAUTHORIZED_ACCESS" });
     }
-    const { email, categoryId } = req.body; // Add categoryId
-    if (!email) { return res.status(400).json({ error: "EMAIL_REQUIRED" }); }
+    const { email, role, can_cash_out } = req.body;
+    if (!email || !role) { return res.status(400).json({ error: "EMAIL_AND_ROLE_REQUIRED" }); }
 
     try {
         let user = await AuthModel.findUserByEmail(email);
@@ -158,8 +160,7 @@ const inviteEmployee = async (req, res) => {
             return res.status(409).json({ error: "USER_ALREADY_MEMBER_OF_COMPANY" });
         }
 
-        // Create membership with the generic 'employee' role and optional categoryId
-        await AuthModel.createMembership(user.id, managerCompanyId, 'employee', categoryId);
+        await AuthModel.createMembership(user.id, managerCompanyId, role, can_cash_out);
 
         if (isNewUser) {
             const code = await AuthModel.createInvitationCode(user.id);
@@ -196,7 +197,7 @@ const inviteEmployee = async (req, res) => {
 
 const updateMembership = async (req, res) => {
     const { membershipId } = req.params;
-    const { categoryId } = req.body;
+    const { role, can_cash_out } = req.body;
     const { company_id: managerCompanyId, role: managerRole } = req.user;
 
     if (managerRole !== 'manager') {
@@ -210,7 +211,7 @@ const updateMembership = async (req, res) => {
             return res.status(404).json({ error: "MEMBERSHIP_NOT_FOUND_IN_COMPANY" });
         }
 
-        await AuthModel.updateMembership(membershipId, categoryId);
+        await AuthModel.updateMembership(membershipId, { role, can_cash_out });
         res.status(200).json({ success_code: "MEMBERSHIP_UPDATED_SUCCESSFULLY" });
     } catch (err) {
         console.error(err);

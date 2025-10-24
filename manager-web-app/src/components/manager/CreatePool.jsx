@@ -8,32 +8,31 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { getDepartments, getPayPeriodSummary, createPool, getCategories } from '../../api/tipApi';
+import { getPayPeriodSummary, createPool } from '../../api/tipApi';
 import { getCompanyEmployees } from '../../api/authApi';
 
 const CreatePool = () => {
   const { t } = useTranslation(['components/manager/createPool', 'common', 'errors']);
 
-  const [departments, setDepartments] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(''); // Add success state
+  const [success, setSuccess] = useState('');
   
   const [startDate, setStartDate] = useState(dayjs().startOf('month'));
   const [endDate, setEndDate] = useState(dayjs().endOf('month'));
   
   const [report, setReport] = useState(null);
   const [selectedEmployees, setSelectedEmployees] = useState({});
+  const [selectedRole, setSelectedRole] = useState(''); // New state for selected role
+
+  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [deps, emps, cats] = await Promise.all([getDepartments(), getCompanyEmployees(), getCategories()]);
-      setDepartments(deps.filter(d => d.department_type === 'RECEIVER'));
+      const emps = await getCompanyEmployees();
       setEmployees(emps);
-      setCategories(cats);
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -51,10 +50,11 @@ const CreatePool = () => {
     setSuccess('');
     try {
       const reports = await Promise.all(
-        departments.map(d => getPayPeriodSummary(d.id, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD')))
+        predefinedRoles.map(role => getPayPeriodSummary(role, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD')))
       );
-      const augmentedReports = reports.map(r => ({
+      const augmentedReports = reports.map((r, index) => ({
         ...r,
+        role: predefinedRoles[index],
         editable_total_tip_out_amount: r.total_tip_out_amount
       }));
       setReport(augmentedReports);
@@ -86,12 +86,12 @@ const CreatePool = () => {
     setSelectedEmployees(newSelection);
   };
 
-  const handleDistribute = async (department, totalAmount) => {
+  const handleDistribute = async (role, totalAmount) => {
     setError('');
     setSuccess('');
     setLoading(true);
 
-    const distributions = Object.entries(selectedEmployees[department.id] || {})
+    const distributions = Object.entries(selectedEmployees[role] || {})
       .filter(([, data]) => data.selected)
 
     const missingHours = distributions.some(([, data]) => data.hours === undefined || data.hours === null || data.hours === '');
@@ -117,7 +117,7 @@ const CreatePool = () => {
 
     try {
       await createPool({
-        departmentId: department.id,
+        role: role,
         startDate: startDate.format('YYYY-MM-DD'),
         endDate: endDate.format('YYYY-MM-DD'),
         distributions: finalDistributions,
@@ -125,7 +125,7 @@ const CreatePool = () => {
       });
       setSuccess(t('DISTRIBUTION_SUCCESS', { ns: 'common' }));
       // Reset selections for the current department
-      setSelectedEmployees(prev => ({...prev, [department.id]: {}}));
+      setSelectedEmployees(prev => ({...prev, [role]: {}}));
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -133,7 +133,7 @@ const CreatePool = () => {
     }
   };
 
-  if (loading && departments.length === 0) return <CircularProgress />;
+  if (loading) return <CircularProgress />;
 
   return (
     <Box>
@@ -159,15 +159,12 @@ const CreatePool = () => {
       </Paper>
 
       {report && report.map((deptReport, index) => {
-        const department = departments[index];
-        const departmentEmployees = employees.filter(emp => {
-          const category = categories.find(c => c.id === emp.category_id);
-          return category && category.department_id === department.id;
-        });
+        const role = predefinedRoles[index];
+        const roleEmployees = employees.filter(emp => emp.role === role);
 
         return (
-          <Paper key={department.id} elevation={3} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6">{department.name}</Typography>
+          <Paper key={role} elevation={3} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6">{t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}</Typography>
             <TextField
               label={t('totalAmount')}
               type="number"
@@ -182,29 +179,29 @@ const CreatePool = () => {
             
             <Box sx={{ mt: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
               <List dense>
-                {departmentEmployees.map(emp => (
+                {roleEmployees.map(emp => (
                   <ListItem
                     key={emp.id}
                     secondaryAction={
-                      selectedEmployees[department.id]?.[emp.id]?.selected && (
+                      selectedEmployees[role]?.[emp.id]?.selected && (
                         <TextField
                           type="number"
                           label={t('hoursWorked')}
                           variant="outlined"
                           size="small"
-                          value={selectedEmployees[department.id]?.[emp.id]?.hours || ''}
-                          onChange={(e) => handleHoursChange(department.id, emp.id, e.target.value)}
+                          value={selectedEmployees[role]?.[emp.id]?.hours || ''}
+                          onChange={(e) => handleHoursChange(role, emp.id, e.target.value)}
                           sx={{ width: '100px' }}
                         />
                       )
                     }
                     disablePadding
                   >
-                    <ListItemButton onClick={() => handleEmployeeSelect(department.id, emp.id)}>
+                    <ListItemButton onClick={() => handleEmployeeSelect(role, emp.id)}>
                       <ListItemIcon>
                         <Checkbox
                           edge="start"
-                          checked={selectedEmployees[department.id]?.[emp.id]?.selected || false}
+                          checked={selectedEmployees[role]?.[emp.id]?.selected || false}
                           tabIndex={-1}
                           disableRipple
                         />
@@ -215,8 +212,8 @@ const CreatePool = () => {
                 ))}
               </List>
             </Box>
-            <Button variant="contained" color="secondary" onClick={() => handleDistribute(department, deptReport.editable_total_tip_out_amount)} sx={{ mt: 2 }} disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : t('distributeFor')} {department.name}
+            <Button variant="contained" color="secondary" onClick={() => handleDistribute(role, deptReport.editable_total_tip_out_amount)} sx={{ mt: 2 }} disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : t('distributeFor')} {t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}
             </Button>
           </Paper>
         );

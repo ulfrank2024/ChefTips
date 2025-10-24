@@ -3,8 +3,6 @@
   "overview": "Overview",
   "serverOverview": "Server Reports",
   "manageEmployees": "Manage Employees",
-  "manageDepartments": "Manage Departments",
-  "manageCategories": "Manage Categories",
   "manageRules": "Manage Tip-Out Rules",
   "payPeriodReport": "Pay Period Report",
   "createPool": "Create Tip Pool",
@@ -16,10 +14,14 @@
   "amount": "Amount",
   "noPoolsYet": "No pools created yet.",
   "lastPoolCreated": "Last Pool Created",
-  "department": "Department",
+  "role": "Role",
   "period": "Period",
-  "employeesByDepartment": "Employees by Department",
-  "noDepartmentsYet": "No departments found.",
-  "noEmployeesInDepartment": "No employees in this department.",
-  "creationDate": "Creation Date"
+  "employeesByRole": "Employees by Role",
+  "noRolesYet": "No roles found.",
+  "noEmployeesInRole": "No employees in this role.",
+  "creationDate": "Creation Date",
+  "tipOutRules": "Tip-Out Rules",
+  "noTipOutRules": "No tip-out rules found.",
+  "ofTotalSales": "of Total Sales",
+  "ofGrossTips": "of Gross Tips"
 }

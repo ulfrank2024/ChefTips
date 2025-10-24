@@ -11,5 +11,11 @@
   "totalCurrentYear": "Total This Year",
   "viewAllTips": "View All Tips",
   "statistics": "Statistics",
-  "tipDetailsTitle": "Tip Details"
+  "tipDetailsTitle": "Tip Details",
+  "myReports": "My Reports",
+  "declareCashOut": "Declare Cash Out",
+  "myCashOutHistory": "My Cash Out History",
+  "noRecentCashOuts": "No recent cash outs found.",
+  "declareTips": "Declare Tips",
+  "viewCashOutHistory": "View Cash Out History"
 }
