@@ -5,9 +5,10 @@ const TipModel = {
     // --- Cash Out & Adjustment Methods ---
     async createCashOut(cashOutData, dailyReportId, adjustments) {
         const {
-            user_id, company_id, role, service_date, // Changed category_id to role
+            user_id, company_id, role, service_date,
             was_collector, total_sales, gross_tips, net_tips, service_end_time,
-            food_sales, alcohol_sales, cash_difference, final_balance
+            food_sales, alcohol_sales, cash_difference, final_balance, cash_on_hand,
+            payout_period_id // Added payout_period_id
         } = cashOutData;
 
         const client = await pool.connect();
@@ -15,9 +16,9 @@ const TipModel = {
             await client.query('BEGIN');
 
             const cashOutResult = await client.query(
-                `INSERT INTO cash_outs (user_id, company_id, role, service_date, was_collector, total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, daily_report_id)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
-                [user_id, company_id, role, service_date, was_collector, total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, dailyReportId]
+                `INSERT INTO cash_outs (user_id, company_id, role, service_date, was_collector, total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, daily_report_id, cash_on_hand, payout_period_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
+                [user_id, company_id, role, service_date, was_collector, total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, dailyReportId, cash_on_hand, payout_period_id]
             );
             const newCashOut = cashOutResult.rows[0];
 
@@ -50,7 +51,7 @@ const TipModel = {
                 co.*,
                 dr.role as category_name,
                 COALESCE(
-                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.id),
+                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.daily_report_id),
                     '[]'
                 ) as adjustments
              FROM cash_outs co
@@ -68,12 +69,20 @@ const TipModel = {
                 co.*,
                 co.role as category_name, // Use role and alias as category_name for compatibility
                 COALESCE(
-                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.id),
+                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.daily_report_id),
                     '[]'
                 ) as adjustments
              FROM cash_outs co
              WHERE co.id = $1`,
             [cashOutId]
+        );
+        return result.rows[0];
+    },
+
+    async getCashOutByDailyReportId(dailyReportId) {
+        const result = await pool.query(
+            `SELECT * FROM cash_outs WHERE daily_report_id = $1`,
+            [dailyReportId]
         );
         return result.rows[0];
     },
@@ -241,11 +250,27 @@ const TipModel = {
                 tp.end_date,
                 tp.created_at as pool_created_at,
                 tp.role as department_name,
-                tp.id as pool_id
+                tp.id as pool_id,
+                'pool' as source,
+                NULL as sender_user_id
              FROM pool_distributions pd
              JOIN tip_pools tp ON pd.pool_id = tp.id
              WHERE pd.user_id = $1 AND tp.company_id = $2
-             ORDER BY tp.start_date DESC`,
+             UNION ALL
+             SELECT
+                ra.amount as distributed_amount,
+                NULL as hours_worked,
+                dr.service_date as start_date,
+                dr.service_date as end_date,
+                ra.created_at as pool_created_at,
+                ra.description as department_name,
+                ra.id as pool_id,
+                'individual' as source,
+                dr.user_id as sender_user_id
+             FROM report_adjustments ra
+             JOIN daily_reports dr ON ra.report_id = dr.id
+             WHERE ra.related_user_id = $1 AND dr.company_id = $2 AND ra.amount > 0
+             ORDER BY start_date DESC`,
             [userId, companyId]
         );
         return result.rows;

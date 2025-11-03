@@ -70,12 +70,19 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setToken(null);
         localStorage.removeItem('userToken');
-        sessionStorage.removeItem('welcomeShown'); // Clear the welcome flag
     };
 
     const handleTokenUpdate = (newToken) => {
         localStorage.setItem('userToken', newToken);
         setToken(newToken);
+        try {
+            const decoded = jwtDecode(newToken);
+            setUser(decoded);
+        } catch (error) {
+            console.error("Failed to decode token on update:", error);
+            // If decoding fails, the token is likely invalid, so log out
+            logout();
+        }
     };
 
     return (

@@ -1,17 +1,53 @@
 const request = require('supertest');
-const app = require('../server');
+let app;
 
 // Mock dependencies
-jest.mock('../models/authModel');
-jest.mock('bcrypt');
+jest.mock('bcrypt', () => ({
+  compare: jest.fn(),
+}));
 jest.mock('jsonwebtoken');
 
-// Import the dependencies (the mocks will be used automatically)
-const { AuthModel } = require('../models/authModel');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+let UserModel;
+let MembershipModel;
+let bcrypt;
+let jwt;
+
+
+
 
 describe('API Auth Endpoints', () => {
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
+    // Re-mock modules after resetting
+    jest.doMock('../models/userModel', () => ({
+      UserModel: {
+        findUserByEmail: jest.fn(),
+        findUserById: jest.fn(),
+        updateUserName: jest.fn(),
+        updatePassword: jest.fn(),
+        validateUserEmail: jest.fn(),
+        updateUserLanguage: jest.fn(),
+      },
+    }));
+    jest.doMock('../models/membershipModel', () => ({
+      MembershipModel: {
+        createMembership: jest.fn(),
+        getMembershipsByUserId: jest.fn(),
+        getMembershipById: jest.fn(),
+        deleteMembership: jest.fn(),
+        updateMembership: jest.fn(),
+        getCompanyEmployees: jest.fn(),
+      },
+    }));
+    // Import the mocked modules
+    UserModel = require('../models/userModel').UserModel;
+    MembershipModel = require('../models/membershipModel').MembershipModel;
+    bcrypt = require('bcrypt');
+    jwt = require('jsonwebtoken');
+    app = require('../server');
+  });
 
   // Test for a non-existent route (already created)
   it('should return 404 for a non-existent route', async () => {
@@ -32,7 +68,8 @@ describe('API Auth Endpoints', () => {
         role: 'manager',
         company_id: 123
       };
-      AuthModel.findUserByEmail.mockResolvedValue(fakeUser);
+      UserModel.findUserByEmail.mockResolvedValue(fakeUser);
+      MembershipModel.getMembershipsByUserId.mockResolvedValue([{ company_id: 123, company_name: 'Fake Company', role: 'manager', can_cash_out: true }]);
       bcrypt.compare.mockResolvedValue(true);
       jwt.sign.mockReturnValue('fake-jwt-token');
 
@@ -44,7 +81,7 @@ describe('API Auth Endpoints', () => {
       // Assert: Check the response
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty('token', 'fake-jwt-token');
-      expect(response.body.message).toBe('Connexion réussie.');
+      expect(response.body.success_code).toBe('LOGIN_SUCCESSFUL');
     });
 
     it('should fail with wrong password', async () => {
@@ -53,10 +90,10 @@ describe('API Auth Endpoints', () => {
         id: 1,
         email: 'test@example.com',
         password: 'hashedpassword',
-        email_validated: true
+        email_validated: true,
+        preferred_language: 'en',
       };
-      AuthModel.findUserByEmail.mockResolvedValue(fakeUser);
-      bcrypt.compare.mockResolvedValue(false); // Simulate wrong password
+      UserModel.findUserByEmail.mockResolvedValue(fakeUser);
 
       // Act: Make the request
       const response = await request(app)
@@ -69,8 +106,7 @@ describe('API Auth Endpoints', () => {
     });
 
     it('should fail if user does not exist', async () => {
-      // Arrange: Mock that no user is found
-      AuthModel.findUserByEmail.mockResolvedValue(null);
+      UserModel.findUserByEmail.mockResolvedValue(null);
 
       // Act: Make the request
       const response = await request(app)
@@ -79,7 +115,7 @@ describe('API Auth Endpoints', () => {
 
       // Assert: Check the response
       expect(response.statusCode).toBe(401);
-      expect(response.body.error).toBe('INVALID_CREDENTIALS');
+      expect(response.body.error).toBe('INVALID_CREDENTIALS_OR_UNVERIFIED');
     });
 
     it('should fail if email is not validated', async () => {
@@ -88,9 +124,10 @@ describe('API Auth Endpoints', () => {
         id: 1,
         email: 'test@example.com',
         password: 'hashedpassword',
-        email_validated: false // Email not validated
+        email_validated: false,
+        preferred_language: 'en',
       };
-      AuthModel.findUserByEmail.mockResolvedValue(fakeUser);
+      UserModel.findUserByEmail.mockResolvedValue(fakeUser);
 
       // Act: Make the request
       const response = await request(app)
@@ -99,7 +136,7 @@ describe('API Auth Endpoints', () => {
 
       // Assert: Check the response
       expect(response.statusCode).toBe(401);
-      expect(response.body.error).toBe('EMAIL_NOT_VALIDATED');
+      expect(response.body.error).toBe('INVALID_CREDENTIALS_OR_UNVERIFIED');
     });
 
   });

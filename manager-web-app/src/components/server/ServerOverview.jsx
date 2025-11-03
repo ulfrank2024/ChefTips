@@ -53,7 +53,14 @@ const ServerOverview = () => {
         const endDate = now.endOf('month').toISOString();
         const tips = await getCashOutsByCollector(user.id, startDate, endDate);
         if (tips.length > 0) {
-          setLatestCashOut(tips[0]); // Le premier élément est le plus récent
+          const now = dayjs();
+          const pastTips = tips.filter(tip => dayjs(tip.service_date).isSameOrBefore(now, 'day'));
+          if (pastTips.length > 0) {
+            const sortedTips = pastTips.sort((a, b) => dayjs(b.service_date).diff(dayjs(a.service_date)));
+            setLatestCashOut(sortedTips[0]);
+          } else {
+            setLatestCashOut(null);
+          }
         } else {
           setLatestCashOut(null);
         }
@@ -77,11 +84,18 @@ const ServerOverview = () => {
     // Re-fetch tips to update the list
     setLoading(true);
     const now = dayjs();
-    const startDate = now.startOf('month').toISOString();
-    const endDate = now.endOf('month').toISOString();
+    const startDate = now.subtract(30, 'days').toISOString(); // Fetch for last 30 days
+    const endDate = now.endOf('day').toISOString(); // Up to end of current day
     const tips = await getCashOutsByCollector(user.id, startDate, endDate);
     if (tips.length > 0) {
-      setLatestCashOut(tips[0]); // Mettre à jour le dernier Cash Out
+      const now = dayjs();
+      const pastTips = tips.filter(tip => dayjs(tip.service_date).isSameOrBefore(now, 'day'));
+      if (pastTips.length > 0) {
+        const sortedTips = pastTips.sort((a, b) => dayjs(b.service_date).diff(dayjs(a.service_date)));
+        setLatestCashOut(sortedTips[0]); // Mettre à jour le dernier Cash Out
+      } else {
+        setLatestCashOut(null);
+      }
     } else {
       setLatestCashOut(null);
     }

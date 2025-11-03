@@ -47,6 +47,6 @@
   "noTipDistributionDetails": "Aucun détail de distribution de pourboires disponible.",
   "kitchenPool": "Pool Cuisine",
   "dueBackPositiveMessage": "tu doit donner la somme de {{amount}} en caisse",
-  "dueBackNegativeMessage": "tu recevra ce montant de {{amount}} lors de la paie des pourboire",
+  "dueBackNegativeMessage": "tu recevras ce montant de {{amount}} lors de la paie des pourboires",
   "dueBackZeroMessage": "Aucun montant dû"
 }

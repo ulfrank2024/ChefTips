@@ -1,7 +1,7 @@
 {
   "overview": "Overview",
   "profile": "Profile",
-  "myReceivedTips": "My Received Tips",
+  "myReceivedTips": "Recent Received Tips",
   "userIdNotFound": "User ID not found.",
   "noReceivedTips": "No tips received yet.",
   "profileTitle": "My Profile",
@@ -17,5 +17,13 @@
   "myCashOutHistory": "My Cash Out History",
   "noRecentCashOuts": "No recent cash outs found.",
   "declareTips": "Declare Tips",
-  "viewCashOutHistory": "View Cash Out History"
+  "viewCashOutHistory": "View Cash Out History",
+  "serviceDate": "Service Date",
+  "latestCashOutSummary": "Latest Cash Out Summary",
+  "periodSummary": "Period Summary",
+  "paidToHouse": "Paid to House",
+  "owedToEmployee": "Owed to You",
+  "owedToYou": "Owed to You",
+  "tipOutsByRule": "Tip-Outs by Rule",
+  "totalReceivedTips": "Total Received Tips"
 }

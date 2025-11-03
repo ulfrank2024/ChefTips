@@ -1,0 +1,17 @@
+{
+  "en": {
+    "subject": "You have been added to {{managerCompanyName}}",
+    "title": "You've been added to a new team!",
+    "body1": "You have been added to the <strong>{{managerCompanyName}}</strong> team on ChefTips.",
+    "body2": "You can log in with your existing password to see your new team.",
+    "closing": "The ChefTips Team",
+    "bilingual_intro": "English version below:"
+  },
+  "fr": {
+    "subject": "Vous avez été ajouté à {{managerCompanyName}}",
+    "title": "Vous avez été ajouté à une nouvelle équipe !",
+    "body1": "Vous avez été ajouté à l'équipe <strong>{{managerCompanyName}}</strong> sur ChefTips.",
+    "body2": "Vous pouvez vous connecter avec votre mot de passe existant pour voir votre nouvelle équipe.",
+    "closing": "L'équipe ChefTips"
+  }
+}

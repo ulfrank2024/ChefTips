@@ -1,0 +1,15 @@
+{
+  "en": {
+    "subject": "Your company access has been revoked",
+    "title": "Your company access has been revoked",
+    "body1": "Your access to the company has been revoked on ChefTips.",
+    "closing": "The ChefTips Team",
+    "bilingual_intro": "English version below:"
+  },
+  "fr": {
+    "subject": "Votre accès à une entreprise a été révoqué",
+    "title": "Votre accès à une entreprise a été révoqué",
+    "body1": "Votre accès à l'entreprise a été révoqué sur ChefTips.",
+    "closing": "L'équipe ChefTips"
+  }
+}

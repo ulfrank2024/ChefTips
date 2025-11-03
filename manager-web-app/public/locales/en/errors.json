@@ -44,5 +44,6 @@
   "POOL_NOT_FOUND": "Tip pool not found.",
   "INVALID_POOL_ID_FORMAT": "Invalid tip pool ID format.",
   "MISSING_REQUIRED_FIELDS": "Missing required fields.",
-  "CASH_OUT_ALREADY_EXISTS": "Cash out report already exists for this period."
+  "CASH_OUT_ALREADY_EXISTS": "Cash out report already exists for this period.",
+  "NO_ACTIVE_PAYOUT_PERIOD": "No active payout period found. Please contact the manager."
 }

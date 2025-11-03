@@ -1,0 +1,20 @@
+{
+    "en": {
+        "subject": "You've Received a Tip-Out!",
+        "title": "Tip-Out Received",
+        "greeting": "Hello {{recipient_name}},",
+        "line1": "You have received a tip-out of ${{amount}} from {{sender_name}} for your work as a {{role}}.",
+        "line2": "You can view the details by logging into your account.",
+        "cta": "Go to Dashboard",
+        "salutation": "Best regards,<br>The Tips App Team"
+    },
+    "fr": {
+        "subject": "Vous avez reçu un pourboire !",
+        "title": "Pourboire Reçu",
+        "greeting": "Bonjour {{recipient_name}},",
+        "line1": "Vous avez reçu un pourboire de {{amount}}$ de la part de {{sender_name}} pour votre travail en tant que {{role}}.",
+        "line2": "Vous pouvez voir les détails en vous connectant à votre compte.",
+        "cta": "Aller au tableau de bord",
+        "salutation": "Cordialement,<br>L'équipe de Tips App"
+    }
+}

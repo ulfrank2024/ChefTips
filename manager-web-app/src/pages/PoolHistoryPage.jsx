@@ -5,7 +5,7 @@ import { getCompanyEmployees } from '../api/authApi'; // To get employee names
 import PoolDetailsModal from '../components/manager/PoolDetailsModal'; // Import the modal
 import {
   Box, Typography, CircularProgress, Alert, Paper, Table, TableBody, 
-  TableCell, TableContainer, TableHead, TableRow, Grid, Button
+  TableCell, TableContainer, TableHead, TableRow, Grid, Button, useTheme, useMediaQuery, TextField
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -14,6 +14,8 @@ import dayjs from 'dayjs';
 
 const PoolHistoryPage = () => {
   const { t } = useTranslation(['common']);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [pools, setPools] = useState([]);
   const [employees, setEmployees] = useState([]); // State for employees
   const [loading, setLoading] = useState(true);
@@ -125,56 +127,84 @@ const PoolHistoryPage = () => {
         </Grid>
       </Paper>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Rôle de Destination</TableCell>
-              <TableCell align="center">{t('startDate')}</TableCell>
-              <TableCell align="center">{t('endDate')}</TableCell>
-              <TableCell align="center">{t('creationDate')}</TableCell>
-              <TableCell align="center">{t('recipientCount')}</TableCell>
-              <TableCell align="center">{t('totalDistributedHours')}</TableCell>
-              <TableCell align="center">{t('ratePerHour')}</TableCell>
-              <TableCell align="center">Montant Total</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {pools.length === 0 && !loading ? (
+      {isMobile ? (
+        <Box>
+          {pools.length === 0 && !loading ? (
+            <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
+              <Typography sx={{ color: 'black' }}>Aucun pool trouvé.</Typography>
+            </Paper>
+          ) : (
+            pools.map((pool) => {
+              const totalAmount = Number(pool.total_amount);
+              const totalDistributedHours = Number(pool.total_distributed_hours);
+              const ratePerHour = totalDistributedHours > 0 ? totalAmount / totalDistributedHours : 0;
+              return (
+                <Paper key={pool.id} elevation={3} sx={{ p: 2, mb: 2 }} onClick={() => handleRowClick(pool.id)}>
+                  <Typography variant="subtitle1" component="h3">{pool.department_name}</Typography>
+                  <Typography><strong>{t('startDate')}:</strong> {dayjs(pool.start_date).format('YYYY-MM-DD')}</Typography>
+                  <Typography><strong>{t('endDate')}:</strong> {dayjs(pool.end_date).format('YYYY-MM-DD')}</Typography>
+                  <Typography><strong>{t('creationDate')}:</strong> {dayjs(pool.created_at).format('YYYY-MM-DD HH:mm')}</Typography>
+                  <Typography><strong>{t('recipientCount')}:</strong> {pool.recipient_count || 0}</Typography>
+                  <Typography><strong>{t('totalDistributedHours')}:</strong> {totalDistributedHours.toFixed(2)}</Typography>
+                  <Typography><strong>{t('ratePerHour')}:</strong> {ratePerHour.toFixed(2)} $</Typography>
+                  <Typography><strong>Montant Total:</strong> {totalAmount.toFixed(2)} $</Typography>
+                </Paper>
+              );
+            })
+          )}
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={8} align="center">
-                  Aucun pool trouvé.
-                </TableCell>
+                <TableCell>Rôle de Destination</TableCell>
+                <TableCell align="center">{t('startDate')}</TableCell>
+                <TableCell align="center">{t('endDate')}</TableCell>
+                <TableCell align="center">{t('creationDate')}</TableCell>
+                <TableCell align="center">{t('recipientCount')}</TableCell>
+                <TableCell align="center">{t('totalDistributedHours')}</TableCell>
+                <TableCell align="center">{t('ratePerHour')}</TableCell>
+                <TableCell align="center">Montant Total</TableCell>
               </TableRow>
-            ) : (
-              pools.map((pool) => {
-                const totalAmount = Number(pool.total_amount);
-                const totalDistributedHours = Number(pool.total_distributed_hours);
-                const ratePerHour = totalDistributedHours > 0 ? totalAmount / totalDistributedHours : 0;
-                return (
-                  <TableRow
-                    key={pool.id}
-                    hover
-                    onClick={() => handleRowClick(pool.id)}
-                    sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {pool.department_name}
-                    </TableCell>
-                    <TableCell align="center">{dayjs(pool.start_date).format('YYYY-MM-DD')}</TableCell>
-                    <TableCell align="center">{dayjs(pool.end_date).format('YYYY-MM-DD')}</TableCell>
-                    <TableCell align="center">{dayjs(pool.created_at).format('YYYY-MM-DD HH:mm')}</TableCell>
-                    <TableCell align="center">{pool.recipient_count || 0}</TableCell>
-                    <TableCell align="center">{totalDistributedHours.toFixed(2)}</TableCell>
-                    <TableCell align="center">{ratePerHour.toFixed(2)} $</TableCell>
-                    <TableCell align="center">{totalAmount.toFixed(2)} $</TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {pools.length === 0 && !loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} align="center">
+                    Aucun pool trouvé.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                pools.map((pool) => {
+                  const totalAmount = Number(pool.total_amount);
+                  const totalDistributedHours = Number(pool.total_distributed_hours);
+                  const ratePerHour = totalDistributedHours > 0 ? totalAmount / totalDistributedHours : 0;
+                  return (
+                    <TableRow
+                      key={pool.id}
+                      hover
+                      onClick={() => handleRowClick(pool.id)}
+                      sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {pool.department_name}
+                      </TableCell>
+                      <TableCell align="center">{dayjs(pool.start_date).format('YYYY-MM-DD')}</TableCell>
+                      <TableCell align="center">{dayjs(pool.end_date).format('YYYY-MM-DD')}</TableCell>
+                      <TableCell align="center">{dayjs(pool.created_at).format('YYYY-MM-DD HH:mm')}</TableCell>
+                      <TableCell align="center">{pool.recipient_count || 0}</TableCell>
+                      <TableCell align="center">{totalDistributedHours.toFixed(2)}</TableCell>
+                      <TableCell align="center">{ratePerHour.toFixed(2)} $</TableCell>
+                      <TableCell align="center">{totalAmount.toFixed(2)} $</TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <PoolDetailsModal 
         open={isModalOpen}

@@ -44,5 +44,6 @@
   "POOL_NOT_FOUND": "Pool de pourboires introuvable.",
   "INVALID_POOL_ID_FORMAT": "Format d'ID de pool de pourboires invalide.",
   "MISSING_REQUIRED_FIELDS": "Champs requis manquants.",
-  "CASH_OUT_ALREADY_EXISTS": "Un rapport de caisse existe déjà pour cette période."
+  "CASH_OUT_ALREADY_EXISTS": "Un rapport de caisse existe déjà pour cette période.",
+  "NO_ACTIVE_PAYOUT_PERIOD": "Aucune période de paie active trouvée. Veuillez contacter le manager."
 }

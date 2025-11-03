@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { signup, login, selectCompany, inviteEmployee, removeEmployee, getCompanyEmployees, verifyOtp, resendOtp, updateLanguagePreference, changePassword, updateProfile, updateMembership, verifyInvitation, setupPassword } = require('../controllers/authController');
+const { signup } = require('../controllers/signupController');
+const { login, selectCompany } = require('../controllers/authController');
+const { inviteEmployee, removeEmployee, getCompanyEmployees, updateMembership } = require('../controllers/employeeController');
+const { verifyOtp, resendOtp, verifyInvitation, setupPassword } = require('../controllers/verificationController');
+const { updateLanguagePreference, changePassword, updateProfile, getUserDetails } = require('../controllers/userController');
+const { sendCashOutNotification } = require('../controllers/emailController');
 const { authenticateToken } = require("../middleware/authMiddleware");
 
 // --- User Account Routes ---
@@ -48,7 +53,9 @@ router.get("/employees", authenticateToken, getCompanyEmployees);
 
 // --- Inter-service Communication Routes ---
 // Used by other services to get user details
-// router.get('/users/:userId/details', authenticateToken, getUserDetails);
+router.get('/users/:userId/details', authenticateToken, getUserDetails);
+// Used by tip-service to notify user of a cashout
+router.post('/notify-cashout', authenticateToken, sendCashOutNotification);
 
 
 module.exports = router;

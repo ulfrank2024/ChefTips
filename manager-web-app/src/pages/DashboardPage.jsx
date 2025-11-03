@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, Link as RouterLink, useLocation } from 'react-router-dom';
+import { Outlet, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Typography, Box, Drawer, List, ListItem, ListItemIcon, ListItemText,
-  CssBaseline, useTheme, Fade
+  CssBaseline, useTheme, Fade, IconButton, useMediaQuery
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
@@ -15,7 +15,12 @@ import RuleIcon from '@mui/icons-material/Rule';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import PoolIcon from '@mui/icons-material/Pool';
 import HistoryIcon from '@mui/icons-material/History';
+import DateRangeIcon from '@mui/icons-material/DateRange'; // Import new icon
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'; // Import AttachMoneyIcon
+import MenuIcon from '@mui/icons-material/Menu';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useDrawer } from '../context/DrawerContext.jsx';
 import WelcomeModal from '../components/WelcomeModal';
 import './DashboardPage.css';
 
@@ -23,10 +28,12 @@ const drawerWidth = 240;
 
 const DashboardPage = () => {
   const { t } = useTranslation(['common', 'pages/managerDashboard']);
-  const { user } = useAuth(); 
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth(); 
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { mobileOpen, handleDrawerToggle } = useDrawer();
   const location = useLocation();
+  const navigate = useNavigate();
   const mainContentRef = useRef(null);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -41,15 +48,17 @@ const DashboardPage = () => {
     setShowWelcome(false);
   };
 
+  const handleLogout = () => {
+    logout();
+    handleDrawerToggle(); // Close drawer if open on mobile
+    navigate('/login');
+  };
+
   useEffect(() => {
     if (mainContentRef.current) {
       mainContentRef.current.scrollTo(0, 0);
     }
   }, [location.pathname]);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
 
   const menuItems = [
     { text: t('overview', { ns: 'pages/managerDashboard' }), icon: <DashboardIcon />, path: '/dashboard' },
@@ -59,7 +68,12 @@ const DashboardPage = () => {
     { text: t('payPeriodReport', { ns: 'pages/managerDashboard' }), icon: <ReceiptLongIcon />, path: '/dashboard/pay-period-report' },
     { text: t('createPool', { ns: 'pages/managerDashboard' }), icon: <PoolIcon />, path: '/dashboard/create-pool' },
     { text: t('poolHistory', { ns: 'pages/managerDashboard' }), icon: <HistoryIcon />, path: '/dashboard/pool-history' },
+    { text: 'Manage Periods', icon: <DateRangeIcon />, path: '/dashboard/manage-payout-periods' },
+    { text: 'Declare Tips', icon: <ReceiptLongIcon />, path: '/dashboard/declare-tips', managerCanCashOut: true },
+    { text: 'Cash Out History', icon: <HistoryIcon />, path: '/dashboard/cashout-history', managerCanCashOut: true },
+    { text: 'Received Tips History', icon: <AttachMoneyIcon />, path: '/dashboard/received-tips', managerCanCashOut: true },
     { text: t('profile', { ns: 'pages/managerDashboard' }), icon: <PersonIcon />, path: '/dashboard/profile' },
+    { text: t('logout', { ns: 'common' }), icon: <ExitToAppIcon />, onClick: handleLogout, path: '#' }, // Logout button
   ];
 
   const drawer = (
@@ -72,12 +86,19 @@ const DashboardPage = () => {
           }}
       >
           <List>
-              {menuItems.map((item) => (
+              {menuItems
+                  .filter(item => {
+                      if (item.managerCanCashOut) {
+                          return user?.can_cash_out;
+                      }
+                      return true;
+                  })
+                  .map((item) => (
                   <ListItem
                       key={item.text}
                       component={RouterLink}
                       to={item.path}
-                      onClick={handleDrawerToggle}
+                      onClick={item.onClick ? item.onClick : handleDrawerToggle}
                   sx={{
                         color:'white',
                           backgroundColor:
@@ -122,34 +143,20 @@ const DashboardPage = () => {
               aria-label="mailbox folders"
           >
               <Drawer
-                  variant="temporary"
-                  open={mobileOpen}
+                  variant={isMobile ? "temporary" : "permanent"}
+                  open={isMobile ? mobileOpen : true}
                   onClose={handleDrawerToggle}
                   ModalProps={{
                       keepMounted: true,
                   }}
                   sx={{
-                      display: { xs: "block", sm: "none" },
+                      display: { xs: "block", sm: "block" },
                       "& .MuiDrawer-paper": {
                           boxSizing: "border-box",
                           width: drawerWidth,
                           backgroundColor: theme.palette.primary.dark,
                       },
                   }}
-              >
-                  {drawer}
-              </Drawer>
-              <Drawer
-                  variant="permanent"
-                  sx={{
-                      display: { xs: "none", sm: "block" },
-                      "& .MuiDrawer-paper": {
-                          boxSizing: "border-box",
-                          width: drawerWidth,
-                          backgroundColor: theme.palette.primary.dark,
-                      },
-                  }}
-                  open
               >
                   {drawer}
               </Drawer>

@@ -54,6 +54,7 @@
   "employees": "employé",
   "employees_plural": "employés",
   "department": "Département",
+  "positionOrRole": "Poste ou rôle occupé",
   "period": "Période",
   "totalPoolAmount": "Montant Total du Pool",
   "totalAmount": "Montant Total",
@@ -69,3 +70,9 @@
   "manualAdjustment": "Ajustement de Caisse / Dépôt",
   "manualAdjustmentHelp": "Entrez un nombre négatif pour un dépôt, positif pour un retrait.",
   "select": "Sélectionner",
+  "description": "Description",
+  "sentBy": "Envoyé par",
+  "emailAddress": "Adresse e-mail",
+  "confirmDeletion": "Confirmer la suppression",
+  "areYouSureToDeletePeriod": "Êtes-vous sûr de vouloir supprimer la période {{periodName}} ? Cette action est irréversible."
+}

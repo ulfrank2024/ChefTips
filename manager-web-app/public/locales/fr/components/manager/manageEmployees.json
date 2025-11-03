@@ -15,7 +15,7 @@
   "employeeInvitedSuccessfully": "Employé invité avec succès !",
   "employeeUpdatedSuccessfully": "Employé mis à jour avec succès !",
   "joinedOn": "Rejoint le {{date}}",
-  "cashOutPermission": "Permission d'Encaissement",
+  "canCashOutPermission": "Permission d'Encaissement",
   "permissionUpdatedSuccessfully": "Permission mise à jour avec succès !",
   "role": "Rôle",
   "emailAndRoleRequired": "L'e-mail et le rôle sont requis.",
@@ -28,5 +28,10 @@
   "barman": "Barman",
   "hote": "Hôte",
   "supportDeSalle": "Support de salle",
-  "personneAyantPermission": "Personne avec permission d'encaissement"
+  "personneAyantPermission": "Personne avec permission d'encaissement",
+  "inviteEmployeeDescription": "Pour inviter un nouvel employé, veuillez saisir son adresse e-mail et sélectionner un rôle. Il recevra un e-mail avec des instructions pour rejoindre votre entreprise.",
+  "editEmployeeDescription": "Modifier le rôle et les permissions de l'employé.",
+  "invite": "Inviter",
+  "areYouSureYouWantToDelete": "Êtes-vous sûr de vouloir supprimer",
+  "confirmDeletion": "Confirmer la suppression"
 }

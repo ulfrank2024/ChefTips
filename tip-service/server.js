@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require('cors'); // Add this line
 const nodemailer = require("nodemailer");
 const tipRoutes = require("./routes/tipRoutes");
+const payoutPeriodRoutes = require("./routes/payoutPeriodRoutes"); // Import the new routes
 
 const app = express();
 
@@ -31,6 +32,7 @@ const transporter = nodemailer.createTransport({
 app.set('transporter', transporter);
 
 app.use("/api/tips", tipRoutes);
+app.use("/api/payout-periods", payoutPeriodRoutes); // Use the new routes
 
 const PORT = process.env.PORT || 4001; // Using a different port than auth-service
 

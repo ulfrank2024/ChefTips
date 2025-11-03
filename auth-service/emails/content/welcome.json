@@ -1,0 +1,19 @@
+{
+  "en": {
+    "subject": "Welcome to ChefTips, {{firstName}}!",
+    "title": "Welcome, {{firstName}}!",
+    "message": "We're thrilled to have you on board. Your account is now fully verified.",
+    "callToAction": "Start exploring all the features of our application.",
+    "closing": "Thank you for choosing our service!",
+    "teamName": "The ChefTips Team",
+    "bilingual_intro": "English version below:"
+  },
+  "fr": {
+    "subject": "Bienvenue sur ChefTips, {{firstName}} !",
+    "title": "Bienvenue, {{firstName}} !",
+    "message": "Nous sommes ravis de vous compter parmi nous. Votre compte est maintenant entièrement vérifié.",
+    "callToAction": "Commencez à explorer toutes les fonctionnalités de notre application.",
+    "closing": "Merci d'avoir choisi notre service !",
+    "teamName": "L'équipe ChefTips"
+  }
+}

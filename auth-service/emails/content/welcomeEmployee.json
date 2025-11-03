@@ -1,0 +1,21 @@
+{
+  "en": {
+    "subject": "Welcome to ChefTips, {{firstName}}!",
+    "title": "Welcome, {{firstName}}!",
+    "message": "We're thrilled to have you on board.",
+    "companyJoinMessage": "You have successfully joined",
+    "callToAction": "Start exploring all the features of our application.",
+    "closing": "Thank you for choosing our service!",
+    "teamName": "The ChefTips Team",
+    "bilingual_intro": "English version below:"
+  },
+  "fr": {
+    "subject": "Bienvenue sur ChefTips, {{firstName}} !",
+    "title": "Bienvenue, {{firstName}} !",
+    "message": "Nous sommes ravis de vous compter parmi nous.",
+    "companyJoinMessage": "Vous avez rejoint avec succès",
+    "callToAction": "Commencez à explorer toutes les fonctionnalités de notre application.",
+    "closing": "Merci d'avoir choisi notre service !",
+    "teamName": "L'équipe ChefTips"
+  }
+}

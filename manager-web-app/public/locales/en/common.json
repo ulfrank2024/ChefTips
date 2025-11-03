@@ -54,9 +54,11 @@
   "employees": "employee",
   "employees_plural": "employees",
   "department": "Department",
+  "positionOrRole": "Position or Role",
   "period": "Period",
   "totalPoolAmount": "Total Pool Amount",
   "totalAmount": "Total Amount",
+  "amount": "Amount",
   "hoursWorked": "Hours Worked",
   "category": "Category",
   "logout": "Logout",
@@ -68,3 +70,9 @@
   "manualAdjustment": "Cash Adjustment / Deposit",
   "manualAdjustmentHelp": "Enter negative for deposit, positive for withdrawal.",
   "select": "Select",
+  "description": "Description",
+  "sentBy": "Sent By",
+  "emailAddress": "Email Address",
+  "confirmDeletion": "Confirm Deletion",
+  "areYouSureToDeletePeriod": "Are you sure you want to delete the period {{periodName}}? This action cannot be undone."
+}

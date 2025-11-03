@@ -144,13 +144,12 @@ const LoginPage = () => {
             {loading ? t('loggingIn') : t("button")}
           </Button>
           <Grid container justifyContent="space-between">
-            <Grid item>
-              <MuiLink component={RouterLink} to="/forgot-password" variant="body2" sx={{ mt: 2, color: "#1b2646ff", textDecoration: "none" }}>
-                {t("forgotPassword")}
-              </MuiLink>
-            </Grid>
-            <Grid item>
-              <MuiLink component={RouterLink} to="/signup" variant="body2" sx={{ mt: 2, color: "#1b2646ff", textDecoration: "none" }}>
+                          <Grid item>
+                            <MuiLink component={RouterLink} to="/forgot-password" variant="body2" sx={{ mt: 2, color: "#1b2646ff", textDecoration: "none" }}>
+                              {t("forgotPassword")}
+                            </MuiLink>
+                          </Grid>
+                          <Grid item>              <MuiLink component={RouterLink} to="/signup" variant="body2" sx={{ mt: 2, color: "#1b2646ff", textDecoration: "none" }}>
                 {t("noAccount")}
               </MuiLink>
             </Grid>

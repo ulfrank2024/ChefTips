@@ -15,7 +15,7 @@
   "employeeInvitedSuccessfully": "Employee invited successfully!",
   "employeeUpdatedSuccessfully": "Employee updated successfully!",
   "joinedOn": "Joined on {{date}}",
-  "cashOutPermission": "Cash Out Permission",
+  "canCashOutPermission": "Cash Out Permission",
   "permissionUpdatedSuccessfully": "Permission updated successfully!",
   "role": "Role",
   "emailAndRoleRequired": "Email and role are required.",
@@ -28,5 +28,10 @@
   "barman": "Bartender",
   "hote": "Host",
   "supportDeSalle": "Dining Room Support",
-  "personneAyantPermission": "Person with Cash Out Permission"
+  "personneAyantPermission": "Person with Cash Out Permission",
+  "inviteEmployeeDescription": "To invite a new employee, please enter their email address and select a role. They will receive an email with instructions to join your company.",
+  "editEmployeeDescription": "Edit the employee's role and permissions.",
+  "invite": "Invite",
+  "areYouSureYouWantToDelete": "Are you sure you want to delete",
+  "confirmDeletion": "Confirm Deletion"
 }

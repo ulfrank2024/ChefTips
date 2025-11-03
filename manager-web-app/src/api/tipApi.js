@@ -101,6 +101,7 @@ export const createCashOutReport = async (reportData) => {
 };
 
 export const calculateTipDistribution = async (calculationData) => {
+    console.log("Sending calculationData to backend:", calculationData);
     try {
         const response = await apiClient.post('/cash-outs/calculate-distribution', calculationData);
         console.log('API Response for calculateTipDistribution (data):', response.data);
@@ -177,7 +178,7 @@ export const getPoolSummary = async (poolId) => {
 
 // --- Collector Specific APIs ---
 export const getCashOutsByCollector = async (userId, startDate, endDate) => {
-  const response = await apiClient.get(`/cash-outs/collector/${userId}`, { params: { startDate, endDate } });
+  const response = await apiClient.get(`/cash-outs/collector/${userId}`, { params: { startDate, endDate, _t: new Date().getTime() } });
   return response.data;
 };
 

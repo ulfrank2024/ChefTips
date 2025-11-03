@@ -86,6 +86,25 @@ const EmployeeDetailsPage = () => {
 
       {receivedTips.length === 0 ? (
         <Alert severity="info">{t('noReceivedTips', { ns: 'pages/employeeDetails' })}</Alert>
+      ) : isMobile ? (
+        <List component={Paper} elevation={3} sx={{ p: 2 }}>
+          {receivedTips.map((tip, index) => (
+            <Box key={index} sx={{ mb: 2, borderBottom: '1px solid #eee', pb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                {t('date', { ns: 'common' })}: {dayjs(tip.start_date).format('YYYY-MM-DD')} - {dayjs(tip.end_date).format('YYYY-MM-DD')}
+              </Typography>
+              <Typography variant="body2">
+                {t('department', { ns: 'pages/employeeDetails' })}: {tip.department_name}
+              </Typography>
+              <Typography variant="body2">
+                {t('amount', { ns: 'common' })}: {Number(tip.distributed_amount).toFixed(2)} $
+              </Typography>
+              <Typography variant="body2">
+                {t('hoursWorked', { ns: 'pages/employeeDetails' })}: {Number(tip.hours_worked).toFixed(2)}
+              </Typography>
+            </Box>
+          ))}
+        </List>
       ) : (
         <TableContainer component={Paper} elevation={3}>
           <Table>

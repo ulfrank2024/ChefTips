@@ -23,5 +23,11 @@
   "tipOutRules": "Règles de Pourboires",
   "noTipOutRules": "Aucune règle de pourboires trouvée.",
   "ofTotalSales": "des Ventes Totales",
-  "ofGrossTips": "des Pourboires Bruts"
+  "ofGrossTips": "des Pourboires Bruts",
+  "declareTips": "Déclarer les pourboires",
+  "noPayoutPeriodsFound": "Aucune période de paie trouvée.",
+  "activePayoutPeriod": "Période de paie active",
+  "start": "Début",
+  "end": "Fin",
+  "noActivePayoutPeriod": "Aucune période de paie active trouvée."
 }

@@ -48,6 +48,7 @@ CREATE TABLE cash_outs (
     total_sales DECIMAL(10, 2),
     gross_tips DECIMAL(10, 2),
     net_tips DECIMAL(10, 2),
+    cash_on_hand DECIMAL(10, 2),
     service_end_time TIME,
     food_sales DECIMAL(10, 2),
     alcohol_sales DECIMAL(10, 2),
@@ -91,6 +92,24 @@ CREATE TABLE pool_distributions (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table for Payout Periods
+CREATE TABLE payout_periods (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED', 'PAID')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (company_id, name)
+);
+
+-- Add foreign key to cash_outs for payout periods
+ALTER TABLE cash_outs
+ADD COLUMN payout_period_id UUID REFERENCES payout_periods(id) ON DELETE SET NULL;
+
+
 -- Step 2: Create triggers for automatic timestamp updates.
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -103,3 +122,4 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_tip_out_rules_updated_at BEFORE UPDATE ON tip_out_rules FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_daily_reports_updated_at BEFORE UPDATE ON daily_reports FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_payout_periods_updated_at BEFORE UPDATE ON payout_periods FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

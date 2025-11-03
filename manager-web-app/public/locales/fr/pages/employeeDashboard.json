@@ -1,7 +1,7 @@
 {
   "overview": "Vue d'ensemble",
   "profile": "Profil",
-  "myReceivedTips": "Mes pourboires reçus",
+  "myReceivedTips": "Pourboires récents reçus",
   "userIdNotFound": "ID utilisateur non trouvé.",
   "noReceivedTips": "Aucun pourboire reçu pour le moment.",
   "profileTitle": "Mon Profil",
@@ -21,5 +21,13 @@
   "myCashOutHistory": "Mon Historique de Déclarations",
   "noRecentCashOuts": "Aucune déclaration récente trouvée.",
   "declareTips": "Déclarer les Pourboires",
-  "viewCashOutHistory": "Voir l'Historique des Déclarations"
+  "viewCashOutHistory": "Voir l'Historique des Déclarations",
+  "serviceDate": "Date de service",
+  "latestCashOutSummary": "Résumé de la dernière sortie de caisse",
+  "periodSummary": "Sommaire de la période",
+  "owedToHouse": "Dû à la caisse",
+  "owedToYou": "Dû par la caisse",
+  "owedToEmployee": "Dû à l'Employé",
+  "tipOutsByRule": "Pourboires par Règle",
+  "totalReceivedTips": "Total des Pourboires Reçus"
 }

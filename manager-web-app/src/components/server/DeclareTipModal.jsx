@@ -13,6 +13,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 const steps = ['enterDetails', 'selectRecipients', 'previewAndConfirm'];
 
@@ -22,8 +24,9 @@ const DeclareTipModal = ({
   onTipDeclared,
   initialDate = dayjs(),
   currentUser,
+  openPeriod,
 }) => {
-  const { t } = useTranslation(['pages/serverDashboard', 'common', 'errors']);
+  const { t } = useTranslation(['pages/serverDashboard', 'common', 'errors', 'pages/managerDashboard']);
   const { showAlert } = useAlert();
   const initialDateRef = useRef(initialDate);
 
@@ -31,8 +34,7 @@ const DeclareTipModal = ({
   const [activeStep, setActiveStep] = useState(0);
 
   // Form state
-  const [foodSales, setFoodSales] = useState('');
-  const [alcoholSales, setAlcoholSales] = useState('');
+  const [totalSales, setTotalSales] = useState('');
   const [cashOnHand, setCashOnHand] = useState('');
   const [serviceDate, setServiceDate] = useState(initialDateRef.current);
   const [serviceEndTime, setServiceEndTime] = useState(dayjs());
@@ -56,10 +58,9 @@ const DeclareTipModal = ({
 
   const resetModalState = useCallback(() => {
     setActiveStep(0);
-    setFoodSales('');
-    setAlcoholSales('');
+    setTotalSales('');
     setCashOnHand('');
-    setServiceDate(initialDateRef.current);
+    setServiceDate(dayjs());
     setServiceEndTime(dayjs());
     setError('');
     setLoading(false);
@@ -102,20 +103,19 @@ const DeclareTipModal = ({
 
   const handlePreviewCalculation = useCallback(async () => {
     setPreviewLoading(true);
-    setError('');
-    try {
-      const calculatedGrossTips = parseFloat(foodSales || 0) + parseFloat(alcoholSales || 0);
+      const calculatedGrossTips = parseFloat(totalSales || 0);
+      console.log("cashOnHand state value:", cashOnHand);
       const payload = {
-        food_sales: parseFloat(foodSales || 0),
-        alcohol_sales: parseFloat(alcoholSales || 0),
+        food_sales: parseFloat(totalSales || 0),
+        alcohol_sales: 0,
         gross_tips: calculatedGrossTips,
-        cash_on_hand: parseFloat(cashOnHand || 0),
         service_date: serviceDate.format('YYYY-MM-DD'),
         selected_recipients: Object.entries(selectedRecipientsByRule).map(([ruleId, user_ids]) => ({
           rule_id: ruleId,
           user_ids: user_ids,
         })),
       };
+    try {
       const response = await calculateTipDistribution(payload);
       setPreviewData(response);
     } catch (err) {
@@ -124,7 +124,7 @@ const DeclareTipModal = ({
     } finally {
       setPreviewLoading(false);
     }
-  }, [foodSales, alcoholSales, cashOnHand, serviceDate, selectedRecipientsByRule, t]);
+  }, [totalSales, cashOnHand, serviceDate, selectedRecipientsByRule, t]);
 
   useEffect(() => {
     if (activeStep === 2) {
@@ -158,23 +158,26 @@ const DeclareTipModal = ({
     setError('');
     setLoading(true);
     try {
-      const calculatedGrossTips = parseFloat(foodSales || 0) + parseFloat(alcoholSales || 0);
+      const calculatedGrossTips = parseFloat(totalSales || 0);
       const payload = {
         service_date: serviceDate.format('YYYY-MM-DD'),
         was_collector: true,
-        food_sales: parseFloat(foodSales || 0),
-        alcohol_sales: parseFloat(alcoholSales || 0),
+        food_sales: parseFloat(totalSales || 0),
+        alcohol_sales: 0,
         gross_tips: calculatedGrossTips,
-        cash_on_hand: parseFloat(cashOnHand || 0),
+        cash_on_hand: cashOnHand,
         service_end_time: serviceEndTime.format('HH:mm:ss'),
         selected_recipients: Object.entries(selectedRecipientsByRule).map(([ruleId, user_ids]) => ({
           rule_id: ruleId,
           user_ids: user_ids,
         })),
       };
+      console.log("Payload cash_on_hand (frontend):", payload.cash_on_hand);
+      console.log("Payload cash_on_hand (frontend):", payload.cash_on_hand);
       await createCashOutReport(payload);
       showAlert(t('tipDeclaredSuccess'), 'success');
       onClose();
+      console.log("Calling onTipDeclared from DeclareTipModal");
       onTipDeclared();
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
@@ -196,6 +199,13 @@ const DeclareTipModal = ({
       case 0:
         return (
           <Grid container spacing={2} sx={{ mt: 2 }}>
+            <Grid item xs={12}>
+              {openPeriod && (
+                  <Typography variant="body1">
+                      {t('activePayoutPeriod', { ns: 'pages/managerDashboard' })}: {openPeriod.name} ({dayjs(openPeriod.start_date).format('YYYY-MM-DD')} - {dayjs(openPeriod.end_date).format('YYYY-MM-DD')})
+                  </Typography>
+              )}
+            </Grid>
             <Grid item xs={12} md={6}>
               <DatePicker
                 label={t('serviceDate')}
@@ -216,20 +226,10 @@ const DeclareTipModal = ({
             </Grid>
             <Grid item xs={12} md={6}>
               <TextField
-                label={t('foodSales')}
+                label={t('totalSales')}
                 fullWidth
-                value={foodSales}
-                onChange={handleNumericInputChange(setFoodSales)}
-                InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
-                inputProps={{ inputMode: 'decimal' }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label={t('alcoholSales')}
-                fullWidth
-                value={alcoholSales}
-                onChange={handleNumericInputChange(setAlcoholSales)}
+                value={totalSales}
+                onChange={handleNumericInputChange(setTotalSales)}
                 InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                 inputProps={{ inputMode: 'decimal' }}
               />
@@ -275,16 +275,25 @@ const DeclareTipModal = ({
           </Box>
         );
       case 2:
-        const totalSales = parseFloat(foodSales || 0) + parseFloat(alcoholSales || 0);
+        const totalSalesValue = parseFloat(totalSales || 0);
         return (
           <Box sx={{ mt: 2 }}>
             {previewLoading ? <CircularProgress /> :
               previewData ? (
                 <Paper elevation={2} sx={{ p: 3 }}>
                   <Typography variant="h5" gutterBottom sx={{ color: 'black' }}>{t('calculationSummary')}</Typography>
+                  {openPeriod ? (
+                    <Typography variant="body1">
+                        {t('activePayoutPeriod', { ns: 'pages/managerDashboard' })}: {openPeriod.name}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body1" color="error">
+                        {t('noActivePayoutPeriod', { ns: 'pages/managerDashboard' })}
+                    </Typography>
+                  )}
                   <Grid container spacing={1}>
                     <Grid item xs={6}><Typography sx={{ color: 'black' }}><strong>{t('totalSales')}:</strong></Typography></Grid>
-                    <Grid item xs={6}><Typography align="right" sx={{ color: 'black' }}>${totalSales.toFixed(2)}</Typography></Grid>
+                    <Grid item xs={6}><Typography align="right" sx={{ color: 'black' }}>${totalSalesValue.toFixed(2)}</Typography></Grid>
 
                     <Grid item xs={6}><Typography sx={{ color: 'black' }}><strong>{t('cashOnHand')}:</strong></Typography></Grid>
                     <Grid item xs={6}><Typography align="right" sx={{ color: 'black' }}>${parseFloat(cashOnHand || 0).toFixed(2)}</Typography></Grid>

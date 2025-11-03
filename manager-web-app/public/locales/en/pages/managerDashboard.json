@@ -23,5 +23,11 @@
   "tipOutRules": "Tip-Out Rules",
   "noTipOutRules": "No tip-out rules found.",
   "ofTotalSales": "of Total Sales",
-  "ofGrossTips": "of Gross Tips"
+  "ofGrossTips": "of Gross Tips",
+  "declareTips": "Declare Tips",
+  "noPayoutPeriodsFound": "No payout periods found.",
+  "activePayoutPeriod": "Active Payout Period",
+  "start": "Start",
+  "end": "End",
+  "noActivePayoutPeriod": "No active payout period found."
 }

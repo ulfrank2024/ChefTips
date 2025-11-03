@@ -1,4 +1,5 @@
 const { TipModel } = require("../models/tipModel");
+const { getAuthUserDetails } = require("../services/authService");
 
 const getPayPeriodSummary = async (req, res) => {
     const { company_id, role } = req.user;
@@ -132,7 +133,22 @@ const getEmployeeReceivedTips = async (req, res) => {
     }
 
     try {
-        const receivedTips = await TipModel.getReceivedTipsByEmployee(userId, company_id);
+        let receivedTips = await TipModel.getReceivedTipsByEmployee(userId, company_id);
+
+        // Fetch sender details for individual tips
+        receivedTips = await Promise.all(receivedTips.map(async (tip) => {
+            if (tip.source === 'individual' && tip.sender_user_id) {
+                try {
+                    const senderDetails = await getAuthUserDetails(tip.sender_user_id);
+                    return { ...tip, sender_first_name: senderDetails.first_name, sender_last_name: senderDetails.last_name };
+                } catch (error) {
+                    console.error(`Failed to fetch sender details for tip ${tip.pool_id}:`, error.message);
+                    return { ...tip, sender_first_name: 'Unknown', sender_last_name: 'Sender' };
+                }
+            }
+            return tip;
+        }));
+
         res.status(200).json(receivedTips);
     } catch (err) {
         console.error(err);

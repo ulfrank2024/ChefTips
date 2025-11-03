@@ -10,13 +10,19 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import { getCompanyEmployees, inviteEmployee, removeEmployee, updateEmployeeMembership } from '../../api/authApi';
 import { useAlert } from '../../context/AlertContext';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './ManageEmployees.css';
+
+import { useTheme, useMediaQuery } from '@mui/material';
 
 const ManageEmployees = () => {
   const { t } = useTranslation(['common', 'errors', 'components/manager/manageEmployees']);
   const { showAlert } = useAlert();
+  const { handleTokenUpdate } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const validateEmail = (email) => {
     if (!email) {
@@ -152,7 +158,10 @@ const ManageEmployees = () => {
     setModalLoading(true);
     setModalError('');
     try {
-      await updateEmployeeMembership(currentEmployee.membership_id, { role: selectedRole, can_cash_out: permissionCashOut });
+      const data = await updateEmployeeMembership(currentEmployee.membership_id, { role: selectedRole, can_cash_out: permissionCashOut });
+      if (data.token) {
+        handleTokenUpdate(data.token);
+      }
       showAlert(t('success'), t('employeeUpdatedSuccessfully', { ns: 'components/manager/manageEmployees' }));
       setIsEditModalOpen(false);
       resetModalState();
@@ -166,7 +175,10 @@ const ManageEmployees = () => {
 
   const handlePermissionChange = async (employee, checked) => {
     try {
-      await updateEmployeeMembership(employee.membership_id, { can_cash_out: checked });
+      const data = await updateEmployeeMembership(employee.membership_id, { can_cash_out: checked });
+      if (data.token) {
+        handleTokenUpdate(data.token);
+      }
       showAlert(t('success'), t('permissionUpdatedSuccessfully', { ns: 'components/manager/manageEmployees' }));
       fetchData();
     } catch (err) {
@@ -225,13 +237,14 @@ const ManageEmployees = () => {
           </Button>
 
           <Paper elevation={3} sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, flexDirection: isMobile ? 'column' : 'row' }}>
               <TextField
                 fullWidth
                 variant="outlined"
                 label={t('searchPlaceholder', { ns: 'components/manager/manageEmployees' })}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{ mb: isMobile ? 2 : 0 }}
               />
               <FormControl sx={{ minWidth: 200 }}>
                 <InputLabel id="filter-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
@@ -258,133 +271,166 @@ const ManageEmployees = () => {
                       padding: 2,
                       borderRadius: '10px',
                       mb: 1,
+                      flexDirection: isMobile ? 'column' : 'row', // Stack vertically on mobile
+                      alignItems: isMobile ? 'flex-start' : 'center', // Align items to start on mobile
                     }}
                     secondaryAction={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Chip
-                          label={employee.can_cash_out ? t('canCashOut', { ns: 'components/manager/manageEmployees' }) : t('cannotCashOut', { ns: 'components/manager/manageEmployees' })}
-                          color={employee.can_cash_out ? 'success' : 'default'}
-                          size="small"
-                          sx={{ mr: 2, color: employee.can_cash_out ? '#fff' : '#000', backgroundColor: employee.can_cash_out ? '#28a745' : '#6c757d' }}
-                        />
-                        <IconButton edge="end" aria-label="edit" onClick={() => handleOpenEditModal(employee)} sx={{ color: '#ad9407ff' }}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteClick(employee)} sx={{ color: '#dc3545' }}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
+                      isMobile ? null : ( // Hide secondaryAction on mobile, render actions inside ListItemText
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Chip
+                            label={employee.can_cash_out ? t('canCashOut', { ns: 'components/manager/manageEmployees' }) : t('cannotCashOut', { ns: 'components/manager/manageEmployees' })}
+                            color={employee.can_cash_out ? 'success' : 'default'}
+                            size="small"
+                            sx={{ mr: 2, color: employee.can_cash_out ? '#fff' : '#000', backgroundColor: employee.can_cash_out ? '#28a745' : '#6c757d' }}
+                          />
+                          <IconButton edge="end" aria-label="edit" onClick={() => handleOpenEditModal(employee)} sx={{ color: '#ad9407ff' }}>
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteClick(employee)} sx={{ color: '#dc3545' }}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      )
                     }
                   >
                     <ListItemText
                       primary={<Typography sx={{ color: '#fff' }}>{`${employee.first_name || ''} ${employee.last_name || ''} (${employee.email})`}</Typography>}
-                      secondary={<Typography sx={{ color: '#ccc' }}>{getEmployeeInfo(employee)}</Typography>}
+                      secondary={
+                        <Box component="span"> {/* Changed to span to avoid div inside p warning */}
+                          <Typography component="span" sx={{ color: '#ccc', display: 'block' }}>{getEmployeeInfo(employee)}</Typography>
+                          {isMobile && ( // Render actions below text on mobile
+                            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                              <Chip
+                                label={employee.can_cash_out ? t('canCashOut', { ns: 'components/manager/manageEmployees' }) : t('cannotCashOut', { ns: 'components/manager/manageEmployees' })}
+                                color={employee.can_cash_out ? 'success' : 'default'}
+                                size="small"
+                                sx={{ mr: 2, color: employee.can_cash_out ? '#fff' : '#000', backgroundColor: employee.can_cash_out ? '#28a745' : '#6c757d' }}
+                              />
+                              <IconButton aria-label="edit" onClick={() => handleOpenEditModal(employee)} sx={{ color: '#ad9407ff' }}>
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton aria-label="delete" onClick={() => handleDeleteClick(employee)} sx={{ color: '#dc3545' }}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
+                          )}
+                        </Box>
+                      }
                     />
                   </ListItem>
-                ))}
+              ))}
             </List>
           </Paper>
+
+          {/* Invite Employee Modal */}
+          <Dialog open={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)}>
+            <DialogTitle>{t('inviteEmployee', { ns: 'components/manager/manageEmployees' })}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {t('inviteEmployeeDescription', { ns: 'components/manager/manageEmployees' })}
+              </DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="email"
+                label={t('emailAddress', { ns: 'common' })}
+                type="email"
+                fullWidth
+                variant="standard"
+                value={inviteEmail}
+                onChange={(e) => {
+                  setInviteEmail(e.target.value);
+                  setInviteEmailError(validateEmail(e.target.value));
+                }}
+                error={!!inviteEmailError}
+                helperText={inviteEmailError}
+              />
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="invite-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
+                <Select
+                  labelId="invite-role-label"
+                  value={selectedInviteKey}
+                  onChange={(e) => setSelectedInviteKey(e.target.value)}
+                  label={t('role', { ns: 'components/manager/manageEmployees' })}
+                >
+                  {inviteRoles.map((role) => (
+                    <MenuItem key={role.key} value={role.key}>
+                      {t(role.labelKey, { ns: 'components/manager/manageEmployees' })}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {modalError && <Alert severity="error" sx={{ mt: 2 }}>{modalError}</Alert>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsInviteModalOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
+              <Button onClick={handleInviteSubmit} disabled={modalLoading}>
+                {modalLoading ? <CircularProgress size={24} /> : t('invite', { ns: 'components/manager/manageEmployees' })}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Edit Employee Modal */}
+          <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+            <DialogTitle>{t('editEmployee', { ns: 'components/manager/manageEmployees' })}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {t('editEmployeeDescription', { ns: 'components/manager/manageEmployees' })}
+              </DialogContentText>
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="edit-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
+                <Select
+                  labelId="edit-role-label"
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  label={t('role', { ns: 'components/manager/manageEmployees' })}
+                  disabled={currentEmployee?.role === 'GERANT' || currentEmployee?.role === 'manager'}
+                >
+                  {predefinedRoles.map((role) => (
+                    <MenuItem key={role} value={role}>
+                      {t(role.toLowerCase(), { ns: 'components/manager/manageEmployees' })}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControlLabel
+                control={<Switch checked={permissionCashOut} onChange={(e) => setPermissionCashOut(e.target.checked)} />}
+                label={
+                  <Typography style={{ color: 'black' }}>
+                    {t('canCashOutPermission', { ns: 'components/manager/manageEmployees' })}
+                  </Typography>
+                }
+              />
+              {modalError && <Alert severity="error" sx={{ mt: 2 }}>{modalError}</Alert>}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsEditModalOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
+              <Button onClick={handleEditSubmit} disabled={modalLoading}>
+                {modalLoading ? <CircularProgress size={24} /> : t('save', { ns: 'common' })}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={isDeleteConfirmOpen}
+            onClose={() => setIsDeleteConfirmOpen(false)}
+          >
+            <DialogTitle>{t('confirmDeletion', { ns: 'components/manager/manageEmployees' })}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {t('areYouSureYouWantToDelete', { ns: 'components/manager/manageEmployees' })} {employeeToDelete?.first_name} {employeeToDelete?.last_name}?
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setIsDeleteConfirmOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
+              <Button onClick={handleDeleteConfirm} color="error">
+                {t('delete', { ns: 'common' })}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </>
       )}
-
-      {/* Invite Employee Dialog */}
-      <Dialog open={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{t('inviteEmployee', { ns: 'components/manager/manageEmployees' })}</DialogTitle>
-        <DialogContent>
-          {modalError && <Alert severity="error" sx={{ mb: 2 }}>{modalError}</Alert>}
-          <DialogContentText sx={{ mb: 2 }}>
-            {t('inviteInstructions', { ns: 'components/manager/manageEmployees' })}
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            label={t('employeeEmailPlaceholder', { ns: 'components/manager/manageEmployees' })}
-            type="email"
-            fullWidth
-            variant="outlined"
-            value={inviteEmail}
-            onChange={(e) => {
-              setInviteEmail(e.target.value);
-              if (inviteEmailError) {
-                setInviteEmailError(validateEmail(e.target.value));
-              }
-            }}
-            onBlur={() => setInviteEmailError(validateEmail(inviteEmail))}
-            error={!!inviteEmailError}
-            helperText={inviteEmailError}
-            sx={{ mb: 2 }}
-          />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="role-select-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
-            <Select
-              labelId="role-select-label"
-              value={selectedInviteKey}
-              label={t('role', { ns: 'components/manager/manageEmployees' })}
-              onChange={(e) => setSelectedInviteKey(e.target.value)}
-            >
-              {inviteRoles.map(item => (
-                <MenuItem key={item.key} value={item.key}>{t(item.labelKey, { ns: 'components/manager/manageEmployees' })}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsInviteModalOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
-          <Button onClick={handleInviteSubmit} disabled={modalLoading || !!inviteEmailError}>
-            {modalLoading ? <CircularProgress size={24} /> : t('sendInvitation', { ns: 'components/manager/manageEmployees' })}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Employee Dialog */}
-      <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{t('editEmployee', { ns: 'components/manager/manageEmployees' })}</DialogTitle>
-        <DialogContent>
-          {modalError && <Alert severity="error" sx={{ mb: 2 }}>{modalError}</Alert>}
-          <Typography variant="h6">{`${currentEmployee?.first_name || ''} ${currentEmployee?.last_name || ''}`}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{currentEmployee?.email}</Typography>
-          
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel id="edit-role-select-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
-            <Select
-              labelId="edit-role-select-label"
-              value={selectedRole}
-              label={t('role', { ns: 'components/manager/manageEmployees' })}
-              onChange={(e) => setSelectedRole(e.target.value)}
-            >
-              {predefinedRoles.map(role => (
-                <MenuItem key={role} value={role}>{t(role.toLowerCase(), { ns: 'components/manager/manageEmployees' })}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControlLabel
-            control={<Switch checked={permissionCashOut} onChange={(e) => setPermissionCashOut(e.target.checked)} />}
-            label={<Typography sx={{ color: 'black' }}>{t('cashOutPermission', { ns: 'components/manager/manageEmployees' })}</Typography>}
-            sx={{ mb: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsEditModalOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
-          <Button onClick={handleEditSubmit} disabled={modalLoading}>
-            {modalLoading ? <CircularProgress size={24} /> : t('save', { ns: 'common' })}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Employee Confirmation Dialog */}
-      <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
-        <DialogTitle>{t('confirmDeleteTitle', { ns: 'components/manager/manageEmployees' })}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t('confirmDeleteMessage', { ns: 'components/manager/manageEmployees', employeeName: `${employeeToDelete?.first_name || ''} ${employeeToDelete?.last_name || ''}` })}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsDeleteConfirmOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
-          <Button onClick={handleDeleteConfirm} color="error">{t('delete', { ns: 'common' })}</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

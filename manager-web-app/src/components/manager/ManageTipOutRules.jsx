@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Box, Typography, CircularProgress, Alert, Paper, List, ListItem, ListItemText,
   Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Select, MenuItem, FormControl, InputLabel, IconButton, Switch, FormGroup, FormControlLabel
+  Select, MenuItem, FormControl, InputLabel, IconButton, Switch, FormGroup, FormControlLabel, useTheme, useMediaQuery
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,6 +12,8 @@ import { getTipOutRules, createTipOutRule, updateTipOutRule, deleteTipOutRule } 
 
 const ManageTipOutRules = () => {
   const { t } = useTranslation(['components/manager/manageRules', 'common', 'errors']);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -231,15 +233,37 @@ const ManageTipOutRules = () => {
             {rules.length > 0 ? (
               <List>
                 {rules.map((rule) => (
-                  <ListItem key={rule.id} sx={{ backgroundColor: '#2a2a3e', padding: 2, borderRadius: '10px', mb: 1 }}>
+                  <ListItem
+                    key={rule.id}
+                    sx={{
+                      backgroundColor: '#2a2a3e',
+                      padding: 2,
+                      borderRadius: '10px',
+                      mb: 1,
+                      flexDirection: isMobile ? 'column' : 'row',
+                      alignItems: isMobile ? 'flex-start' : 'center',
+                    }}
+                    secondaryAction={isMobile ? null : (
+                      <Box>
+                        <IconButton onClick={() => handleOpenEditModal(rule)} sx={{ color: '#ad9407ff' }}><EditIcon /></IconButton>
+                        <IconButton onClick={() => handleDeleteClick(rule)} sx={{ color: '#dc3545' }}><DeleteIcon /></IconButton>
+                      </Box>
+                    )}
+                  >
                     <ListItemText
                       primary={<Typography sx={{ color: '#fff', fontWeight: 'bold' }}>{rule.name}</Typography>}
-                      secondary={<Typography sx={{ color: '#ccc' }}>{getRuleDescription(rule)}</Typography>}
+                      secondary={
+                        <>
+                          <Typography sx={{ color: '#ccc' }}>{getRuleDescription(rule)}</Typography>
+                          {isMobile && (
+                            <Box sx={{ mt: 1 }}>
+                              <IconButton onClick={() => handleOpenEditModal(rule)} sx={{ color: '#ad9407ff' }}><EditIcon /></IconButton>
+                              <IconButton onClick={() => handleDeleteClick(rule)} sx={{ color: '#dc3545' }}><DeleteIcon /></IconButton>
+                            </Box>
+                          )}
+                        </>
+                      }
                     />
-                    <Box>
-                      <IconButton onClick={() => handleOpenEditModal(rule)} sx={{ color: '#ad9407ff' }}><EditIcon /></IconButton>
-                      <IconButton onClick={() => handleDeleteClick(rule)} sx={{ color: '#dc3545' }}><DeleteIcon /></IconButton>
-                    </Box>
                   </ListItem>
                 ))}
               </List>

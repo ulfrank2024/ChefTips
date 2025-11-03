@@ -1,31 +1,34 @@
 import React, { useEffect } from 'react';
-import { Box, Typography, Grow, Fade } from '@mui/material';
+import { Box, Typography, Grow, Fade, useTheme, useMediaQuery } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import Logo from '../assets/logo.png';
-
-const contentStyle = {
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  borderRadius: 4,
-  textAlign: 'center'
-};
 
 const WelcomeModal = ({ open, onClose, firstName, lastName, companyName }) => {
   const { t, i18n } = useTranslation('common');
   const ready = i18n.isInitialized;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const contentStyle = {
+    width: isMobile ? '90%' : 400,
+    maxWidth: isMobile ? 'none' : 400, // Ensure it doesn't get too wide on larger screens
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    borderRadius: 4,
+    textAlign: 'center'
+  };
 
   useEffect(() => {
     let timer;
     if (open) {
       timer = setTimeout(() => {
         onClose();
-      }, 3000); // Close after 3 seconds
+      }, 2000); // Close after 1 second
     }
     return () => clearTimeout(timer);
   }, [open, onClose]);

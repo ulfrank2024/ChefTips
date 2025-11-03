@@ -9,7 +9,7 @@ Ce document fournit une vue d'ensemble du Système de Gestion de Pourboires, dé
 Le système est basé sur une **architecture de microservices** pour la scalabilité et la séparation des responsabilités :
 
 * **Service d'Authentification (`auth-service`)**: Backend Node.js/Express gérant les utilisateurs, les entreprises, et les appartenances. C'est la source unique de vérité pour les informations sur les employés.
-* **Service de Pourboires (`tip-service`)**: Backend Node.js/Express gérant toute la logique métier des pourboires (rapports, calculs, pools, etc.). Il communique avec l'`auth-service` pour obtenir les listes d'employés.
+* **Service de Pourboires (`tip-service`)**: Backend Node.js/Express gérant toute la logique métier des pourboires (rapports, calculs, pools, etc.). Il communique avec l`auth-service` pour obtenir les listes d'employés.
 * **Application Web Manager (`manager-web-app`)**: SPA React (Vite) pour l'administration par les managers.
 * **Application Mobile (`mobile-app`)**: Application React Native (Expo) pour les employés.
 
@@ -82,14 +82,14 @@ Cette procédure vise à calculer automatiquement le montant exact que le serveu
 **Phase 2 : Les Calculs Automatiques par Shef Tips**
 
 1.  Définition de la Base de Tip-Out
-    $$\text{Base du Tip-Out} = \text{Ventes Nourriture} + \text{Ventes Alcool}$$
+    $$\text{Base du Tip-Out} = \text{Ventes Nourriture} + \text{Ventes Alcool}$$ 
 
 2.  Calcul du Tip-Out Total (Dépense du Serveur)
     Le système applique les pourcentages définis (ex: Cuisine 1%, Bar 2%, Commis & Hôte(sse) 1%, Gérant 0.5%).
-    $$\text{Tip-Out Total} = \sum (\text{Tips Cuisine, Bar, Commis/Hôte, Gérant})$$
+    $$\text{Tip-Out Total} = \sum (\text{Tips Cuisine, Bar, Commis/Hôte, Gérant})$$ 
 
 3.  Calcul du "Due Back" (Solde Final)
-    $$\mathbf{\text{Due Back} = \text{Tip-Out Total} + \text{Comptant (Solde de Caisse)}}$$
+    $$\mathbf{\text{Due Back} = \text{Tip-Out Total} + \text{Comptant (Solde de Caisse)}}$$ 
 
 **Phase 3 : Interprétation du Solde Final**
 
@@ -148,7 +148,7 @@ L'affichage est conditionné par la permission `can_cash_out`.
 
 **A. Calcul Final (Due Back)**
 
-$$\mathbf{\text{Due Back} = \text{Tip-Out Total} + \text{Comptant}}$$
+$$\mathbf{\text{Due Back} = \text{Tip-Out Total} + \text{Comptant}}$$ 
 
 * Si $\text{Due Back}$ est positif : "Le Serveur doit remettre cette somme au restaurant."
 * Si $\text{Due Back}$ est négatif : "Le Restaurant doit rembourser cette somme au Serveur."
@@ -157,5 +157,31 @@ $$\mathbf{\text{Due Back} = \text{Tip-Out Total} + \text{Comptant}}$$
 
 | Scénario du Due Back | Action du Manager | Statut dans le Système |
 | :------------------- | :---------------- | :--------------------- |
-| Serveur doit le restaurant ($\text{Due Back} > 0$) | Le Manager vérifie l'enveloppe et coche "**Bien Reçu**" dans l'application. | Le système marque la transaction comme "**Financement Approuvé**". |
-| Restaurant doit le serveur ($\text{Due Back} < 0$) | Le Manager rembourse le Serveur, puis clique sur "**Remboursement Fait**". | Le système marque l'opération comme **réglée** et met à jour le solde de trésorerie. |
+| Serveur doit le restaurant ($	ext{Due Back} > 0$) | Le Manager vérifie l'enveloppe et coche "**Bien Reçu**" dans l'application. | Le système marque la transaction comme "**Financement Approuvé**". |
+| Restaurant doit le serveur ($	ext{Due Back} < 0$) | Le Manager rembourse le Serveur, puis clique sur "**Remboursement Fait**". | Le système marque l'opération comme **réglée** et met à jour le solde de trésorerie. |
+
+## 6. Évolution Majeure : Gestion par Périodes de Paie
+
+Pour simplifier et automatiser la distribution des pourboires, le système évolue d'une gestion par "pools" manuels vers un système de **périodes de paie**.
+
+### Principe de Fonctionnement
+
+1.  **Création des Périodes par le Manager** : Le manager définit des périodes de paie avec une date de début et de fin (ex: "Semaine du 4 au 10 novembre"). Une seule période peut être active à la fois.
+2.  **Association Automatique des "Cash Outs"** : Chaque rapport de pourboire ("cash out") effectué par un employé est automatiquement rattaché à la période active en cours.
+3.  **Clôture et Calcul de la Période** : À la fin de la période, le manager la clôture. Le système agrège alors tous les pourboires collectés et distribués durant cette période.
+4.  **Répartition Simplifiée** :
+    *   **Pour les rôles en pool (ex: `CUISINIER`)** : Le manager n'a plus qu'à saisir les heures travaillées par chaque employé du pool *pendant cette période*. Le système répartit le montant total du pool au prorata des heures.
+    *   **Pour les autres employés (ex: `BARMAN`, `COMMIS`)** : Ils reçoivent la somme totale des pourboires qui leur ont été individuellement attribués durant la période.
+
+Ce système élimine la création manuelle de pools à chaque paie et offre une vue d'ensemble claire et consolidée des finances pour des intervalles de temps définis.
+
+### Évolution du Rôle de Manager
+
+Pour offrir plus de flexibilité, le rôle de `GERANT` est mis à jour :
+
+*   **Double Casquette** : Un manager peut désormais effectuer des "cash outs" et recevoir des pourboires de la même manière qu'un employé de support (comme un `BARMAN` ou `SERVEUR`), en plus de ses responsabilités de gestion. Sa permission `can_cash_out` peut être activée au besoin.
+
+## 7. Améliorations Futures Suggérées
+
+*   **Activation Automatique des Périodes de Paie** : Implémenter une logique (par exemple, une tâche planifiée côté serveur) pour automatiquement clôturer une période de paie et en ouvrir une nouvelle lorsque les dates le permettent.
+*   **Notification par E-mail pour Période Inactive** : Envoyer une notification par e-mail aux managers si aucune période de paie active n'est détectée, afin de leur rappeler d'en créer une.

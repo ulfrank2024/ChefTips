@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Box, Typography, Paper, TextField, Button, Grid, Snackbar, Alert
+  Box, Typography, Paper, TextField, Button, Grid, Snackbar, Alert,
+  useMediaQuery, useTheme
 } from '@mui/material';
 import { useAuth } from '../../context/AuthContext';
 import { changePassword, updateUserLanguage, updateProfile } from '../../api/authApi'; // Import updateUserLanguage and updateProfile
@@ -11,6 +12,8 @@ import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'; // Im
 const EmployeeProfile = () => {
   const { t } = useTranslation(['common', 'errors', 'pages/profilePage', 'pages/employeeDashboard']);
   const { user, setUser, handleTokenUpdate } = useAuth(); // Get setUser and handleTokenUpdate from useAuth
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Profile Edit State
   const [firstName, setFirstName] = useState(user?.first_name || '');
@@ -71,7 +74,7 @@ const EmployeeProfile = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 3 }}>
+          <Typography variant={isMobile ? "h6" : "h5"} component="h2" sx={{ mb: 3 }}>
               {t("profileTitle", { ns: "pages/employeeDashboard" })}
           </Typography>
 
@@ -79,7 +82,7 @@ const EmployeeProfile = () => {
               {/* User Information */}
               <Grid item xs={12} md={6}>
                   <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
                           {t("profileInfo", { ns: "pages/profilePage" })}
                       </Typography>
                       <TextField
@@ -103,7 +106,7 @@ const EmployeeProfile = () => {
                           value={user?.email || ""}
                           disabled
                       />
-                      <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleSaveProfile}>
+                      <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleSaveProfile} fullWidth={isMobile}>
                           {t('save', { ns: 'common' })}
                       </Button>
                       <FormControl fullWidth margin="normal">
@@ -124,7 +127,7 @@ const EmployeeProfile = () => {
               {/* Change Password */}
               <Grid item xs={12} md={6}>
                   <Paper elevation={3} sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
                           {t("changePassword", { ns: "pages/profilePage" })}
                       </Typography>
                       <form onSubmit={handleChangePassword}>
@@ -167,6 +170,7 @@ const EmployeeProfile = () => {
                               variant="contained"
                               color="primary"
                               sx={{ mt: 2 }}
+                              fullWidth={isMobile}
                           >
                               {t("changePasswordButton", {
                                   ns: "pages/profilePage",

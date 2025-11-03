@@ -1,0 +1,27 @@
+{
+  "en": {
+    "subject": "Invitation to join {{managerCompanyName}} on ChefTips",
+    "title": "You're Invited to Join ChefTips!",
+    "greeting": "Hello,",
+    "body1": "You've been invited by {{managerCompanyName}} to join their team on ChefTips, the ultimate platform for managing tips efficiently.",
+    "body2": "To complete your registration and set up your password, please click the secure link below:",
+    "linkText": "Complete Registration",
+    "body3": "Your unique invitation code is:",
+    "body4": "This code ensures your account is linked correctly. If you did not expect this invitation, please ignore this email.",
+    "closing": "We look forward to welcoming you!",
+    "teamName": "The ChefTips Team",
+    "bilingual_intro": "English version below:"
+  },
+  "fr": {
+    "subject": "Invitation à rejoindre {{managerCompanyName}} sur ChefTips",
+    "title": "Vous êtes invité à rejoindre ChefTips !",
+    "greeting": "Bonjour,",
+    "body1": "Vous avez été invité par {{managerCompanyName}} à rejoindre leur équipe sur ChefTips, la plateforme ultime pour gérer les pourboires efficacement.",
+    "body2": "Pour finaliser votre inscription et définir votre mot de passe, veuillez cliquer sur le lien sécurisé ci-dessous :",
+    "linkText": "Compléter l'inscription",
+    "body3": "Votre code d'invitation unique est :",
+    "body4": "Ce code garantit que votre compte est correctement lié. Si vous n'attendiez pas cette invitation, veuillez ignorer cet e-mail.",
+    "closing": "Nous sommes impatients de vous accueillir !",
+    "teamName": "L'équipe ChefTips"
+  }
+}
