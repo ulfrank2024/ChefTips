@@ -121,9 +121,9 @@ export const getEmployeeCashOutDashboard = async (startDate, endDate) => {
     }
 };
 
-export const getPayPeriodSummary = async (destinationRole, startDate, endDate) => { // Changed destinationDepartmentId to destinationRole
+export const getPayPeriodSummary = async (destinationDepartmentId, startDate, endDate) => {
     try {
-        const response = await apiClient.get('/dashboard/pay-period-summary', { params: { destinationRole, startDate, endDate } });
+        const response = await apiClient.get('/dashboard/pay-period-summary', { params: { destinationDepartmentId, startDate, endDate } });
         return response.data;
     } catch (error) {
         handleApiError(error);

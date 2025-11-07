@@ -3,5 +3,6 @@
   "prepareDistribution": "Prepare Distribution",
   "totalAmount": "Total Amount",
   "hoursWorked": "Hours Worked",
-  "distributeFor": "Distribute for"
+  "distributeFor": "Distribute for",
+  "selectAPeriodPlaceholder": "Select a period"
 }

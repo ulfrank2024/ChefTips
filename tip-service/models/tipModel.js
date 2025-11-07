@@ -87,6 +87,58 @@ const TipModel = {
         return result.rows[0];
     },
 
+    async getServerOverviewForCompany(companyId, startDate, endDate) {
+        const params = [companyId];
+        let query = `SELECT
+                co.user_id as employee_id,
+                co.service_date as date,
+                co.gross_tips,
+                co.net_tips,
+                (co.gross_tips - co.net_tips) as adjustments
+             FROM cash_outs co
+             WHERE co.company_id = $1`;
+
+        if (startDate && endDate) {
+            query += ` AND co.service_date BETWEEN $2 AND $3`;
+            params.push(startDate, endDate);
+        }
+
+        query += ` ORDER BY co.service_date DESC`;
+
+        const result = await pool.query(query, params);
+        return result.rows;
+    },
+
+    async getCashOutsForCompany(companyId, startDate, endDate) {
+        const params = [companyId];
+        let query = `SELECT
+                co.id,
+                co.user_id,
+                co.service_date as date,
+                co.gross_tips as amount,
+                co.net_tips,
+                co.final_balance,
+                co.payout_period_id,
+                co.created_at,
+                'Completed' as status, -- Assuming all fetched cash outs are completed. Adjust if status is stored.
+                COALESCE(
+                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.daily_report_id),
+                    '[]'
+                ) as adjustments
+             FROM cash_outs co
+             WHERE co.company_id = $1`;
+
+        if (startDate && endDate) {
+            query += ` AND co.service_date BETWEEN $2 AND $3`;
+            params.push(startDate, endDate);
+        }
+
+        query += ` ORDER BY co.service_date DESC`;
+
+        const result = await pool.query(query, params);
+        return result.rows;
+    },
+
     async updateCashOut(cashOutId, cashOutData, adjustments) {
         const {
             total_sales, gross_tips, net_tips, service_end_time,
@@ -241,9 +293,26 @@ const TipModel = {
         return poolDetails;
     },
 
-    async getReceivedTipsByEmployee(userId, companyId) {
-        const result = await pool.query(
-            `SELECT
+    async getReceivedTipsByEmployee(userId, companyId, startDate, endDate) {
+        const params = [userId, companyId];
+        let poolConditions = [`pd.user_id = $1`, `tp.company_id = $2`];
+        let individualConditions = [`ra.related_user_id = $1`, `dr.company_id = $2`, `ra.amount > 0`];
+        let paramIndex = 3;
+
+        if (startDate) {
+            poolConditions.push(`tp.start_date >= $${paramIndex}::DATE`);
+            individualConditions.push(`dr.service_date >= $${paramIndex}::DATE`);
+            params.push(startDate);
+            paramIndex++;
+        }
+        if (endDate) {
+            poolConditions.push(`tp.end_date <= $${paramIndex}::DATE`);
+            individualConditions.push(`dr.service_date <= $${paramIndex}::DATE`);
+            params.push(endDate);
+            paramIndex++;
+        }
+
+        const poolQuery = `SELECT
                 pd.distributed_amount,
                 pd.hours_worked,
                 tp.start_date,
@@ -255,9 +324,9 @@ const TipModel = {
                 NULL as sender_user_id
              FROM pool_distributions pd
              JOIN tip_pools tp ON pd.pool_id = tp.id
-             WHERE pd.user_id = $1 AND tp.company_id = $2
-             UNION ALL
-             SELECT
+             WHERE ${poolConditions.join(' AND ')}`;
+
+        const individualQuery = `SELECT
                 ra.amount as distributed_amount,
                 NULL as hours_worked,
                 dr.service_date as start_date,
@@ -269,9 +338,11 @@ const TipModel = {
                 dr.user_id as sender_user_id
              FROM report_adjustments ra
              JOIN daily_reports dr ON ra.report_id = dr.id
-             WHERE ra.related_user_id = $1 AND dr.company_id = $2 AND ra.amount > 0
-             ORDER BY start_date DESC`,
-            [userId, companyId]
+             WHERE ${individualConditions.join(' AND ')}`;
+
+        const result = await pool.query(
+            `${poolQuery} UNION ALL ${individualQuery} ORDER BY start_date DESC`,
+            params
         );
         return result.rows;
     },

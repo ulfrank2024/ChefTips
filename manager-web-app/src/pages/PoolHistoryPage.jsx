@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPools, getPoolDetails } from '../api/tipApi';
 import { getCompanyEmployees } from '../api/authApi'; // To get employee names
+import { getPayoutPeriods } from '../api/payoutPeriodApi';
 import PoolDetailsModal from '../components/manager/PoolDetailsModal'; // Import the modal
 import {
   Box, Typography, CircularProgress, Alert, Paper, Table, TableBody, 
-  TableCell, TableContainer, TableHead, TableRow, Grid, Button, useTheme, useMediaQuery, TextField
+  TableCell, TableContainer, TableHead, TableRow, Grid, Button, useTheme, useMediaQuery, TextField,
+  FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -46,16 +48,21 @@ const PoolHistoryPage = () => {
     }
   };
 
+  const [payoutPeriods, setPayoutPeriods] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const [poolsData, employeesData] = await Promise.all([
+        const [poolsData, employeesData, periodsData] = await Promise.all([
           getPools(), // Initial fetch without filters
-          getCompanyEmployees()
+          getCompanyEmployees(),
+          getPayoutPeriods()
         ]);
         setPools(poolsData);
         setEmployees(employeesData);
+        setPayoutPeriods(periodsData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -99,25 +106,54 @@ const PoolHistoryPage = () => {
 
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker 
-                label={t('startDate', { ns: 'common' })}
-                value={filterStartDate}
-                onChange={setFilterStartDate}
-                renderInput={(params) => <TextField {...params} fullWidth />} 
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker 
-                label={t('endDate', { ns: 'common' })}
-                value={filterEndDate}
-                onChange={setFilterEndDate}
-                renderInput={(params) => <TextField {...params} fullWidth />} 
-              />
-            </LocalizationProvider>
+          <Grid item xs={12} sm={12}>
+            <FormControl fullWidth>
+              <Select
+                value={selectedPeriod}
+                onChange={(e) => {
+                  const periodId = e.target.value;
+                  setSelectedPeriod(periodId);
+                  if (periodId) {
+                    const period = payoutPeriods.find(p => p.id === periodId);
+                    setFilterStartDate(dayjs.utc(period.start_date));
+                    setFilterEndDate(dayjs.utc(period.end_date));
+                  } else {
+                    setFilterStartDate(null);
+                    setFilterEndDate(null);
+                  }
+                }}
+                displayEmpty
+                MenuProps={{
+                  PaperProps: {
+                    sx: { zIndex: (theme) => theme.zIndex.drawer + 2 }
+                  },
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  },
+                }}
+                inputProps={{ 'aria-label': t('payoutPeriod', { ns: 'common' }) }}
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return t('all', { ns: 'common' });
+                  }
+                  const selectedPeriod = payoutPeriods.find(p => p.id === selected);
+                  return selectedPeriod ? `${selectedPeriod.name} (${dayjs.utc(selectedPeriod.start_date).format('YYYY-MM-DD')} - ${dayjs.utc(selectedPeriod.end_date).format('YYYY-MM-DD')})` : '';
+                }}>
+                <MenuItem value="">
+                  {t('all', { ns: 'common' })}
+                </MenuItem>
+                {payoutPeriods.map((period) => (
+                  <MenuItem key={period.id} value={period.id} sx={{ fontSize: '0.875rem' }}>
+                    {period.name} ({dayjs.utc(period.start_date).format('YYYY-MM-DD')} - {dayjs.utc(period.end_date).format('YYYY-MM-DD')})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Button variant="contained" onClick={handleApplyFilter} sx={{ height: '56px' }}>
@@ -131,7 +167,7 @@ const PoolHistoryPage = () => {
         <Box>
           {pools.length === 0 && !loading ? (
             <Paper elevation={3} sx={{ p: 2, textAlign: 'center' }}>
-              <Typography sx={{ color: 'black' }}>Aucun pool trouvé.</Typography>
+              <Typography sx={{ color: 'black' }}>{t('noPoolsFound', { ns: 'common' })}</Typography>
             </Paper>
           ) : (
             pools.map((pool) => {
@@ -141,13 +177,13 @@ const PoolHistoryPage = () => {
               return (
                 <Paper key={pool.id} elevation={3} sx={{ p: 2, mb: 2 }} onClick={() => handleRowClick(pool.id)}>
                   <Typography variant="subtitle1" component="h3">{pool.department_name}</Typography>
-                  <Typography><strong>{t('startDate')}:</strong> {dayjs(pool.start_date).format('YYYY-MM-DD')}</Typography>
-                  <Typography><strong>{t('endDate')}:</strong> {dayjs(pool.end_date).format('YYYY-MM-DD')}</Typography>
-                  <Typography><strong>{t('creationDate')}:</strong> {dayjs(pool.created_at).format('YYYY-MM-DD HH:mm')}</Typography>
+                  <Typography><strong>{t('startDate')}:</strong> {dayjs.utc(pool.start_date).format('YYYY-MM-DD')}</Typography>
+                  <Typography><strong>{t('endDate')}:</strong> {dayjs.utc(pool.end_date).format('YYYY-MM-DD')}</Typography>
+                  <Typography><strong>{t('creationDate')}:</strong> {dayjs.utc(pool.created_at).format('YYYY-MM-DD HH:mm')}</Typography>
                   <Typography><strong>{t('recipientCount')}:</strong> {pool.recipient_count || 0}</Typography>
                   <Typography><strong>{t('totalDistributedHours')}:</strong> {totalDistributedHours.toFixed(2)}</Typography>
                   <Typography><strong>{t('ratePerHour')}:</strong> {ratePerHour.toFixed(2)} $</Typography>
-                  <Typography><strong>Montant Total:</strong> {totalAmount.toFixed(2)} $</Typography>
+                  <Typography><strong>{t('totalAmount', { ns: 'common' })}:</strong> {totalAmount.toFixed(2)} $</Typography>
                 </Paper>
               );
             })
@@ -158,21 +194,21 @@ const PoolHistoryPage = () => {
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <TableCell>Rôle de Destination</TableCell>
+                <TableCell>{t('destinationRole', { ns: 'common' })}</TableCell>
                 <TableCell align="center">{t('startDate')}</TableCell>
                 <TableCell align="center">{t('endDate')}</TableCell>
                 <TableCell align="center">{t('creationDate')}</TableCell>
                 <TableCell align="center">{t('recipientCount')}</TableCell>
                 <TableCell align="center">{t('totalDistributedHours')}</TableCell>
                 <TableCell align="center">{t('ratePerHour')}</TableCell>
-                <TableCell align="center">Montant Total</TableCell>
+                <TableCell align="center">{t('totalAmount', { ns: 'common' })}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {pools.length === 0 && !loading ? (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
-                    Aucun pool trouvé.
+                    {t('noPoolsFound', { ns: 'common' })}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -190,9 +226,9 @@ const PoolHistoryPage = () => {
                       <TableCell component="th" scope="row">
                         {pool.department_name}
                       </TableCell>
-                      <TableCell align="center">{dayjs(pool.start_date).format('YYYY-MM-DD')}</TableCell>
-                      <TableCell align="center">{dayjs(pool.end_date).format('YYYY-MM-DD')}</TableCell>
-                      <TableCell align="center">{dayjs(pool.created_at).format('YYYY-MM-DD HH:mm')}</TableCell>
+                      <TableCell align="center">{dayjs.utc(pool.start_date).format('YYYY-MM-DD')}</TableCell>
+                      <TableCell align="center">{dayjs.utc(pool.end_date).format('YYYY-MM-DD')}</TableCell>
+                      <TableCell align="center">{dayjs.utc(pool.created_at).format('YYYY-MM-DD HH:mm')}</TableCell>
                       <TableCell align="center">{pool.recipient_count || 0}</TableCell>
                       <TableCell align="center">{totalDistributedHours.toFixed(2)}</TableCell>
                       <TableCell align="center">{ratePerHour.toFixed(2)} $</TableCell>

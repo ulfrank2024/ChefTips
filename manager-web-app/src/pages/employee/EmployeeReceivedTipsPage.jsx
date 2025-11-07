@@ -9,8 +9,16 @@ import {
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PeopleIcon from '@mui/icons-material/People';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import EventBusyIcon from '@mui/icons-material/EventBusy';
 import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 import { getEmployeeReceivedTips, getPoolSummary } from '../../api/tipApi';
+import { getPayoutPeriods } from '../../api/payoutPeriodApi';
 import { useAuth } from '../../context/AuthContext';
 
 const EmployeeReceivedTipsPage = () => {
@@ -23,20 +31,26 @@ const EmployeeReceivedTipsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [startDate, setStartDate] = useState(dayjs().startOf('month').format('YYYY-MM-DD'));
-  const [endDate, setEndDate] = useState(dayjs().endOf('month').format('YYYY-MM-DD'));
-
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedTipDetails, setSelectedTipDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState('');
 
+  const [payoutPeriods, setPayoutPeriods] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+
   useEffect(() => {
-    const fetchTips = async () => {
+    const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const tips = await getEmployeeReceivedTips(user.id);
-        setAllReceivedTips(tips);
+        if (user?.id) {
+          const [tips, periods] = await Promise.all([
+            getEmployeeReceivedTips(user.id),
+            getPayoutPeriods(),
+          ]);
+          setAllReceivedTips(tips);
+          setPayoutPeriods(periods);
+        }
       } catch (err) {
         setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
       } finally {
@@ -45,147 +59,226 @@ const EmployeeReceivedTipsPage = () => {
     };
 
     if (user?.id) {
-      fetchTips();
+      fetchInitialData();
     }
   }, [user?.id, t]);
 
   const filteredTips = useMemo(() => {
-    let currentFilteredTips = allReceivedTips;
-
-    if (startDate && endDate) {
-        currentFilteredTips = currentFilteredTips.filter(tip => {
-            const tipDate = dayjs(tip.start_date);
-            return !tipDate.isBefore(dayjs(startDate), 'day') && !tipDate.isAfter(dayjs(endDate), 'day');
-        });
+    if (!selectedPeriod) {
+      return allReceivedTips;
     }
-
-    return currentFilteredTips.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
-}, [allReceivedTips, startDate, endDate]);
-
-  const handleTipClick = async (tip) => {
-    if (tip.source === 'pool') {
-        setLoadingDetails(true);
-        setDetailsError('');
-        try {
-          const poolSummary = await getPoolSummary(tip.pool_id);
-          setSelectedTipDetails({ ...tip, ...poolSummary });
-          setIsDetailsModalOpen(true);
-        } catch (err) {
-          setDetailsError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
-        } finally {
-          setLoadingDetails(false);
-        }
-    } else {
-        setSelectedTipDetails(tip);
-        setIsDetailsModalOpen(true);
+    const period = payoutPeriods.find(p => p.id === selectedPeriod);
+    if (!period) {
+      return allReceivedTips;
     }
-  };
+    return allReceivedTips.filter(tip => {
+      const tipDate = dayjs(tip.start_date);
+      return tipDate.isSameOrAfter(dayjs(period.start_date), 'day') && tipDate.isSameOrBefore(dayjs(period.end_date), 'day');
+    });
+  }, [selectedPeriod, allReceivedTips, payoutPeriods]);
+
+  const groupedTips = useMemo(() => {
+    const groups = {};
+    filteredTips.forEach(tip => {
+      const associatedPeriod = payoutPeriods.find(p => 
+        dayjs(tip.start_date).isSameOrAfter(dayjs(p.start_date), 'day') &&
+        dayjs(tip.end_date).isSameOrBefore(dayjs(p.end_date), 'day')
+      );
+      const periodKey = associatedPeriod ? associatedPeriod.id : 'unassigned';
+      const periodDisplay = associatedPeriod ? {
+        name: associatedPeriod.name,
+        startDate: dayjs.utc(associatedPeriod.start_date).format('DD MMMM YYYY'),
+        endDate: dayjs.utc(associatedPeriod.end_date).format('DD MMMM YYYY')
+      } : {
+        name: t('unassignedPeriod', { ns: 'common' }),
+        startDate: '',
+        endDate: ''
+      };
+
+      if (!groups[periodKey]) {
+        groups[periodKey] = {
+          periodInfo: periodDisplay,
+          periodTotal: 0,
+          dates: {}
+        };
+      }
+
+      const date = dayjs.utc(tip.created_at).format('YYYY-MM-DD');
+      if (!groups[periodKey].dates[date]) {
+        groups[periodKey].dates[date] = {
+          tips: [],
+          dateTotal: 0
+        };
+      }
+      const amount = Number(tip.distributed_amount) || 0;
+      groups[periodKey].dates[date].tips.push(tip);
+      groups[periodKey].dates[date].dateTotal += amount;
+      groups[periodKey].periodTotal += amount;
+    });
+    return groups;
+  }, [filteredTips, payoutPeriods, t]);
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant={isMobile ? "h6" : "h4"} component="h1" sx={{ color: 'black', mb: isMobile ? 2 : 3 }}>
-        {t('myReceivedTips', { ns: 'pages/employeeDashboard' })}
+    <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Typography variant={isMobile ? "h6" : "h4"} component="h1" sx={{ color: 'black', mb: 3 }}>
+        {t('receivedTipsHistory', { ns: 'pages/managerDashboard' })}
       </Typography>
-
-      <Box sx={{ mb: 3 }}>
-        <Grid container spacing={1}>
-            <Grid item xs={6}>
-                <TextField
-                    fullWidth
-                    id="start-date"
-                    label={t('startDate', { ns: 'common' })}
-                    type="date"
-                    size="small"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-            </Grid>
-            <Grid item xs={6}>
-                <TextField
-                    fullWidth
-                    id="end-date"
-                    label={t('endDate', { ns: 'common' })}
-                    type="date"
-                    size="small"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
+      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>{t('filter', { ns: 'common' })}</Typography>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <Select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  displayEmpty
+                  inputProps={{ 'aria-label': t('payoutPeriod', { ns: 'common' }) }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { zIndex: (theme) => theme.zIndex.drawer + 2 }
+                    },
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'left',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'left',
+                    },
+                  }}
+                  renderValue={(selected) => {
+                    if (!selected) {
+                      return t('all', { ns: 'common' });
+                    }
+                    const selectedPeriod = payoutPeriods.find(p => p.id === selected);
+                    return selectedPeriod ? `${selectedPeriod.name} (${dayjs.utc(selectedPeriod.start_date).format('YYYY-MM-DD')} - ${dayjs.utc(selectedPeriod.end_date).format('YYYY-MM-DD')})` : '';
+                  }}
+                >
+                  <MenuItem value="">
+                    {t('all', { ns: 'common' })}
+                  </MenuItem>
+                  {payoutPeriods.map((period) => (
+                    <MenuItem key={period.id} value={period.id} sx={{ fontSize: '0.875rem' }}>
+                      {period.name} ({dayjs.utc(period.start_date).format('YYYY-MM-DD')} - {dayjs.utc(period.end_date).format('YYYY-MM-DD')})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
         </Grid>
-      </Box>
-
+      </Paper>
       {filteredTips.length === 0 ? (
         <Alert severity="info">{t('noReceivedTips', { ns: 'pages/employeeDashboard' })}</Alert>
       ) : (
-        <TableContainer component={Paper} elevation={3} sx={{ p: 1 }}>
-          <Table>
-            <TableHead sx={{ display: isMobile ? 'none' : 'table-header-group' }}>
-              <TableRow>
-                <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>{t('period', { ns: 'common' })}</TableCell>
-                <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>{t('positionOrRole', { ns: 'common' })}</TableCell>
-                <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>{t('amount', { ns: 'common' })}</TableCell>
-                <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>{t('sentBy', { ns: 'common' })}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredTips.map((tip, index) => (
-                isMobile ? (
-                  <Paper 
-                    key={index} 
-                    sx={{ p: 2, mb: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' } }}
-                    onClick={() => handleTipClick(tip)}
-                  >
-                    <Typography variant="subtitle2" sx={{ color: 'black' }}>{t('period', { ns: 'common' })}:</Typography>
-                    <Typography variant="body2" sx={{ color: 'black', fontWeight: 'bold' }}>{dayjs(tip.start_date).format('YYYY-MM-DD')} - {dayjs(tip.end_date).format('YYYY-MM-DD')}</Typography>
+        Object.entries(groupedTips).map(([periodKey, periodGroup]) => (
+          <Box key={periodKey} sx={{ mb: 4, backgroundColor: theme.palette.grey[100], p: 2, borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <PlayCircleOutlineIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant={isMobile ? "h6" : "h5"} component="h2" sx={{ color: 'black' }}>
+                      {periodGroup.periodInfo.name}
+                  </Typography>
+              </Box>
+              <Typography variant={isMobile ? "subtitle1" : "h5"} component="h2" sx={{ color: 'black' }}>
+                  Total: ${periodGroup.periodTotal.toFixed(2)}
+              </Typography>
+            </Box>
 
-                    <Typography variant="subtitle2" sx={{ color: 'black', mt: 1 }}>{t('positionOrRole', { ns: 'common' })}:</Typography>
-                    <Typography variant="body2" sx={{ color: 'black' }}>
-                      {tip.department_name.startsWith('Tip-Out received from ') 
-                        ? tip.department_name.replace('Tip-Out received from ', '') 
-                        : tip.department_name}
-                    </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 1, color: 'text.secondary' }}>
+              {periodGroup.periodInfo.startDate && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
+                      <EventAvailableIcon sx={{ mr: 1, color: 'success.main' }} />
+                      <Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>
+                          Début: {periodGroup.periodInfo.startDate}
+                      </Typography>
+                  </Box>
+              )}
+              {periodGroup.periodInfo.endDate && (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <EventBusyIcon sx={{ mr: 1, color: 'error.main' }} />
+                      <Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>
+                          Fin: {periodGroup.periodInfo.endDate}
+                      </Typography>
+                  </Box>
+              )}
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+            {Object.entries(periodGroup.dates).map(([date, dateGroup]) => (
+              <Box key={date} sx={{ mb: 3, pl: isMobile ? 0 : 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Typography variant={isMobile ? "subtitle1" : "h6"} component="h3" sx={{ color: 'black' }}>
+                    {dayjs(date).format('DD MMMM YYYY')}
+                  </Typography>
+                  <Typography variant={isMobile ? "subtitle2" : "h6"} component="h3" sx={{ color: 'black' }}>
+                    Total: ${dateGroup.dateTotal.toFixed(2)}
+                  </Typography>
+                </Box>
+                {isMobile ? (
+                  <Box>
+                    {dateGroup.tips.map((tip, index) => (
+                      <Paper 
+                        key={index} 
+                        sx={{ p: 2, mb: 2, cursor: 'pointer', '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' } }}
+                        onClick={() => handleTipClick(tip)}
+                      >
+                        <Typography variant="subtitle2" sx={{ color: 'black' }}>{t('positionOrRole', { ns: 'common' })}:</Typography>
+                        <Typography variant="body2" sx={{ color: 'black' }}>
+                          {tip.department_name.startsWith('Tip-Out received from ') 
+                            ? tip.department_name.replace('Tip-Out received from ', '') 
+                            : tip.department_name}
+                        </Typography>
 
-                    <Typography variant="subtitle2" sx={{ color: 'black', mt: 1 }}>{t('amount', { ns: 'common' })}:</Typography>
-                    <Typography variant="body2" sx={{ color: 'black', fontWeight: 'bold' }}>{Number(tip.distributed_amount).toFixed(2)} $</Typography>
+                        <Typography variant="subtitle2" sx={{ color: 'black', mt: 1 }}>{t('amount', { ns: 'common' })}:</Typography>
+                        <Typography variant="body2" sx={{ color: 'black', fontWeight: 'bold' }}>{Number(tip.distributed_amount).toFixed(2)} $</Typography>
 
-                    {tip.source === 'individual' && tip.sender_first_name && (
-                      <>
-                        <Typography variant="subtitle2" sx={{ color: 'black', mt: 1 }}>{t('sentBy', { ns: 'common' })}:</Typography>
-                        <Typography variant="body2" sx={{ color: 'black' }}>{`${tip.sender_first_name} ${tip.sender_last_name}`}</Typography>
-                      </>
-                    )}
-                  </Paper>
+                        {tip.source === 'individual' && tip.sender_first_name && (
+                          <>
+                            <Typography variant="subtitle2" sx={{ color: 'black', mt: 1 }}>{t('sentBy', { ns: 'common' })}:</Typography>
+                            <Typography variant="body2" sx={{ color: 'black' }}>{`${tip.sender_first_name} ${tip.sender_last_name}`}</Typography>
+                          </>
+                        )}
+                      </Paper>
+                    ))}
+                  </Box>
                 ) : (
-                  <TableRow 
-                    key={index} 
-                    onClick={() => handleTipClick(tip)} 
-                    sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' } }}
-                  >
-                    <TableCell align="center" sx={{ color: 'black' }}>{dayjs(tip.start_date).format('YYYY-MM-DD')} - {dayjs(tip.end_date).format('YYYY-MM-DD')}</TableCell>
-                    <TableCell align="center" sx={{ color: 'black' }}>
-                      {tip.department_name.startsWith('Tip-Out received from ') 
-                        ? tip.department_name.replace('Tip-Out received from ', '') 
-                        : tip.department_name}
-                    </TableCell>
-                    <TableCell align="center" sx={{ color: 'black' }}>{Number(tip.distributed_amount).toFixed(2)} $</TableCell>
-                    <TableCell align="center" sx={{ color: 'black' }}>
-                      {tip.source === 'individual' ? `${tip.sender_first_name} ${tip.sender_last_name}` : ''}
-                    </TableCell>
-                  </TableRow>
-                )
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                  <TableContainer component={Paper} elevation={2} sx={{ p: 1 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>{t('positionOrRole', { ns: 'common' })}</TableCell>
+                          <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>{t('amount', { ns: 'common' })}</TableCell>
+                          <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>{t('sentBy', { ns: 'common' })}</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {dateGroup.tips.map((tip, index) => (
+                          <TableRow 
+                            key={index} 
+                            onClick={() => handleTipClick(tip)} 
+                            sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' } }}
+                          >
+                            <TableCell sx={{ color: 'black' }}>
+                              {tip.department_name.startsWith('Tip-Out received from ') 
+                                ? tip.department_name.replace('Tip-Out received from ', '') 
+                                : tip.department_name}
+                            </TableCell>
+                            <TableCell align="center" sx={{ color: 'black' }}>{Number(tip.distributed_amount).toFixed(2)} $</TableCell>
+                            <TableCell align="center" sx={{ color: 'black' }}>
+                              {tip.source === 'individual' ? `${tip.sender_first_name} ${tip.sender_last_name}` : t('fromTipPool', { ns: 'common' })}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Box>
+            ))}
+          </Box>
+        ))
       )}
 
       {/* Tip Details Modal */}
@@ -214,11 +307,11 @@ const EmployeeReceivedTipsPage = () => {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle2" color="black">{t('period', { ns: 'common' })}:</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'black' }}>{dayjs(selectedTipDetails.start_date).format('YYYY-MM-DD')} - {dayjs(selectedTipDetails.end_date).format('YYYY-MM-DD')}</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'black' }}>{dayjs.utc(selectedTipDetails.start_date).format('YYYY-MM-DD')} - {dayjs.utc(selectedTipDetails.end_date).format('YYYY-MM-DD')}</Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle2" color="black">{t('creationDate', { ns: 'common' })}:</Typography>
-                      <Typography variant="body1" sx={{ color: 'black' }}>{dayjs(selectedTipDetails.pool_created_at).format('YYYY-MM-DD HH:mm')}</Typography>
+                      <Typography variant="body1" sx={{ color: 'black' }}>{dayjs.utc(selectedTipDetails.pool_created_at).format('YYYY-MM-DD HH:mm')}</Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle2" color="black">{t('recipientCount', { ns: 'common' })}:</Typography>
@@ -275,7 +368,7 @@ const EmployeeReceivedTipsPage = () => {
                     )}
                     <Grid item xs={12}>
                       <Typography variant="subtitle2" color="black">{t('date', { ns: 'common' })}:</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'black' }}>{dayjs(selectedTipDetails.start_date).format('YYYY-MM-DD')}</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'black' }}>{dayjs.utc(selectedTipDetails.start_date).format('YYYY-MM-DD')}</Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <Typography variant="subtitle2" color="black">{t('amount', { ns: 'common' })}:</Typography>

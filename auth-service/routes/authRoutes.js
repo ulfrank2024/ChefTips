@@ -6,6 +6,7 @@ const { inviteEmployee, removeEmployee, getCompanyEmployees, updateMembership } 
 const { verifyOtp, resendOtp, verifyInvitation, setupPassword } = require('../controllers/verificationController');
 const { updateLanguagePreference, changePassword, updateProfile, getUserDetails } = require('../controllers/userController');
 const { sendCashOutNotification } = require('../controllers/emailController');
+const { getCompanyDepartments } = require('../controllers/companyController');
 const { authenticateToken } = require("../middleware/authMiddleware");
 
 // --- User Account Routes ---
@@ -40,6 +41,8 @@ router.put("/memberships/:membershipId", authenticateToken, updateMembership);
 router.delete("/memberships/:membershipId", authenticateToken, removeEmployee);
 // Manager gets all employees in their company
 router.get("/employees", authenticateToken, getCompanyEmployees);
+// Manager gets all departments in their company
+router.get("/departments", authenticateToken, getCompanyDepartments);
 
 // --- Manager: Category Management Routes ---
 // router.post("/categories", authenticateToken, createCategory);

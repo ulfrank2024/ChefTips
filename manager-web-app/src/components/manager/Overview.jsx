@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {  Box, Typography, Paper, CircularProgress, Alert, Grid, List, ListItem, ListItemText, useTheme, useMediaQuery} from '@mui/material';
+import {  Box, Typography, Paper, CircularProgress, Alert, Grid, List, ListItem, ListItemText, useTheme, useMediaQuery, Card, CardHeader, CardContent, Divider} from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -14,7 +14,7 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { getPools, getTipOutRules } from '../../api/tipApi'; // Import getTipOutRules
+import { getPools, getTipOutRules, getEmployeeReceivedTips } from '../../api/tipApi'; // Import getTipOutRules
 import { getCompanyEmployees } from '../../api/authApi'; // Import getCompanyEmployees
 import { getPayoutPeriods } from '../../api/payoutPeriodApi'; // Import getPayoutPeriods
 import {
@@ -23,8 +23,11 @@ import {
 import { Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
+dayjs.extend(utc);
 
 
 // Register Chart.js components and plugin
@@ -33,7 +36,7 @@ ChartJS.register(
 );
 
 const Overview = () => {
-  const { t } = useTranslation(['common', 'pages/managerDashboard']);
+  const { t } = useTranslation(['common', 'pages/managerDashboard', "pages/employeeDashboard"]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -45,6 +48,7 @@ const Overview = () => {
   const [payoutPeriods, setPayoutPeriods] = useState([]); // New state for payout periods
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [receivedTips, setReceivedTips] = useState([]);
 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(''); // Use empty string for "All Months"
@@ -89,11 +93,12 @@ const Overview = () => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const [poolsData, employeesData, rulesData, periodsData] = await Promise.all([
+        const [poolsData, employeesData, rulesData, periodsData, tipsData] = await Promise.all([
           getPools(),
           getCompanyEmployees(),
           getTipOutRules(), // Fetch tip-out rules
-          getPayoutPeriods()
+          getPayoutPeriods(),
+          getEmployeeReceivedTips(user.id)
         ]);
         // Sort pools by created_at for chronological display in chart and to get the last created
         const sortedPools = poolsData.sort((a, b) => dayjs(a.start_date).unix() - dayjs(b.start_date).unix());
@@ -101,6 +106,7 @@ const Overview = () => {
         setEmployees(employeesData);
         setRules(rulesData);          // Set rules state
         setPayoutPeriods(periodsData);
+        setReceivedTips(tipsData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -109,7 +115,34 @@ const Overview = () => {
     };
 
     fetchAllData();
-  }, []);
+  }, [user]);
+
+  const groupedByDateAndRole = useMemo(() => {
+    const dateGroups = {};
+    receivedTips.forEach(tip => {
+        const date = dayjs.utc(tip.start_date).format('YYYY-MM-DD');
+        if (!dateGroups[date]) {
+            dateGroups[date] = {
+                roles: {},
+                dayTotal: 0,
+            };
+        }
+
+        const role = tip.department_name;
+        if (!dateGroups[date].roles[role]) {
+            dateGroups[date].roles[role] = {
+                tips: [],
+                total: 0,
+            };
+        }
+
+        dateGroups[date].roles[role].tips.push(tip);
+        dateGroups[date].roles[role].total += Number(tip.distributed_amount);
+        dateGroups[date].dayTotal += Number(tip.distributed_amount);
+    });
+
+    return Object.entries(dateGroups).sort(([dateA], [dateB]) => dayjs.utc(dateB).unix() - dayjs.utc(dateA).unix());
+  }, [receivedTips]);
 
   // Prepare data for the chart
   const chartData = {
@@ -178,7 +211,7 @@ const Overview = () => {
   if (error) return <Alert severity="error">{error}</Alert>;
 
   const lastPool = pools.length > 0 ? pools[pools.length - 1] : null; // Get the last created pool
-  const openPeriod = payoutPeriods.find(p => p.status === 'OPEN');
+  const openPeriod = payoutPeriods.find(p => p.status === 'CURRENT');
 
   // Group employees by role
   const employeesByRole = {};
@@ -312,7 +345,7 @@ const Overview = () => {
                                       })}
                                       :
                                   </strong>{" "}
-                                  {dayjs(openPeriod.start_date).format(
+                                  {dayjs.utc(openPeriod.start_date).format(
                                       "YYYY-MM-DD"
                                   )}
                               </Typography>
@@ -337,7 +370,7 @@ const Overview = () => {
                                       })}
                                       :
                                   </strong>{" "}
-                                  {dayjs(openPeriod.end_date).format(
+                                  {dayjs.utc(openPeriod.end_date).format(
                                       "YYYY-MM-DD"
                                   )}
                               </Typography>
@@ -353,7 +386,7 @@ const Overview = () => {
               sx={{ mb: isMobile ? 2 : 4 }}
           >
               {lastPool && (
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} md={4}>
                       <Paper
                           elevation={3}
                           sx={{ p: isMobile ? 2 : 3, height: "100%" }}
@@ -494,8 +527,58 @@ const Overview = () => {
                       </Paper>
                   </Grid>
               )}
+              
+              {groupedByDateAndRole.length > 0 && (
+                <Grid item xs={12} md={4}>
+                    <Card elevation={3} sx={{height: "100%"}}>
+                    <CardHeader
+                        avatar={<AttachMoneyIcon color="primary" />}
+                        title={
+                        <Typography variant={isMobile ? "subtitle1" : "h6"} component="h2">
+                            {t("myReceivedTips", { ns: "pages/employeeDashboard" })}
+                        </Typography>
+                        }
+                        sx={{ pb: 0 }}
+                    />
+                    <CardContent>
+                        {(() => {
+                            const [date, { roles, dayTotal }] = groupedByDateAndRole[0];
+                            return (
+                                <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
+                                    <Typography variant={isMobile ? "subtitle2" : "h6"} component="h3" sx={{ mb: 1, color: 'black' }}>{date}</Typography>
+                                    <Divider />
+                                    {Object.entries(roles).map(([role, { tips, total }], roleIndex) => (
+                                        <Box key={roleIndex} sx={{ my: 1 }}>
+                                            <Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black', fontWeight: 'bold' }}>
+                                                {role.startsWith('Tip-Out received from ')
+                                                    ? role.replace('Tip-Out received from ', '')
+                                                    : role}
+                                                : ${total.toFixed(2)}
+                                            </Typography>
+                                            {tips.map((tip, tipIndex) => (
+                                                tip.source === 'individual' && (
+                                                    <Typography key={tipIndex} variant={isMobile ? "caption" : "body2"} color="text.secondary" sx={{ fontStyle: 'italic', ml: 2 }}>
+                                                        From: {tip.sender_first_name} {tip.sender_last_name} (${Number(tip.distributed_amount).toFixed(2)})
+                                                    </Typography>
+                                                )
+                                            ))}
+                                        </Box>
+                                    ))}
+                                    <Divider />
+                                    <Box sx={{ mt: 1, textAlign: 'right' }}>
+                                        <Typography variant={isMobile ? "subtitle1" : "h6"} component="p" sx={{ fontWeight: 'bold', color: 'black' }}>
+                                            Total: ${dayTotal.toFixed(2)}
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            );
+                        })()}
+                    </CardContent>
+                    </Card>
+                </Grid>
+                )}
 
-              <Grid item xs={12} md={lastPool ? 6 : 12}>
+              <Grid item xs={12} md={lastPool ? 4 : 12}>
                   {" "}
                   {/* Takes remaining space or full width if no lastPool */}
                   <Paper

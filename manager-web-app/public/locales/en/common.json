@@ -10,6 +10,7 @@
   "percentage": "Percentage",
   "cancel": "Cancel",
   "delete": "Delete",
+  "update": "Update",
   "edit": "Edit",
   "create": "Create",
   "view": "View",
@@ -74,5 +75,8 @@
   "sentBy": "Sent By",
   "emailAddress": "Email Address",
   "confirmDeletion": "Confirm Deletion",
-  "areYouSureToDeletePeriod": "Are you sure you want to delete the period {{periodName}}? This action cannot be undone."
+  "areYouSureToDeletePeriod": "Are you sure you want to delete the period {{periodName}}? This action cannot be undone.",
+  "fromTipPool": "From Tip Pool",
+  "dateHeader": "Date",
+  "payoutPeriod": "Payout Period"
 }

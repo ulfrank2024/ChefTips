@@ -23,7 +23,9 @@ services:
     
 
   postgres:
-    image: postgres:13
+    build:
+      context: .
+      dockerfile: auth-db.Dockerfile
     environment:
       POSTGRES_DB: tips_app_db
       POSTGRES_USER: tips_ulrich_2025
@@ -32,10 +34,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./auth-service/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   tip_postgres:
-    image: postgres:13
+    build:
+      context: .
+      dockerfile: tip-db.Dockerfile
     environment:
       POSTGRES_DB: tip_db
       POSTGRES_USER: tip_user
@@ -44,7 +47,6 @@ services:
       - "5434:5432"
     volumes:
       - tip_postgres_data:/var/lib/postgresql/data
-      - ./tip-service/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   pgadmin:
     image: dpage/pgadmin4

@@ -254,7 +254,7 @@ const ManageTipOutRules = () => {
                       primary={<Typography sx={{ color: '#fff', fontWeight: 'bold' }}>{rule.name}</Typography>}
                       secondary={
                         <>
-                          <Typography sx={{ color: '#ccc' }}>{getRuleDescription(rule)}</Typography>
+                          <Typography component="span" sx={{ color: '#ccc' }}>{getRuleDescription(rule)}</Typography>
                           {isMobile && (
                             <Box sx={{ mt: 1 }}>
                               <IconButton onClick={() => handleOpenEditModal(rule)} sx={{ color: '#ad9407ff' }}><EditIcon /></IconButton>

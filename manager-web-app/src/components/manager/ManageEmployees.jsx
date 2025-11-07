@@ -377,22 +377,23 @@ const ManageEmployees = () => {
               <DialogContentText>
                 {t('editEmployeeDescription', { ns: 'components/manager/manageEmployees' })}
               </DialogContentText>
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="edit-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
-                <Select
-                  labelId="edit-role-label"
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                  label={t('role', { ns: 'components/manager/manageEmployees' })}
-                  disabled={currentEmployee?.role === 'GERANT' || currentEmployee?.role === 'manager'}
-                >
-                  {predefinedRoles.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {t(role.toLowerCase(), { ns: 'components/manager/manageEmployees' })}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              {currentEmployee?.role !== 'GERANT' && currentEmployee?.role !== 'manager' && (
+                <FormControl fullWidth margin="dense">
+                  <InputLabel id="edit-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
+                  <Select
+                    labelId="edit-role-label"
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    label={t('role', { ns: 'components/manager/manageEmployees' })}
+                  >
+                    {predefinedRoles.map((role) => (
+                      <MenuItem key={role} value={role}>
+                        {t(role.toLowerCase(), { ns: 'components/manager/manageEmployees' })}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
               <FormControlLabel
                 control={<Switch checked={permissionCashOut} onChange={(e) => setPermissionCashOut(e.target.checked)} />}
                 label={

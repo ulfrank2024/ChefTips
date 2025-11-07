@@ -42,12 +42,15 @@ const performTipCalculation = (rules, total_sales, gross_tips, selected_recipien
                         rule_id: rule.id,
                     });
                     user_ids.forEach(uid => {
+                         const recipientEmployee = employeeMap.get(uid);
                          automatic_adjustments.push({
                             adjustment_type: 'TIP_OUT_AUTOMATIC',
                             amount: amount_per_recipient,
-                            description: rule.name,
+                            description: recipientEmployee ? `${recipientEmployee.name} (${recipientEmployee.role})` : rule.name,
                             rule_id: rule.id,
                             related_user_id: uid,
+                            is_individual_recipient: true,
+                            distribution_type: 'INDIVIDUAL_SELECTION',
                         });
                     });
 
@@ -75,12 +78,23 @@ const performTipCalculation = (rules, total_sales, gross_tips, selected_recipien
                 totalTipOutsFromCollector += rule_amount;
                 totalDepartmentPoolContribution += rule_amount;
 
-                // For createCashOutReport
+                // For createCashOutReport (negative adjustment for collector)
                 automatic_adjustments.push({
                     adjustment_type: 'TIP_OUT_AUTOMATIC',
                     amount: -rule_amount,
                     description: `Tip-Out to ${rule.name}`,
                     rule_id: rule.id,
+                    distribution_type: 'DEPARTMENT_POOL',
+                });
+
+                // For createCashOutReport (positive adjustment for the department pool)
+                automatic_adjustments.push({
+                    adjustment_type: 'DEPARTMENT_CONTRIBUTION',
+                    amount: rule_amount,
+                    description: rule.name,
+                    rule_id: rule.id,
+                    is_department_pool: true,
+                    distribution_type: 'DEPARTMENT_POOL',
                 });
 
                 // For calculateTipDistribution
@@ -293,6 +307,68 @@ const previewCashOutReport = async (req, res) => {
     res.status(501).json({ error: "This function is deprecated and should not be used." });
 };
 
+const getCashOutReports = async (req, res) => {
+    const { companyId, startDate, endDate } = req.query;
+    if (!companyId) {
+        return res.status(400).json({ error: "MISSING_REQUIRED_QUERY_PARAMETERS" });
+    }
+
+    try {
+        const cashOutData = await TipModel.getCashOutsForCompany(companyId, startDate, endDate);
+        const token = req.headers.authorization.split(' ')[1];
+        const employees = await getCompanyEmployeesFromAuthService(token);
+        const employeeMap = new Map(employees.map(emp => [emp.id, `${emp.first_name} ${emp.last_name}`]));
+
+        const enrichedCashOuts = cashOutData.map(cashOut => {
+            const enrichedAdjustments = cashOut.adjustments.map(adj => {
+                if (adj.related_user_id) {
+                    const employee = employees.find(emp => emp.id === adj.related_user_id);
+                    return { 
+                        ...adj, 
+                        employee_name: employeeMap.get(adj.related_user_id) || 'Unknown Employee',
+                        employee_role: employee ? employee.role : 'Unknown Role'
+                    };
+                }
+                return adj;
+            });
+            return {
+                ...cashOut,
+                employee_name: employeeMap.get(cashOut.user_id) || 'Unknown Employee',
+                adjustments: enrichedAdjustments
+            };
+        });
+
+        res.status(200).json(enrichedCashOuts);
+    } catch (err) {
+        console.error("[getCashOutReports] Error:", err);
+        res.status(500).json({ error: "INTERNAL_SERVER_ERROR" });
+    }
+};
+
+const getServerOverview = async (req, res) => {
+    const { companyId, startDate, endDate } = req.query;
+    if (!companyId) {
+        return res.status(400).json({ error: "MISSING_REQUIRED_QUERY_PARAMETERS" });
+    }
+
+    try {
+        const overviewData = await TipModel.getServerOverviewForCompany(companyId, startDate, endDate);
+        const token = req.headers.authorization.split(' ')[1];
+        const employees = await getCompanyEmployeesFromAuthService(token);
+        const employeeMap = new Map(employees.map(emp => [emp.id, `${emp.first_name} ${emp.last_name}`]));
+
+        const enrichedOverview = overviewData.map(overview => ({
+            ...overview,
+            employee_name: employeeMap.get(overview.employee_id) || 'Unknown Employee'
+        }));
+
+        res.status(200).json(enrichedOverview);
+    } catch (err) {
+        console.error("[getServerOverview] Error:", err);
+        res.status(500).json({ error: "INTERNAL_SERVER_ERROR" });
+    }
+};
+
 
 module.exports = {
     createCashOutReport,
@@ -301,4 +377,6 @@ module.exports = {
     createSimplifiedCashOut,
     previewCashOutReport,
     calculateTipDistribution,
+    getCashOutReports,
+    getServerOverview,
 };

@@ -29,5 +29,6 @@
   "owedToYou": "Dû par la caisse",
   "owedToEmployee": "Dû à l'Employé",
   "tipOutsByRule": "Pourboires par Règle",
-  "totalReceivedTips": "Total des Pourboires Reçus"
+  "totalReceivedTips": "Total des Pourboires Reçus",
+  "noActivePeriodContactManager": "Aucune période active. Veuillez contacter votre manager."
 }

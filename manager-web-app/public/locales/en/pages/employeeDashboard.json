@@ -25,5 +25,6 @@
   "owedToEmployee": "Owed to You",
   "owedToYou": "Owed to You",
   "tipOutsByRule": "Tip-Outs by Rule",
-  "totalReceivedTips": "Total Received Tips"
+  "totalReceivedTips": "Total Received Tips",
+  "noActivePeriodContactManager": "No active period. Please contact your manager."
 }

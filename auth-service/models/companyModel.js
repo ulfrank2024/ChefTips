@@ -18,6 +18,14 @@ const CompanyModel = {
         const result = await pool.query("SELECT * FROM companies WHERE id = $1", [companyId]);
         return result.rows[0];
     },
-};
+    async getDepartmentsByCompanyId(companyId) {
+        const query = 'SELECT * FROM departments WHERE company_id = $1';
+        const values = [companyId];
+        const { rows } = await pool.query(query, values);
+        return rows;
+    }
+}
 
-module.exports = { CompanyModel };
+module.exports = {
+    CompanyModel,
+};

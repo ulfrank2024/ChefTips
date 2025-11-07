@@ -60,7 +60,7 @@ const LoginPage = () => {
         if (result.role === 'manager') {
           navigate('/dashboard', { replace: true });
         } else if (result.role === 'SERVEUR' || result.role === 'BARMAN' || result.role === 'COMMIS' || result.role === 'HOTE' || result.role === 'CUISINIER') {
-          const employeeDashboardPath = result.can_cash_out ? '/employee/dashboard' : '/employee/dashboard/received-tips';
+          const employeeDashboardPath = '/employee/dashboard';
           navigate(employeeDashboardPath, { replace: true });
         } else {
           navigate('/login', { replace: true });
@@ -85,7 +85,7 @@ const LoginPage = () => {
       if (user.role === 'manager') {
         navigate('/dashboard', { replace: true });
       } else if (user.role === 'SERVEUR' || user.role === 'BARMAN' || user.role === 'COMMIS' || user.role === 'HOTE' || user.role === 'CUISINIER') {
-        const employeeDashboardPath = user.can_cash_out ? '/employee/dashboard' : '/employee/dashboard/received-tips';
+        const employeeDashboardPath = '/employee/dashboard';
         navigate(employeeDashboardPath, { replace: true });
       } else {
         navigate('/login', { replace: true });

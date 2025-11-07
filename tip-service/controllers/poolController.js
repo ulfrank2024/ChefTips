@@ -127,22 +127,24 @@ const getPoolSummaryById = async (req, res) => {
 const getEmployeeReceivedTips = async (req, res) => {
     const { company_id, id: authUserId, role } = req.user;
     const { userId } = req.params;
+    const { startDate, endDate } = req.query; // Extract startDate and endDate from query
 
     if (role !== 'manager' && authUserId !== userId) {
         return res.status(403).json({ error: "UNAUTHORIZED" });
     }
 
     try {
-        let receivedTips = await TipModel.getReceivedTipsByEmployee(userId, company_id);
+        let receivedTips = await TipModel.getReceivedTipsByEmployee(userId, company_id, startDate, endDate);
 
-        // Fetch sender details for individual tips
         receivedTips = await Promise.all(receivedTips.map(async (tip) => {
+            console.log(`Processing tip: ${tip.id}, Source: ${tip.source}, Sender User ID: ${tip.sender_user_id}`);
             if (tip.source === 'individual' && tip.sender_user_id) {
                 try {
-                    const senderDetails = await getAuthUserDetails(tip.sender_user_id);
+                    const senderDetails = await getAuthUserDetails(tip.sender_user_id, req.user.token);
+                    console.log(`Sender details fetched for ${tip.sender_user_id}: ${senderDetails.first_name} ${senderDetails.last_name}`);
                     return { ...tip, sender_first_name: senderDetails.first_name, sender_last_name: senderDetails.last_name };
                 } catch (error) {
-                    console.error(`Failed to fetch sender details for tip ${tip.pool_id}:`, error.message);
+                    console.error(`Failed to fetch sender details for tip ${tip.id} (sender_user_id: ${tip.sender_user_id}):`, error.message);
                     return { ...tip, sender_first_name: 'Unknown', sender_last_name: 'Sender' };
                 }
             }

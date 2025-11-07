@@ -40,12 +40,10 @@ import ManageTipOutRules from './components/manager/ManageTipOutRules';
 import Profile from './components/manager/Profile';
 import ServerOverview from './components/manager/ServerOverview';
 import ServerReportsHistory from './components/manager/ServerReportsHistory';
-import PayPeriodReport from './components/manager/PayPeriodReport';
 import CreatePool from './components/manager/CreatePool';
 import PoolHistoryPage from './pages/PoolHistoryPage';
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
-import PayoutPeriodsPage from './pages/PayoutPeriodsPage'; // Import the new page
-
+import ManagePayoutPeriods from './components/manager/ManagePayoutPeriods';
 function App() {
   const { i18n, t } = useTranslation(['common', 'pages/login', 'pages/managerDashboard', 'pages/employeeDashboard']);
   const { user, logout } = useAuth();
@@ -130,12 +128,11 @@ function App() {
                             <Route path="manage-employees" element={<ManageEmployees />} />
                             <Route path="manage-rules" element={<ManageTipOutRules />} />
                             <Route path="profile" element={<Profile />} />
+                            <Route path="manage-payout-periods" element={<ManagePayoutPeriods />} />
                             <Route path="server-overview" element={<ServerOverview />} />
                             <Route path="server-reports-history" element={<ServerReportsHistory />} />
-                            <Route path="pay-period-report" element={<PayPeriodReport />} />
                             <Route path="create-pool" element={<CreatePool />} />
                             <Route path="pool-history" element={<PoolHistoryPage />} />
-                            <Route path="manage-payout-periods" element={<PayoutPeriodsPage />} />
                             <Route path="declare-tips" element={<EmployeeOverview isManagerView={true} />} />
                             <Route path="cashout-history" element={<EmployeeCashOutHistoryPage />} />
                             <Route path="received-tips" element={<EmployeeReceivedTipsPage />} />

@@ -93,6 +93,25 @@ export const getCompanyEmployees = async () => {
     }
 };
 
+export const getCompanyDepartments = async () => {
+    try {
+        const response = await apiClient.get('/departments');
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+export const updateMembership = async (membershipId, membershipData) => {
+    try {
+        const response = await apiClient.put(`/memberships/${membershipId}`, membershipData);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+
 // Updated inviteEmployee
 export const inviteEmployee = async (email, role, can_cash_out) => {
     try {

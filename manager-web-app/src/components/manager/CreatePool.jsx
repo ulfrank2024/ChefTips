@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box, Typography, CircularProgress, Alert, Paper, Button, TextField,
-  Grid, Checkbox, FormControlLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, InputAdornment
+  Grid, Checkbox, FormControlLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, InputAdornment,
+  FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { getPayPeriodSummary, createPool } from '../../api/tipApi';
-import { getCompanyEmployees } from '../../api/authApi';
+import utc from 'dayjs/plugin/utc';
+import { getPayPeriodSummary, createPool, getPools } from '../../api/tipApi';
+import { getCompanyEmployees, getCompanyDepartments } from '../../api/authApi';
+import { getPayoutPeriods } from '../../api/payoutPeriodApi';
+
+dayjs.extend(utc);
 
 const CreatePool = () => {
   const { t } = useTranslation(['components/manager/createPool', 'common', 'errors']);
@@ -26,13 +31,28 @@ const CreatePool = () => {
   const [selectedEmployees, setSelectedEmployees] = useState({});
   const [selectedRole, setSelectedRole] = useState(''); // New state for selected role
 
+  const [payoutPeriods, setPayoutPeriods] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+  const [pools, setPools] = useState([]);
+  const [departments, setDepartments] = useState([]);
+
   const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const emps = await getCompanyEmployees();
+      const [emps, periods, existingPools, depts] = await Promise.all([
+        getCompanyEmployees(),
+        getPayoutPeriods(),
+        getPools(), // Fetch existing pools
+        getCompanyDepartments()
+      ]);
       setEmployees(emps);
+      // Filter periods to only show past periods
+      const pastPeriods = periods.filter(period => dayjs.utc(period.end_date).isBefore(dayjs.utc(), 'day'));
+      setPayoutPeriods(pastPeriods);
+      setPools(existingPools);
+      setDepartments(depts);
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -49,10 +69,27 @@ const CreatePool = () => {
     setError('');
     setSuccess('');
     try {
-      const reports = await Promise.all(
-        predefinedRoles.map(role => getPayPeriodSummary(role, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD')))
+      // Check for existing pools for the selected period and role
+      const existingPoolForPeriod = pools.some(pool =>
+        dayjs.utc(pool.start_date).isSame(startDate, 'day') &&
+        dayjs.utc(pool.end_date).isSame(endDate, 'day')
       );
-      const augmentedReports = reports.map((r, index) => ({
+
+      if (existingPoolForPeriod) {
+        setError(t('errors:POOL_ALREADY_EXISTS_FOR_PERIOD'));
+        setLoading(false);
+        return;
+      }
+
+      const reports = await Promise.all(
+        predefinedRoles.map(role => {
+          const department = departments.find(d => d.name === role);
+          if (!department) return null;
+          return getPayPeriodSummary(department.id, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
+        })
+      );
+      
+      const augmentedReports = reports.filter(r => r).map((r, index) => ({
         ...r,
         role: predefinedRoles[index],
         editable_total_tip_out_amount: r.total_tip_out_amount
@@ -91,6 +128,26 @@ const CreatePool = () => {
     setSuccess('');
     setLoading(true);
 
+    const department = departments.find(d => d.name === role);
+    if (!department) {
+        setError(t('errors:INVALID_DEPARTMENT'));
+        setLoading(false);
+        return;
+    }
+
+    // Check for existing pool for this specific role and period before distributing
+    const existingPoolForRoleAndPeriod = pools.some(pool =>
+      pool.department_name === role &&
+      dayjs.utc(pool.start_date).isSame(startDate, 'day') &&
+      dayjs.utc(pool.end_date).isSame(endDate, 'day')
+    );
+
+    if (existingPoolForRoleAndPeriod) {
+      setError(t('errors:POOL_ALREADY_EXISTS_FOR_ROLE_AND_PERIOD', { role: t(role.toLowerCase(), { ns: 'components/manager/manageRules' }) }));
+      setLoading(false);
+      return;
+    }
+
     const distributions = Object.entries(selectedEmployees[role] || {})
       .filter(([, data]) => data.selected)
 
@@ -117,15 +174,16 @@ const CreatePool = () => {
 
     try {
       await createPool({
-        role: role,
+        departmentId: department.id,
         startDate: startDate.format('YYYY-MM-DD'),
         endDate: endDate.format('YYYY-MM-DD'),
         distributions: finalDistributions,
         totalAmount: totalAmount // Add this line
       });
       setSuccess(t('DISTRIBUTION_SUCCESS', { ns: 'common' }));
-      // Reset selections for the current department
+      // Reset selections for the current department and refetch data to update existing pools
       setSelectedEmployees(prev => ({...prev, [role]: {}}));
+      fetchData(); 
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -142,18 +200,59 @@ const CreatePool = () => {
       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>} 
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker label={t('startDate', { ns: 'common' })} value={startDate} onChange={setStartDate} renderInput={(params) => <TextField {...params} fullWidth />} />
-            </LocalizationProvider>
+          <Grid item xs={12} sm={12}>
+            <FormControl fullWidth>
+              <Select
+                labelId="payout-period-select-label"
+                label={t('payoutPeriod', { ns: 'common' })}
+                value={selectedPeriod}
+                onChange={(e) => {
+                  const periodId = e.target.value;
+                  setSelectedPeriod(periodId);
+                  if (periodId) {
+                    const period = payoutPeriods.find(p => p.id === periodId);
+                    setStartDate(dayjs.utc(period.start_date));
+                    setEndDate(dayjs.utc(period.end_date));
+                  } else {
+                    setStartDate(dayjs().startOf('month'));
+                    setEndDate(dayjs().endOf('month'));
+                  }
+                }}
+                displayEmpty
+                MenuProps={{
+                  PaperProps: {
+                    sx: { zIndex: (theme) => theme.zIndex.drawer + 2 }
+                  },
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  },
+                }}
+                inputProps={{ 'aria-label': t('payoutPeriod', { ns: 'common' }) }}
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return <em>{t('selectAPeriodPlaceholder', { ns: 'components/manager/createPool' })}</em>;
+                  }                  const selectedPeriod = payoutPeriods.find(p => p.id === selected);
+                  return selectedPeriod ? `${selectedPeriod.name} (${dayjs.utc(selectedPeriod.start_date).format('YYYY-MM-DD')} - ${dayjs.utc(selectedPeriod.end_date).format('YYYY-MM-DD')})` : '';
+                }}
+              >
+                <MenuItem value="">
+                  <em>{t('selectAPeriodPlaceholder', { ns: 'components/manager/createPool' })}</em>
+                </MenuItem>
+                {payoutPeriods.map((period) => (
+                  <MenuItem key={period.id} value={period.id} sx={{ fontSize: '0.875rem' }}>
+                    {period.name} ({dayjs.utc(period.start_date).format('YYYY-MM-DD')} - {dayjs.utc(period.end_date).format('YYYY-MM-DD')})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker label={t('endDate', { ns: 'common' })} value={endDate} onChange={setEndDate} renderInput={(params) => <TextField {...params} fullWidth />} />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Button variant="contained" onClick={handlePrepareDistribution} sx={{ height: '56px' }} disabled={loading}>{t('prepareDistribution')}</Button>
+            <Button variant="contained" onClick={handlePrepareDistribution} sx={{ height: '56px' }} disabled={loading || !selectedPeriod}>{t('prepareDistribution')}</Button>
           </Grid>
         </Grid>
       </Paper>

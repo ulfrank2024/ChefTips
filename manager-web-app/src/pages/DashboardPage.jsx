@@ -61,19 +61,70 @@ const DashboardPage = () => {
   }, [location.pathname]);
 
   const menuItems = [
-    { text: t('overview', { ns: 'pages/managerDashboard' }), icon: <DashboardIcon />, path: '/dashboard' },
-    { text: t('serverOverview', { ns: 'pages/managerDashboard' }), icon: <AssessmentIcon />, path: '/dashboard/server-overview' },
-    { text: t('manageEmployees', { ns: 'pages/managerDashboard' }), icon: <PeopleIcon />, path: '/dashboard/manage-employees' },
-    { text: t('manageRules', { ns: 'pages/managerDashboard' }), icon: <RuleIcon />, path: '/dashboard/manage-rules' },
-    { text: t('payPeriodReport', { ns: 'pages/managerDashboard' }), icon: <ReceiptLongIcon />, path: '/dashboard/pay-period-report' },
-    { text: t('createPool', { ns: 'pages/managerDashboard' }), icon: <PoolIcon />, path: '/dashboard/create-pool' },
-    { text: t('poolHistory', { ns: 'pages/managerDashboard' }), icon: <HistoryIcon />, path: '/dashboard/pool-history' },
-    { text: 'Manage Periods', icon: <DateRangeIcon />, path: '/dashboard/manage-payout-periods' },
-    { text: 'Declare Tips', icon: <ReceiptLongIcon />, path: '/dashboard/declare-tips', managerCanCashOut: true },
-    { text: 'Cash Out History', icon: <HistoryIcon />, path: '/dashboard/cashout-history', managerCanCashOut: true },
-    { text: 'Received Tips History', icon: <AttachMoneyIcon />, path: '/dashboard/received-tips', managerCanCashOut: true },
-    { text: t('profile', { ns: 'pages/managerDashboard' }), icon: <PersonIcon />, path: '/dashboard/profile' },
-    { text: t('logout', { ns: 'common' }), icon: <ExitToAppIcon />, onClick: handleLogout, path: '#' }, // Logout button
+      {
+          text: t("overview", { ns: "pages/managerDashboard" }),
+          icon: <DashboardIcon />,
+          path: "/dashboard",
+      },
+      {
+          text: t("serverOverview", { ns: "pages/managerDashboard" }),
+          icon: <AssessmentIcon />,
+          path: "/dashboard/server-overview",
+      },
+      {
+          text: t("manageEmployees", { ns: "pages/managerDashboard" }),
+          icon: <PeopleIcon />,
+          path: "/dashboard/manage-employees",
+      },
+      {
+          text: t("manageRules", { ns: "pages/managerDashboard" }),
+          icon: <RuleIcon />,
+          path: "/dashboard/manage-rules",
+      },
+      {
+          text: t("managePayoutPeriods", { ns: "pages/managerDashboard" }),
+          icon: <DateRangeIcon />,
+          path: "/dashboard/manage-payout-periods",
+      },
+      {
+          text: t("createPool", { ns: "pages/managerDashboard" }),
+          icon: <PoolIcon />,
+          path: "/dashboard/create-pool",
+      },
+      {
+          text: t("poolHistory", { ns: "pages/managerDashboard" }),
+          icon: <HistoryIcon />,
+          path: "/dashboard/pool-history",
+      },
+      {
+          text: t("declareTips", { ns: "pages/managerDashboard" }),
+          icon: <ReceiptLongIcon />,
+          path: "/dashboard/declare-tips",
+          managerCanCashOut: true,
+      },
+      {
+          text: t("cashOutHistory", { ns: "pages/managerDashboard" }),
+          icon: <HistoryIcon />,
+          path: "/dashboard/cashout-history",
+          managerCanCashOut: true,
+      },
+      {
+          text: t("receivedTipsHistory", { ns: "pages/managerDashboard" }),
+          icon: <AttachMoneyIcon />,
+          path: "/dashboard/received-tips",
+          managerCanCashOut: true,
+      },
+      {
+          text: t("profile", { ns: "pages/managerDashboard" }),
+          icon: <PersonIcon />,
+          path: "/dashboard/profile",
+      },
+      {
+          text: t("logout", { ns: "common" }),
+          icon: <ExitToAppIcon />,
+          onClick: handleLogout,
+          path: "#",
+      }, // Logout button
   ];
 
   const drawer = (

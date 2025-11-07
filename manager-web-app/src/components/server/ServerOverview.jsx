@@ -162,9 +162,19 @@ const ServerOverview = () => {
                 <Typography variant="body1">
                   <strong>{t('netTips', { ns: 'pages/serverDashboard' })}:</strong> {parseFloat(latestCashOut.net_tips).toFixed(2)} $
                 </Typography>
-                <Typography variant="body1">
-                  <strong>{t('cashAdjustment', { ns: 'pages/serverDashboard' })}:</strong> {parseFloat(latestCashOut.cash_difference).toFixed(2)} $
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="body1">
+                    <strong>{t('dueBack', { ns: 'pages/serverDashboard' })}:</strong>&nbsp;
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: parseFloat(latestCashOut.cash_difference) === 0 ? 'gold' : 'black' 
+                    }}
+                  >
+                    {parseFloat(latestCashOut.cash_difference).toFixed(2)} $
+                  </Typography>
+                </Box>
                 <Typography variant="body1">
                   <strong>{t('tipOuts', { ns: 'pages/serverDashboard' })}:</strong>
                   {(() => {

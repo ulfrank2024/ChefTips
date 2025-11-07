@@ -9,7 +9,10 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import { getCashOutsByCollector, getCompanyEmployees } from '../../api/tipApi';
+import { getPayoutPeriods } from '../../api/payoutPeriodApi';
 import { useAuth } from '../../context/AuthContext';
 import { useMediaQuery, useTheme } from '@mui/material';
 
@@ -108,7 +111,7 @@ const CashOutRow = ({ cashOut, employees, isMobile }) => {
       <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={1}>
           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ color: 'black' }}>{dayjs(processedCashOut.service_date).format('YYYY-MM-DD')}</Typography>
+            <Typography variant="body2" sx={{ color: 'black' }}>{dayjs.utc(processedCashOut.service_date).format('YYYY-MM-DD')}</Typography>
             <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
@@ -169,7 +172,7 @@ const CashOutRow = ({ cashOut, employees, isMobile }) => {
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell><Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>{dayjs(processedCashOut.service_date).format('YYYY-MM-DD')}</Typography></TableCell>
+        <TableCell><Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>{dayjs.utc(processedCashOut.service_date).format('YYYY-MM-DD')}</Typography></TableCell>
         <TableCell><Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>{Number(processedCashOut.total_sales).toFixed(2)}&nbsp;$</Typography></TableCell>
         <TableCell><Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>{Number(processedCashOut.cash_on_hand).toFixed(2)}&nbsp;$</Typography></TableCell>
         <TableCell><Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black' }}>{Number(processedCashOut.totalTipOuts).toFixed(2)}&nbsp;$</Typography></TableCell>
@@ -222,17 +225,22 @@ const EmployeeCashOutHistoryPage = () => {
   const [endDate, setEndDate] = useState(dayjs().endOf('month').format('YYYY-MM-DD'));
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
+  const [payoutPeriods, setPayoutPeriods] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('');
+
   useEffect(() => {
     const fetchCashOuts = async () => {
       try {
         setLoading(true);
         if (user && user.id) {
-          const [cashOuts, employeesData] = await Promise.all([
+          const [cashOuts, employeesData, periodsData] = await Promise.all([
             getCashOutsByCollector(user.id, '2020-01-01', dayjs().endOf('day').toISOString()),
             getCompanyEmployees(),
+            getPayoutPeriods(),
           ]);
           setAllCashOuts(cashOuts);
           setEmployees(employeesData);
+          setPayoutPeriods(periodsData);
         } else {
           setError(t('userIdNotFound', { ns: 'pages/employeeDashboard' }));
         }
@@ -251,9 +259,9 @@ const EmployeeCashOutHistoryPage = () => {
 
     if (startDate && endDate) {
         filteredData = filteredData.filter(cashOut => {
-            const serviceDate = dayjs(cashOut.service_date);
-            const start = dayjs(startDate);
-            const end = dayjs(endDate);
+            const serviceDate = dayjs.utc(cashOut.service_date);
+            const start = dayjs.utc(startDate);
+            const end = dayjs.utc(endDate);
             return !serviceDate.isBefore(start, 'day') && !serviceDate.isAfter(end, 'day');
         });
     }
@@ -307,31 +315,55 @@ const EmployeeCashOutHistoryPage = () => {
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>{t('filter', { ns: 'common' })}</Typography>
         <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={6}>
-                <TextField
-                fullWidth
-                id="start-date"
-                label={t('startDate', { ns: 'common' })}
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                InputLabelProps={{
-                    shrink: true,
-                }}
-                />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-                <TextField
-                fullWidth
-                id="end-date"
-                label={t('endDate', { ns: 'common' })}
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                InputLabelProps={{
-                    shrink: true,
-                }}
-                />
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <Select
+                  value={selectedPeriod}
+                  onChange={(e) => {
+                    const periodId = e.target.value;
+                    setSelectedPeriod(periodId);
+                    if (periodId) {
+                      const period = payoutPeriods.find(p => p.id === periodId);
+                      setStartDate(dayjs.utc(period.start_date).format('YYYY-MM-DD'));
+                      setEndDate(dayjs.utc(period.end_date).format('YYYY-MM-DD'));
+                    } else {
+                      setStartDate(dayjs().startOf('month').format('YYYY-MM-DD'));
+                      setEndDate(dayjs().endOf('month').format('YYYY-MM-DD'));
+                    }
+                  }}
+                  displayEmpty
+                  inputProps={{ 'aria-label': t('payoutPeriod', { ns: 'common' }) }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: { zIndex: (theme) => theme.zIndex.drawer + 2 }
+                    },
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'left',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'left',
+                    },
+                  }}
+                  renderValue={(selected) => {
+                    if (!selected) {
+                      return t('all', { ns: 'common' });
+                    }
+                    const selectedPeriod = payoutPeriods.find(p => p.id === selected);
+                    return selectedPeriod ? `${selectedPeriod.name} (${dayjs.utc(selectedPeriod.start_date).format('YYYY-MM-DD')} - ${dayjs.utc(selectedPeriod.end_date).format('YYYY-MM-DD')})` : '';
+                  }}
+                >
+                  <MenuItem value="">
+                    {t('all', { ns: 'common' })}
+                  </MenuItem>
+                  {payoutPeriods.map((period) => (
+                    <MenuItem key={period.id} value={period.id} sx={{ fontSize: '0.875rem' }}>
+                      {period.name} ({dayjs.utc(period.start_date).format('YYYY-MM-DD')} - {dayjs.utc(period.end_date).format('YYYY-MM-DD')})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
         </Grid>
       </Paper>

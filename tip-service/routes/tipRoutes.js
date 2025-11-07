@@ -4,7 +4,7 @@ const { authenticateToken } = require("../middleware/authMiddleware");
 
 // Import functions from new controllers
 const { createTipOutRule, getTipOutRules, updateTipOutRule, deleteTipOutRule } = require("../controllers/ruleController");
-const { createCashOutReport, getEmployeeCashOutDashboard, getCashOutsByCollector, createSimplifiedCashOut, calculateTipDistribution } = require("../controllers/reportController"); // Added calculateTipDistribution
+const { createCashOutReport, getEmployeeCashOutDashboard, getCashOutsByCollector, createSimplifiedCashOut, calculateTipDistribution, getCashOutReports, getServerOverview } = require("../controllers/reportController"); // Added calculateTipDistribution
 const { createPool, getPools, getPoolDetails, getPoolSummaryById, getEmployeeReceivedTips, getPayPeriodSummary } = require("../controllers/poolController");
 const { getCompanyEmployees, getCollectorEmployees } = require("../controllers/employeeController");
 
@@ -59,5 +59,11 @@ router.get("/dashboard/pay-period-summary", authenticateToken, isManager, getPay
 
 // Manager gets all received tips for a specific employee
 router.get("/employees/:userId/received-tips", authenticateToken, getEmployeeReceivedTips);
+
+// Manager gets server overview
+router.get("/server-overview", authenticateToken, isManager, getServerOverview);
+
+// Manager gets cash out reports
+router.get("/cash-out-reports", authenticateToken, isManager, getCashOutReports);
 
 module.exports = router;

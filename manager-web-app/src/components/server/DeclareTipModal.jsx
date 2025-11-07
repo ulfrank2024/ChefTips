@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box,
   Typography, CircularProgress, Alert, Grid, Paper, InputAdornment, Chip,
-  Stepper, Step, StepLabel
+  Stepper, Step, StepLabel, useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { createCashOutReport, getTipOutRules, calculateTipDistribution } from '../../api/tipApi';
 import { getCompanyEmployees } from '../../api/authApi';
@@ -29,6 +30,8 @@ const DeclareTipModal = ({
   const { t } = useTranslation(['pages/serverDashboard', 'common', 'errors', 'pages/managerDashboard']);
   const { showAlert } = useAlert();
   const initialDateRef = useRef(initialDate);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Stepper state
   const [activeStep, setActiveStep] = useState(0);
@@ -110,6 +113,7 @@ const DeclareTipModal = ({
         alcohol_sales: 0,
         gross_tips: calculatedGrossTips,
         service_date: serviceDate.format('YYYY-MM-DD'),
+        cash_on_hand: parseFloat(cashOnHand || 0),
         selected_recipients: Object.entries(selectedRecipientsByRule).map(([ruleId, user_ids]) => ({
           rule_id: ruleId,
           user_ids: user_ids,
@@ -201,8 +205,8 @@ const DeclareTipModal = ({
           <Grid container spacing={2} sx={{ mt: 2 }}>
             <Grid item xs={12}>
               {openPeriod && (
-                  <Typography variant="body1">
-                      {t('activePayoutPeriod', { ns: 'pages/managerDashboard' })}: {openPeriod.name} ({dayjs(openPeriod.start_date).format('YYYY-MM-DD')} - {dayjs(openPeriod.end_date).format('YYYY-MM-DD')})
+                  <Typography variant="body1" sx={{ color: 'black' }}>
+                      {t('activePayoutPeriod', { ns: 'pages/managerDashboard' })}: {openPeriod.name} ({dayjs.utc(openPeriod.start_date).format('YYYY-MM-DD')} - {dayjs.utc(openPeriod.end_date).format('YYYY-MM-DD')})
                   </Typography>
               )}
             </Grid>
@@ -212,6 +216,8 @@ const DeclareTipModal = ({
                 value={serviceDate}
                 onChange={(newValue) => setServiceDate(newValue)}
                 renderInput={(params) => <TextField {...params} fullWidth />}
+                minDate={openPeriod ? dayjs.utc(openPeriod.start_date) : null}
+                maxDate={openPeriod ? dayjs.utc(openPeriod.end_date) : null}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -256,9 +262,9 @@ const DeclareTipModal = ({
               ) : (
                 tipOutRules.filter(rule => rule.distribution_type === 'INDIVIDUAL_SELECTION').map(rule => (
                   <Box key={rule.id} sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography sx={{ color: 'text.primary' }}>{rule.name}</Typography>
-                      <Button variant="outlined" onClick={() => handleOpenRecipientSelection(rule)}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 1 : 0 }}>
+                      <Typography sx={{ color: 'text.primary', mb: isMobile ? 1 : 0 }}>{rule.name}</Typography>
+                      <Button variant="outlined" onClick={() => handleOpenRecipientSelection(rule)} sx={{ width: isMobile ? '100%' : 'auto' }}>
                         {selectedRecipientsByRule[rule.id]?.length > 0 ? t('editRecipients') : t('selectRecipients')}
                       </Button>
                     </Box>
@@ -283,8 +289,8 @@ const DeclareTipModal = ({
                 <Paper elevation={2} sx={{ p: 3 }}>
                   <Typography variant="h5" gutterBottom sx={{ color: 'black' }}>{t('calculationSummary')}</Typography>
                   {openPeriod ? (
-                    <Typography variant="body1">
-                        {t('activePayoutPeriod', { ns: 'pages/managerDashboard' })}: {openPeriod.name}
+                    <Typography variant="body1" sx={{ color: 'black' }}>
+                        {t('activePayoutPeriod', { ns: 'pages/managerDashboard' })}: {openPeriod.name} ({dayjs.utc(openPeriod.start_date).format('YYYY-MM-DD')} - {dayjs.utc(openPeriod.end_date).format('YYYY-MM-DD')})
                     </Typography>
                   ) : (
                     <Typography variant="body1" color="error">
@@ -292,22 +298,17 @@ const DeclareTipModal = ({
                     </Typography>
                   )}
                   <Grid container spacing={1}>
-                    <Grid item xs={6}><Typography sx={{ color: 'black' }}><strong>{t('totalSales')}:</strong></Typography></Grid>
-                    <Grid item xs={6}><Typography align="right" sx={{ color: 'black' }}>${totalSalesValue.toFixed(2)}</Typography></Grid>
-
-                    <Grid item xs={6}><Typography sx={{ color: 'black' }}><strong>{t('cashOnHand')}:</strong></Typography></Grid>
-                    <Grid item xs={6}><Typography align="right" sx={{ color: 'black' }}>${parseFloat(cashOnHand || 0).toFixed(2)}</Typography></Grid>
-
-                    <Grid item xs={6}><Typography color="secondary"><strong>{t('totalTipOuts')}:</strong></Typography></Grid>
-                    <Grid item xs={6}><Typography color="secondary" align="right">${(previewData.summary?.totalTipOutsFromCollector ?? 0).toFixed(2)}</Typography></Grid>
+                    <Grid item xs={12}><Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography sx={{ color: 'black' }}><strong>{t('totalSales')}:</strong></Typography><Typography align="right" sx={{ color: 'black' }}>${totalSalesValue.toFixed(2)}</Typography></Box></Grid>
+                    <Grid item xs={12}><Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography sx={{ color: 'black' }}><strong>{t('cashOnHand')}:</strong></Typography><Typography align="right" sx={{ color: 'black' }}>${parseFloat(cashOnHand || 0).toFixed(2)}</Typography></Box></Grid>
+                    <Grid item xs={12}><Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography color="secondary"><strong>{t('totalTipOuts')}:</strong></Typography><Typography color="secondary" align="right">${(previewData.summary?.totalTipOutsFromCollector ?? 0).toFixed(2)}</Typography></Box></Grid>
                   </Grid>
 
                   <Typography variant="h6" sx={{ mt: 3, mb: 1, color: 'black' }}>{t('tipDistributionDetails')}</Typography>
                   {previewData.details?.map((detail, index) => (
-                    <Box key={index} sx={{ ml: 2, mb: 1 }}>
+                    <Box key={index} sx={{ ml: isMobile ? 1 : 2, mb: 1 }}>
                       <Typography variant="body2" sx={{ color: 'black' }}><strong>{detail.ruleName}:</strong> ${(detail.amount ?? 0).toFixed(2)}</Typography>
                       {detail.type === 'individual' && detail.recipients?.map((recipient, recIndex) => (
-                        <Typography key={recIndex} variant="body2" sx={{ ml: 2, color: 'black' }}>- {recipient.first_name} {recipient.last_name}: ${(recipient.amount ?? 0).toFixed(2)}</Typography>
+                        <Typography key={recIndex} variant="body2" sx={{ ml: isMobile ? 1 : 2, color: 'black' }}>- {recipient.first_name} {recipient.last_name}: ${(recipient.amount ?? 0).toFixed(2)}</Typography>
                       ))}
                        {detail.type === 'department' && (
                         <Typography variant="body2" sx={{ ml: 2, color: 'black' }}>- {t('kitchenPool')}: ${(detail.amount ?? 0).toFixed(2)}</Typography>
@@ -330,7 +331,7 @@ const DeclareTipModal = ({
                     </Typography>
                   )}
                   {(previewData.summary?.dueBack ?? 0) === 0 && (
-                    <Typography align="center" sx={{ backgroundColor: 'orange', color: 'white', p: 1, mt: 1, borderRadius: 1 }}>
+                    <Typography align="center" sx={{ backgroundColor: 'orange', color: 'gold', p: 1, mt: 1, borderRadius: 1 }}>
                       {t('dueBackZeroMessage')}
                     </Typography>
                   )}
@@ -346,7 +347,7 @@ const DeclareTipModal = ({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" fullScreen={isMobile}>
         <DialogTitle>{t('declareTipsTitle')}</DialogTitle>
         <DialogContent>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>

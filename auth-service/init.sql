@@ -5,6 +5,15 @@ CREATE TABLE companies (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create the departments table
+CREATE TABLE departments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (company_id, name)
+);
+
 -- Create the users table
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

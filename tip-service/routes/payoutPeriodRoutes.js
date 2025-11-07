@@ -1,56 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const {
-    createPayoutPeriod,
-    getPayoutPeriods,
-    getPayoutPeriodById,
-    updatePayoutPeriod,
-    deletePayoutPeriod,
-} = require('../controllers/payoutPeriodController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { authenticateToken } = require("../middleware/authMiddleware");
+const { createPayoutPeriod, getPayoutPeriods, updatePayoutPeriod, deletePayoutPeriod, findActiveByCompany } = require("../controllers/payoutPeriodController");
 
-// Middleware to check for manager role
+// Middleware to check if the user is a manager
 const isManager = (req, res, next) => {
-    if (req.user && req.user.role === 'manager') {
-        next();
-    } else {
-        res.status(403).json({ error: "UNAUTHORIZED" });
+    if (req.user.role !== 'manager') {
+        return res.status(403).json({ error: "UNAUTHORIZED" });
     }
+    next();
 };
 
-/**
- * @route GET /api/payout-periods
- * @description Get all payout periods for the company
- * @access Private (All authenticated users)
- */
-router.get('/', authenticateToken, getPayoutPeriods);
-
-/**
- * @route POST /api/payout-periods
- * @description Create a new payout period
- * @access Private (Manager only)
- */
-router.post('/', authenticateToken, isManager, createPayoutPeriod);
-
-/**
- * @route GET /api/payout-periods/:id
- * @description Get a single payout period by its ID
- * @access Private (All authenticated users)
- */
-router.get('/:id', authenticateToken, getPayoutPeriodById);
-
-/**
- * @route PUT /api/payout-periods/:id
- * @description Update a payout period
- * @access Private (Manager only)
- */
-router.put('/:id', authenticateToken, isManager, updatePayoutPeriod);
-
-/**
- * @route DELETE /api/payout-periods/:id
- * @description Delete a payout period
- * @access Private (Manager only)
- */
-router.delete('/:id', authenticateToken, isManager, deletePayoutPeriod);
+router.post("/", authenticateToken, isManager, createPayoutPeriod);
+router.get("/", authenticateToken, getPayoutPeriods);
+router.put("/:id", authenticateToken, isManager, updatePayoutPeriod);
+router.delete("/:id", authenticateToken, isManager, deletePayoutPeriod);
+router.get("/active", authenticateToken, findActiveByCompany);
 
 module.exports = router;
