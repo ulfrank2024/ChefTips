@@ -31,3 +31,4 @@ yarn-error.log*
 # expo
 /.expo/
 /web-build/
+.vercel
