@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || "http://localhost:4000/api/auth";
+const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || "https://auth-service-0ay7.onrender.com/api/auth";
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -9,7 +9,6 @@ const apiClient = axios.create({
     },
 });
 
-// Use an interceptor to automatically add the auth token to all requests
 apiClient.interceptors.request.use(config => {
     const token = localStorage.getItem('userToken');
     if (token) {
@@ -21,7 +20,6 @@ apiClient.interceptors.request.use(config => {
 });
 
 
-// Function to handle errors consistently
 const handleApiError = (error) => {
     if (error.response) {
         console.error("API Error Response:", error.response.data);

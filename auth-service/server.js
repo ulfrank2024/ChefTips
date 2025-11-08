@@ -8,9 +8,9 @@ const app = express();
 
 // Configure CORS to allow your web application's origin
 app.use(cors({
-    origin: 'http://localhost:5173', // Allow your web app's origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow necessary HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow necessary headers
+    origin: ['http://localhost:5173', 'https://tips-app-main.vercel.app'], // Autoriser votre application web's origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Autoriser les méthodes HTTP nécessaires
+    allowedHeaders: ['Content-Type', 'Authorization'], // Autoriser les en-têtes nécessaires
 }));
 
 app.use(express.json());
