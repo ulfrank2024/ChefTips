@@ -45,6 +45,7 @@ const login = async (req, res) => {
             success_code: "MULTIPLE_COMPANIES_CHOOSE_ONE",
             userId: user.id,
             memberships: memberships.map(m => ({ company_id: m.company_id, company_name: m.company_name, role: m.role }))
+        });
     } catch (err) {
         console.error('DEBUG: DATABASE_URL is:', process.env.DATABASE_URL);
         console.error(err);
