@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || "https://auth-service-0ay7.onrender.com/api/auth";
+const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || "http://13.220.169.115:3000/api/auth";
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,

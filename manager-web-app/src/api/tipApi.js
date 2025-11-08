@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_TIP_API_URL || "https://tip-service.onrender.com/api/tips";
+const API_BASE_URL = import.meta.env.VITE_TIP_API_URL || "http://54.144.192.22:4001/api/tips";
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,

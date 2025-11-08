@@ -13,11 +13,11 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
 *   **Région AWS :** `us-east-1`
 *   **ID de Compte AWS :** `946358504020`
 *   **Nom d'utilisateur RDS :** `tips_ulrich_2025`
-*   **Mot de passe RDS :** `123qweJesus` (⚠️ **ATTENTION :** Pour la production, utilisez AWS Secrets Manager !)
+*   **Mot de passe RDS :** `[REDACTED]` (⚠️ **ATTENTION :** Pour la production, utilisez AWS Secrets Manager !)
 *   **Adresse IP Publique Locale :** `24.203.93.101` (utilisée pour la configuration initiale du pare-feu RDS)
 *   **Email SMTP :** `frranklinlontsi99@gmail.com`
-*   **Mot de passe SMTP :** `qkolanimwgdvtpok` (⚠️ **ATTENTION :** Pour la production, utilisez AWS Secrets Manager !)
-*   **JWT Secret :** `a-very-secret-and-long-key-for-dev-only-!@#$%` (⚠️ **ATTENTION :** Pour la production, utilisez AWS Secrets Manager !)
+*   **Mot de passe SMTP :** `[REDACTED]` (⚠️ **ATTENTION :** Pour la production, utilisez AWS Secrets Manager !)
+*   **JWT Secret :** `[REDACTED]` (⚠️ **ATTENTION :** Pour la production, utilisez AWS Secrets Manager !)
 
 ---
 
@@ -52,7 +52,7 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
       --db-instance-class db.t3.micro \
       --engine postgres \
       --master-username tips_ulrich_2025 \
-      --master-user-password 123qweJesus \
+      --master-user-password [REDACTED] \
       --publicly-accessible
     ```
 *   **Output :** JSON confirmant le statut `creating`.
@@ -69,7 +69,7 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
       --db-instance-class db.t3.micro \
       --engine postgres \
       --master-username tips_ulrich_2025 \
-      --master-user-password 123qweJesus \
+      --master-user-password [REDACTED] \
       --publicly-accessible
     ```
 *   **Output :** JSON confirmant le statut `creating`.
@@ -100,18 +100,18 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
     SMTP_PORT=465
     SMTP_SECURE=true
     SMTP_USER=frranklinlontsi99@gmail.com
-    SMTP_PASSWORD=qkolanimwgdvtpok
+    SMTP_PASSWORD=[REDACTED]
     SMTP_FROM_EMAIL=frranklinlontsi99@gmail.com
 
     # PostgreSQL Configuration for AWS RDS
     DB_USER=tips_ulrich_2025
     DB_HOST=auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com
     DB_NAME=auth_service_db
-    DB_PASSWORD=123qweJesus
+    DB_PASSWORD=[REDACTED]
     DB_PORT=5432
 
     # JWT Secret
-    JWT_SECRET="a-very-secret-and-long-key-for-dev-only-!@#$%"
+    JWT_SECRET="[REDACTED]"
     ```
 
 ##### `tip-service/.env`
@@ -123,7 +123,7 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
     DB_USER=tips_ulrich_2025
     DB_HOST=tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com
     DB_NAME=tip_service_db
-    DB_PASSWORD=123qweJesus
+    DB_PASSWORD=[REDACTED]
     DB_PORT=5432
 
     # SMTP Configuration
@@ -131,10 +131,10 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
     SMTP_PORT=465
     SMTP_SECURE=true
     SMTP_USER=frranklinlontsi99@gmail.com
-    SMTP_PASSWORD=qkolanimwgdvtpok
+    SMTP_PASSWORD=[REDACTED]
     SMTP_FROM_EMAIL=frranklinlontsi99@gmail.com
 
-    JWT_SECRET=a-very-secret-and-long-key-for-dev-only-!@#$%
+    JWT_SECRET=[REDACTED]
     ```
 
 ### Étape 3 : Publication des Images Docker sur Amazon ECR
@@ -275,15 +275,15 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
                 "environment": [
                     { "name": "DB_HOST", "value": "auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
                     { "name": "DB_USER", "value": "tips_ulrich_2025" },
-                    { "name": "DB_PASSWORD", "value": "123qweJesus" },
+                    { "name": "DB_PASSWORD", "value": "[REDACTED]" },
                     { "name": "DB_NAME", "value": "auth_service_db" },
                     { "name": "DB_PORT", "value": "5432" },
-                    { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
+                    { "name": "JWT_SECRET", "value": "[REDACTED]" },
                     { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
                     { "name": "SMTP_PORT", "value": "465" },
                     { "name": "SMTP_SECURE", "value": "true" },
                     { "name": "SMTP_USER", "value": "frranklinlontsi99@gmail.com" },
-                    { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
+                    { "name": "SMTP_PASSWORD", "value": "[REDACTED]" },
                     { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" }
                 ],
                 "logConfiguration": {
@@ -346,15 +346,15 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
                     { "name": "DB_USER", "value": "tips_ulrich_2025" },
                     { "name": "DB_HOST", "value": "tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
                     { "name": "DB_NAME", "value": "tip_service_db" },
-                    { "name": "DB_PASSWORD", "value": "123qweJesus" },
+                    { "name": "DB_PASSWORD", "value": "[REDACTED]" },
                     { "name": "DB_PORT", "value": "5432" },
                     { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
                     { "name": "SMTP_PORT", "value": "465" },
                     { "name": "SMTP_SECURE", "value": "true" },
                     { "name": "SMTP_USER", "value": "frranklinlontsi99@gmail.com" },
-                    { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
+                    { "name": "SMTP_PASSWORD", "value": "[REDACTED]" },
                     { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" },
-                    { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" }
+                    { "name": "JWT_SECRET", "value": "[REDACTED]" }
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
