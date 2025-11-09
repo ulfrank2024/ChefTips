@@ -382,7 +382,7 @@ const AuthLayout = () => {
             <Box
                 sx={{
                     width: { xs: "100%", sm: "50%" },
-                    height: { xs: "150px", sm: "100%" },
+                    height: { xs: "200px", sm: "100%" },
                     overflow: "hidden",
                     display: "block",
                     borderBottomLeftRadius: { xs: "20px", sm: 0 },
@@ -426,7 +426,7 @@ const AuthLayout = () => {
             <Box
                 sx={{
                     width: { xs: "100%", sm: "50%" },
-                    height: { xs: "calc(100vh - 150px)", sm: "100%" },
+                    height: { xs: "calc(100vh - 200px)", sm: "100%" },
                     backgroundColor: { xs: "#f0f2f5", sm: "white" },
                     display: "flex",
                     justifyContent: "center",
@@ -454,7 +454,7 @@ const AuthLayout = () => {
                     <img
                         src={LOGO_SRC}
                         alt="App Logo"
-                        style={{ height: "50px" }}
+                        style={{ height: "60px" }}
                     />
                     <FormControl size="small">
                         <Select
@@ -489,7 +489,7 @@ const AuthLayout = () => {
                         maxWidth: { xs: "90%", sm: "400px" },
                         my: { xs: 2, sm: 0 },
                         p: { xs: 2, sm: 0 },
-                        pt: { xs: "120px", sm: 0 }, // Add padding-top for mobile to account for the logo/language selector bar
+                        pt: { xs: "10px", sm: 0 }, // Add padding-top for mobile to account for the logo/language selector bar
                     }}
                 >
                     <Outlet />
