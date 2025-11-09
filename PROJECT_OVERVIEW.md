@@ -21,7 +21,38 @@ Le système est basé sur une **architecture de microservices** pour la scalabil
 * **Bases de données**: PostgreSQL
 * **Conteneurisation**: Docker, Docker Compose
 
-## 3. Architecture Fonctionnelle Clé (Nouvelle Vision)
+## 3. Infrastructure et Déploiement
+
+Pour assurer la haute disponibilité, la scalabilité et la sécurité des services backend (`auth-service` et `tip-service`), une architecture d'équilibrage de charge a été mise en place sur AWS.
+
+### 3.1. Application Load Balancer (ALB)
+
+*   **Nom :** `cheftips-alb`
+*   **Schéma :** Accessible sur Internet (Internet-facing)
+*   **VPC :** `vpc-0aa38922b0585f759`
+*   **Groupes de sécurité :** `cheftips-alb-sg` (autorise le trafic HTTP:80 et HTTPS:443)
+*   **Écouteurs configurés :**
+    *   **HTTP:80 :** Redirige tout le trafic entrant vers HTTPS:443 pour forcer la connexion sécurisée.
+    *   **HTTPS:443 :** Reçoit le trafic sécurisé, utilise un certificat SSL/TLS (par exemple, pour `api.cheftips.app`) et le transfère vers les groupes cibles appropriés.
+
+### 3.2. Groupes Cibles (Target Groups)
+
+Des groupes cibles sont utilisés pour regrouper les tâches ECS Fargate et permettre à l'ALB d'acheminer le trafic.
+
+*   **`cheftips-auth-tg` :**
+    *   **Type de cible :** Adresses IP (pour les tâches Fargate)
+    *   **Protocole :** HTTP
+    *   **Port :** 3000 (port d'écoute du `auth-service`)
+    *   **VPC :** `vpc-0aa38922b0585f759`
+    *   **Gestion des cibles :** Les tâches ECS Fargate sont automatiquement enregistrées et désenregistrées par le service ECS.
+
+### 3.3. Intégration ECS Fargate
+
+Les services ECS Fargate (`auth-service`, `tip-service`) sont configurés pour s'intégrer nativement avec l'ALB et les groupes cibles. Cela permet à ECS de gérer automatiquement l'enregistrement et le désenregistrement des tâches dans les groupes cibles, assurant ainsi une mise à l'échelle et des déploiements fluides.
+
+*   Le service `auth-service` est mis à jour pour utiliser l'ALB `cheftips-alb` et le groupe cible `cheftips-auth-tg` via son écouteur HTTPS:443.
+
+## 4. Architecture Fonctionnelle Clé (Nouvelle Vision)
 
 Le système est conçu pour être simple et efficace, en se basant sur des rôles prédéfinis et une permission d'encaissement.
 
@@ -46,7 +77,7 @@ Les règles de tip-out peuvent désormais spécifier un `distribution_type`:
 * `DEPARTMENT_POOL`: Le montant du tip-out est alloué à un rôle de destination (ex: `CUISINIER`) et géré via les pools de paie.
 * `INDIVIDUAL_SELECTION`: Le collecteur sélectionne des employés individuels qui recevront une part du tip-out pour cette règle. Le montant est réparti équitablement entre les employés sélectionnés.
 
-## 4. Flux des Utilisateurs
+## 5. Flux des Utilisateurs
 
 ### A. Le Manager
 
@@ -110,7 +141,7 @@ La redirection est basée sur la permission `can_cash_out` dans le token d'authe
 * **Avec `can_cash_out: true` (Collecteur)**: Redirection vers le tableau de bord des collecteurs (déclaration des pourboires).
 * **Avec `can_cash_out: false` (Bénéficiaire)**: Redirection vers le tableau de bord des bénéficiaires (consultation des gains).
 
-## 5. Feuille de Route Future (Exemples)
+## 6. Feuille de Route Future (Exemples)
 
 * **v1.2: Résumé Quotidien pour le Manager**: Envoi d'un e-mail récapitulatif de l'activité de la journée.
 * **v1.3: Intégration d'Agendrix**: Synchronisation des horaires pour automatiser la sélection des employés dans les pools de paie.
@@ -119,6 +150,7 @@ La redirection est basée sur la permission `can_cash_out` dans le token d'authe
 ---
 
 ## Logique Métier Détaillée et Flux de Vérification
+
 
 ### 1. Gestion des Rôles et des Accès
 
@@ -175,7 +207,7 @@ Pour simplifier et automatiser la distribution des pourboires, le système évol
 
 Ce système élimine la création manuelle de pools à chaque paie et offre une vue d'ensemble claire et consolidée des finances pour des intervalles de temps définis.
 
-### Évolution du Rôle de Manager
+### 8.2. Évolution du Rôle de Manager
 
 Pour offrir plus de flexibilité, le rôle de `GERANT` est mis à jour :
 

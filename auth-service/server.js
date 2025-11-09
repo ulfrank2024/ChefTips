@@ -19,7 +19,7 @@ app.use(express.json());
 // Chaque route de authRoutes sera préfixée par '/api/auth'
 app.use("/api/auth", authRoutes);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 // Start the server only if this file is run directly
 if (require.main === module) {

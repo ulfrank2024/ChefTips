@@ -3,7 +3,7 @@ const router = express.Router();
 const { signup } = require('../controllers/signupController');
 const { login, selectCompany } = require('../controllers/authController');
 const { inviteEmployee, removeEmployee, getCompanyEmployees, updateMembership } = require('../controllers/employeeController');
-const { verifyOtp, resendOtp, verifyInvitation, setupPassword } = require('../controllers/verificationController');
+const { verifyOtp, resendOtp, verifyInvitation, setupPassword, forgotPassword, resetPassword } = require('../controllers/verificationController');
 const { updateLanguagePreference, changePassword, updateProfile, getUserDetails } = require('../controllers/userController');
 const { sendCashOutNotification } = require('../controllers/emailController');
 const { getCompanyDepartments } = require('../controllers/companyController');
@@ -18,8 +18,8 @@ router.post("/login", login);
 router.post("/select-company", selectCompany);
 
 // --- Password and Verification Routes ---
-// router.post('/forgot-password', forgotPassword);
-// router.post('/reset-password', resetPassword);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 router.post("/verify-otp", verifyOtp);
 router.post("/resend-otp", resendOtp);
 router.post("/verify-invitation", verifyInvitation);
