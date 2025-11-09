@@ -22,5 +22,13 @@
 
   "forgotPasswordTitle": "Pas de Soucis, Récupérez Votre Accès Facilement.",
   "forgotPasswordInstructions": "Nous savons que cela arrive. Entrez simplement l'adresse email associée à votre compte pour recevoir les instructions de réinitialisation.",
-  "forgotPasswordCallToAction": "Quelques clics, et vous serez de retour dans la performance."
+  "forgotPasswordCallToAction": "Quelques clics, et vous serez de retour dans la performance.",
+
+  "verifyOtpTitle": "Vérifiez Votre Compte. Accès Sécurisé.",
+  "verifyOtpInstructions": "Un code de vérification a été envoyé à votre adresse e-mail. Veuillez le saisir ci-dessous pour vérifier votre compte.",
+  "verifyOtpCallToAction": "Saisissez le code pour continuer.",
+
+  "resetPasswordTitle": "Réinitialisez Votre Mot de Passe. Accès Sécurisé.",
+  "resetPasswordInstructions": "Créez un nouveau mot de passe pour votre compte. Assurez-vous qu'il est fort et sécurisé.",
+  "resetPasswordCallToAction": "Définissez votre nouveau mot de passe pour retrouver l'accès."
 }

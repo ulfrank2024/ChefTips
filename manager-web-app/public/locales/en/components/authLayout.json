@@ -22,5 +22,13 @@
 
   "forgotPasswordTitle": "No Worries, Easily Recover Your Access.",
   "forgotPasswordInstructions": "We know it happens. Simply enter the email address associated with your account to receive reset instructions.",
-  "forgotPasswordCallToAction": "A few clicks, and you'll be back to performance."
+  "forgotPasswordCallToAction": "A few clicks, and you'll be back to performance.",
+
+  "verifyOtpTitle": "Verify Your Account. Secure Access.",
+  "verifyOtpInstructions": "A verification code has been sent to your email address. Please enter it below to verify your account.",
+  "verifyOtpCallToAction": "Enter the code to proceed.",
+
+  "resetPasswordTitle": "Reset Your Password. Secure Access.",
+  "resetPasswordInstructions": "Create a new password for your account. Make sure it's strong and secure.",
+  "resetPasswordCallToAction": "Set your new password to regain access."
 }

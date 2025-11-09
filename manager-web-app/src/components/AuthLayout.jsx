@@ -356,6 +356,94 @@ const AuthLayout = () => {
                     </Typography>
                 );
             }
+        } else if (pathname === "/verify-otp") {
+            if (isDesktop) {
+                content = (
+                    <>
+                        <Typography
+                            component="h1"
+                            variant="h3"
+                            sx={{ fontWeight: 700, mb: 2 }}
+                            className={animClasses[0]}
+                        >
+                            {t("verifyOtpTitle", { ns: "components/authLayout" })}
+                        </Typography>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                lineHeight: 1.6,
+                                opacity: 0.8,
+                                mb: 2,
+                            }}
+                            className={animClasses[1]}
+                        >
+                            {t("verifyOtpInstructions", { ns: "components/authLayout" })}
+                        </Typography>
+                        <Typography
+                            variant="body1"
+                            sx={{ mt: 2, fontWeight: "bold" }}
+                            className={animClasses[2]}
+                        >
+                            {t("verifyOtpCallToAction", { ns: "components/authLayout" })}
+                        </Typography>
+                    </>
+                );
+            } else {
+                content = (
+                    <Typography
+                        component="h1"
+                        variant="h6"
+                        sx={{ fontWeight: 700, color: "white" }}
+                        className={animClasses[0]}
+                    >
+                        {t("verifyOtpTitle", { ns: "components/authLayout" })}
+                    </Typography>
+                );
+            }
+        } else if (pathname === "/reset-password") {
+            if (isDesktop) {
+                content = (
+                    <>
+                        <Typography
+                            component="h1"
+                            variant="h3"
+                            sx={{ fontWeight: 700, mb: 2 }}
+                            className={animClasses[0]}
+                        >
+                            {t("resetPasswordTitle", { ns: "components/authLayout" })}
+                        </Typography>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                lineHeight: 1.6,
+                                opacity: 0.8,
+                                mb: 2,
+                            }}
+                            className={animClasses[1]}
+                        >
+                            {t("resetPasswordInstructions", { ns: "components/authLayout" })}
+                        </Typography>
+                        <Typography
+                            variant="body1"
+                            sx={{ mt: 2, fontWeight: "bold" }}
+                            className={animClasses[2]}
+                        >
+                            {t("resetPasswordCallToAction", { ns: "components/authLayout" })}
+                        </Typography>
+                    </>
+                );
+            } else {
+                content = (
+                    <Typography
+                        component="h1"
+                        variant="h6"
+                        sx={{ fontWeight: 700, color: "white" }}
+                        className={animClasses[0]}
+                    >
+                        {t("resetPasswordTitle", { ns: "components/authLayout" })}
+                    </Typography>
+                );
+            }
         }
 
         if (content) {

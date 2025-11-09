@@ -77,7 +77,7 @@ const JoinTeamPage = () => {
                 {t("title")}
             </Typography>
             <Typography variant="body1" sx={{ color: "#666", mb: 4 }}>
-                {t("subtitle")}
+                {t("subtitle", { ns: "pages/joinTeam" })}
             </Typography>
 
             {error && (

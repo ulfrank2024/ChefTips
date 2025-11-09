@@ -1,5 +1,6 @@
 {
   "title": "Join a Team",
+  "subtitle": "Enter your email and the invitation code to join your team.",
   "emailPlaceholder": "Your Email",
   "codePlaceholder": "Invitation Code",
   "joinButton": "Join Team",

@@ -8,20 +8,14 @@ import {
     Button,
     Alert,
     Link as MuiLink,
-    Select,
-    MenuItem,
-    FormControl,
-    Fade
 } from "@mui/material";
 import {
     verifyOtp as apiVerifyOtp,
     resendOtp as apiResendOtp,
 } from "../api/authApi";
-import "./VerifyOtpPage.css";
-import logo from '../assets/logo.png'; // Import the logo
 
 const VerifyOtpPage = () => {
-    const { t, i18n } = useTranslation(['pages/verifyOtp', 'common', 'errors']);
+    const { t } = useTranslation(["pages/verifyOtp", "common", "errors"]);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const email = searchParams.get("email");
@@ -33,7 +27,7 @@ const VerifyOtpPage = () => {
 
     useEffect(() => {
         if (!email) {
-            setError(t("error.EMAIL_REQUIRED")); // Use translation key
+            setError(t("error.EMAIL_REQUIRED"));
         }
     }, [email, t]);
 
@@ -43,7 +37,7 @@ const VerifyOtpPage = () => {
         setSuccess("");
 
         if (!otp) {
-            setError(t("errors:OTP_REQUIRED")); // Corrected translation key
+            setError(t("errors:OTP_REQUIRED"));
             return;
         }
 
@@ -53,7 +47,7 @@ const VerifyOtpPage = () => {
             setSuccess(t("successMessage"));
             setTimeout(() => {
                 navigate("/login");
-            }, 3000); // Redirect to login after 3 seconds
+            }, 3000);
         } catch (err) {
             setError(
                 t(`errors:${err.message}`) || t("common:somethingWentWrong")
@@ -77,43 +71,25 @@ const VerifyOtpPage = () => {
     };
 
     return (
-        <Fade in={true} timeout={500}>
-            <Box sx={{ width: '100%', maxWidth: '400px', p: 4, boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', borderRadius: '16px', backgroundColor: 'white', position: 'relative' }}>
-            <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'center', mb: 2, height: { xs: 60, sm: 150 } }}>
-                <img src={logo} alt="logo" style={{ height: '100%' }} />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography component="h1" variant="h5" sx={{ textAlign: 'center', fontSize: { xs: '1.5rem', sm: '1.5rem' } }}>
+        <Box sx={{ width: "100%", p: { xs: 0, sm: 4 } }}>
+            <Typography
+                component="h2"
+                variant="h4"
+                sx={{ fontWeight: 600, mb: 1, color: "#333" }}
+            >
                 {t("title")}
-              </Typography>
-              <FormControl>
-                <Select
-                  value={i18n.language}
-                  onChange={(e) => i18n.changeLanguage(e.target.value)}
-                  sx={{
-                    height: { xs: 30, sm: 40 },
-                    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-                    '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                    '& .MuiSelect-select': { paddingRight: '24px', fontSize: { xs: '0.8rem', sm: '1rem' } },
-                    '& .MuiSvgIcon-root': { fontSize: { xs: '1rem', sm: '1.5rem' } },
-                  }}
-                >
-                  <MenuItem value="en" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>English</MenuItem>
-                  <MenuItem value="fr" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Français</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-            <Typography sx={{ mt: 2, textAlign: "center", color: "text.secondary" }}>
+            </Typography>
+            <Typography variant="body1" sx={{ color: "#666", mb: 4 }}>
                 {t("instruction", { email })}
             </Typography>
 
             {error && (
-                <Alert severity="error" sx={{ width: "100%", mt: 2 }}>
+                <Alert severity="error" sx={{ width: "100%", mt: 2, mb: 2 }}>
                     {error}
                 </Alert>
             )}
             {success && (
-                <Alert severity="success" sx={{ width: "100%", mt: 2 }}>
+                <Alert severity="success" sx={{ width: "100%", mt: 2, mb: 2 }}>
                     {success}
                 </Alert>
             )}
@@ -122,10 +98,10 @@ const VerifyOtpPage = () => {
                 component="form"
                 onSubmit={handleSubmit}
                 noValidate
-                sx={{ mt: 1 }}
+                sx={{ mt: 1, width: "100%" }}
             >
                 <TextField
-                    margin="dense"
+                    margin="normal"
                     required
                     fullWidth
                     id="otp"
@@ -139,29 +115,40 @@ const VerifyOtpPage = () => {
                         setSuccess("");
                     }}
                     inputProps={{ maxLength: 6 }}
+                    size="small"
                 />
                 <Button
                     type="submit"
                     fullWidth
                     variant="contained"
-                    disabled={loading || !!success} // Disable if loading or on success
-                    sx={{ mt: 3, mb: 2 }}
+                    disabled={loading || !!success}
+                    sx={{
+                        mt: 3,
+                        mb: 2,
+                        borderRadius: "8px",
+                        backgroundColor: "#ad9407ff",
+                        color: "white",
+                        padding: "12px 0",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        "&:hover": { backgroundColor: "#9a7f06ff" },
+                    }}
                 >
                     {loading ? "Verifying..." : t("verifyButton")}
                 </Button>
                 <Box textAlign="center">
                     <MuiLink
                         component="button"
-                        type="button" 
+                        type="button"
                         variant="body2"
                         onClick={handleResend}
+                        sx={{ color: "#ad9407ff" }}
                     >
                         {t("resendButton")}
                     </MuiLink>
                 </Box>
             </Box>
-            </Box>
-        </Fade>
+        </Box>
     );
 };
 

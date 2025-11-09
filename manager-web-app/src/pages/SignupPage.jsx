@@ -225,7 +225,16 @@ const SignupPage = () => {
                             size="small"
                         />
                         <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
-                            <Grid item xs={12}>
+                            <Grid item xs={12} sm={6}>
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={prevStep}
+                                >
+                                    {t("back", { ns: "common" })}
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
                                 <Button
                                     type="submit"
                                     fullWidth
@@ -235,22 +244,10 @@ const SignupPage = () => {
                                         borderRadius: "8px",
                                         backgroundColor: "#ad9407ff",
                                         color: "white",
-                                        padding: "12px 0",
-                                        fontSize: "1rem",
-                                        fontWeight: 600,
                                         "&:hover": { backgroundColor: "#9a7f06ff" },
                                     }}
                                 >
                                     {loading ? t("signingUp") : t("button")}
-                                </Button>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Button
-                                    fullWidth
-                                    variant="outlined"
-                                    onClick={prevStep}
-                                >
-                                    {t("back", { ns: "common" })}
                                 </Button>
                             </Grid>
                         </Grid>
