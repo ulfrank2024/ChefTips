@@ -1,24 +1,18 @@
-/* /src/pages/LoginPage.css */
+/* src/pages/LoginPage.css */
 
-.login-submit {
-    margin-top: 24px;
-    margin-bottom: 16px;
-    border-radius: 8px; /* Coins arrondis pour le bouton */
-    background-color: #ad9407ff; /* Couleur de fond Material-UI primaire */
-    color: white; /* Texte blanc */
-    padding: 10px 0; /* Espacement interne */
-    font-size: 1rem; /* Taille de police */
-}
-
-.login-submit:hover {
-    background-color: #9a7f06ff; /* Couleur de fond au survol */
-}
+/* Ces styles sont conservés uniquement pour les couleurs de lien et le bouton, 
+   si le style inline dans le JSX n'est pas suffisant (ce qui est peu probable avec MUI) */
 
 .lien {
-    color: #1b2646ff; /* Couleur de lien Material-UI primaire */
-    text-decoration: none; /* Pas de soulignement par défaut */
+    color: #1b2646ff; /* Couleur de lien */
+    text-decoration: none; 
+    transition: color 0.3s;
 }
 
 .lien:hover {
-    text-decoration: underline; /* Soulignement au survol */
+    color: #ad9407ff; /* Couleur de survol */
+    text-decoration: underline;
 }
+
+/* Nous n'avons plus besoin de .login-page-wrapper, .login-left-panel, etc. 
+   car la structure est gérée par AuthLayout et MUI. */

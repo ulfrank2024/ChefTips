@@ -1,9 +1,12 @@
 {
   "title": "Connexion",
+  "welcomeBack": "Bienvenue !",
+  "loginToContinue": "Connectez-vous pour continuer",
   "email": "Adresse e-mail",
   "password": "Mot de passe",
   "button": "Se connecter",
   "noAccount": "Pas encore de compte ? S'inscrire",
+  "signUpHere": "S'inscrire ici",
   "forgotPassword": "Mot de passe oublié ?",
   "loggingIn": "Connexion en cours...",
   "selectCompanyTitle": "Sélectionner une entreprise",

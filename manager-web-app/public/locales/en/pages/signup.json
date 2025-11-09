@@ -1,12 +1,14 @@
 {
-  "title": "Sign Up",
-  "firstNamePlaceholder": "First Name",
-  "lastNamePlaceholder": "Last Name",
-  "companyNamePlaceholder": "Company Name",
-  "email": "Email Address",
-  "password": "Password",
-  "confirmPassword": "Confirm Password",
-  "signingUp": "Signing up...",
-  "button": "Sign Up",
-  "alreadyAccount": "Already have an account? Sign In"
+    "title": "Create your account",
+    "subtitle": "Enter your details to get started.",
+    "subtitle_step2": "Secure your account.",
+    "firstNamePlaceholder": "First Name",
+    "lastNamePlaceholder": "Last Name",
+    "companyNamePlaceholder": "Company Name",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "button": "Sign Up",
+    "signingUp": "Signing Up...",
+    "alreadyAccount": "Already have an account? Sign in"
 }

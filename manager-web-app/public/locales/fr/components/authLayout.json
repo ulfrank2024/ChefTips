@@ -1,0 +1,26 @@
+{
+  "loginTitle": "La Gestion des Pourboires 2.0. Connectez-vous à la Performance.",
+  "loginWelcome": "Bienvenue sur Cheftips : L'outil qui automatise la répartition des Tip-Outs et garantit une transparence totale à chaque service.",
+  "loginAccessPrompt": "Que vous soyez Manager ou Employé, accédez en un clic à :",
+  "loginReportDeclaration": "La déclaration simplifiée de vos rapports journaliers (Collecteur).",
+  "loginPoolHistory": "L'historique précis et vérifié de tous vos gains de pool (Bénéficiaire).",
+  "loginCallToAction": "Moins de stress, plus de clarté. Entrez vos identifiants.",
+
+  "signupTitle": "Rejoignez la Révolution de la Transparence. Créez Votre Compte Manager.",
+  "signupDescription": "Cheftips simplifie la gestion de vos Tip-Outs, sécurise votre trésorerie et élimine les erreurs. L'inscription est rapide.",
+  "signupFeature1": "Configuration rapide des règles de répartition.",
+  "signupFeature2": "Tableau de bord de performance en temps réel.",
+  "signupFeature3": "Gestion par périodes de paie automatisées.",
+  "signupCallToAction": "Prenez le contrôle de vos Tip-Outs en quelques clics.",
+
+  "joinTeamTitle": "Validation de l'Équipe. Accès Sécurisé.",
+  "joinTeamWelcome": "Vous êtes à un pas d'intégrer l'équipe de Cheftips !",
+  "joinTeamBenefit1": "Confirmation de votre rôle et de vos permissions.",
+  "joinTeamBenefit2": "Lien direct à votre tableau de bord personnel.",
+  "joinTeamBenefit3": "Démarrage immédiat de la collecte de vos Tip-Outs.",
+  "joinTeamCallToAction": "Vérifiez vos informations d'employé pour valider votre accès.",
+
+  "forgotPasswordTitle": "Pas de Soucis, Récupérez Votre Accès Facilement.",
+  "forgotPasswordInstructions": "Nous savons que cela arrive. Entrez simplement l'adresse email associée à votre compte pour recevoir les instructions de réinitialisation.",
+  "forgotPasswordCallToAction": "Quelques clics, et vous serez de retour dans la performance."
+}

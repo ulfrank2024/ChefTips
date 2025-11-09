@@ -1,12 +1,14 @@
 {
-  "title": "S'inscrire",
-  "firstNamePlaceholder": "Prénom",
-  "lastNamePlaceholder": "Nom",
-  "companyNamePlaceholder": "Nom de l'entreprise",
-  "email": "Adresse e-mail",
-  "password": "Mot de passe",
-  "confirmPassword": "Confirmer le mot de passe",
-  "signingUp": "Inscription en cours...",
-  "button": "S'inscrire",
-  "alreadyAccount": "Déjà un compte ? Se connecter"
+    "title": "Créez votre compte",
+    "subtitle": "Entrez vos informations pour commencer.",
+    "subtitle_step2": "Sécurisez votre compte.",
+    "firstNamePlaceholder": "Prénom",
+    "lastNamePlaceholder": "Nom de famille",
+    "companyNamePlaceholder": "Nom de l'entreprise",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "button": "S'inscrire",
+    "signingUp": "Inscription en cours...",
+    "alreadyAccount": "Vous avez déjà un compte ? Se connecter"
 }

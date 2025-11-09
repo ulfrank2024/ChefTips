@@ -1,217 +1,304 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Box, Typography, TextField, Button, Grid, Link as MuiLink, Alert, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select, FormControl, InputLabel, Fade } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-import './LoginPage.css';
-import logo from '../assets/logo.png';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Grid,
+    Link as MuiLink,
+    Alert,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    MenuItem,
+    Select,
+    FormControl,
+} from "@mui/material";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import "./LoginPage.css";
+import logo from "../assets/logo.png";
 
 const LoginPage = () => {
-  const { t, i18n } = useTranslation('pages/login'); // Destructure i18n here
-  const { login, selectCompanyAndLogin } = useAuth();
-  const navigate = useNavigate();
+    const { t } = useTranslation("pages/login"); // i18n est géré dans AuthLayout
+    const { login, selectCompanyAndLogin } = useAuth();
+    const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [emailError, setEmailError] = useState('');
+    // ... (Garder tous les useState et fonctions de validation/submit/handleCompanySelection intacts) ...
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [emailError, setEmailError] = useState("");
 
-  const validateEmail = (email) => {
-    if (!email) {
-      return t('EMAIL_REQUIRED', { ns: 'errors' });
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      return t('INVALID_EMAIL_FORMAT', { ns: 'errors' });
-    }
-    return '';
-  };
-
-  // State for multi-company selection
-  const [isCompanySelectOpen, setIsCompanySelectOpen] = useState(false);
-  const [memberships, setMemberships] = useState([]);
-  const [tempUserId, setTempUserId] = useState(null);
-  const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [companySelectError, setCompanySelectError] = useState('');
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-    setEmailError(''); // Réinitialiser l'erreur d'e-mail
-
-    const emailValidationError = validateEmail(email);
-    if (emailValidationError) {
-      setEmailError(emailValidationError);
-      setLoading(false); // Assurez-vous que le chargement est désactivé si la validation échoue
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const result = await login(email, password);
-
-      if (result.success_code === "MULTIPLE_COMPANIES_CHOOSE_ONE") {
-        setTempUserId(result.userId);
-        setMemberships(result.memberships);
-        setIsCompanySelectOpen(true);
-      } else {
-        // Direct login (single company)
-        if (result.role === 'manager') {
-          navigate('/dashboard', { replace: true });
-        } else if (result.role === 'SERVEUR' || result.role === 'BARMAN' || result.role === 'COMMIS' || result.role === 'HOTE' || result.role === 'CUISINIER') {
-          const employeeDashboardPath = '/employee/dashboard';
-          navigate(employeeDashboardPath, { replace: true });
+    const validateEmail = (email) => {
+        if (!email) {
+            return t("email_required", { ns: "errors" });
         }
-      }
-    } catch (err) {
-      setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
-    }
-    finally {
-      setLoading(false);
-    }
-  };
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            return t("invalid_email_format", { ns: "errors" });
+        }
+        return "";
+    };
 
-  const handleCompanySelection = async () => {
-    if (!selectedCompanyId) {
-      setCompanySelectError(t('selectCompanyRequired'));
-      return;
-    }
-    setLoading(true);
-    setCompanySelectError('');
-    try {
-      const user = await selectCompanyAndLogin(tempUserId, selectedCompanyId);
-      if (user.role === 'manager') {
-        navigate('/dashboard', { replace: true });
-      } else if (user.role === 'SERVEUR' || user.role === 'BARMAN' || user.role === 'COMMIS' || user.role === 'HOTE' || user.role === 'CUISINIER') {
-        const employeeDashboardPath = '/employee/dashboard';
-        navigate(employeeDashboardPath, { replace: true });
-      }
-      setIsCompanySelectOpen(false);
-    } catch (err) {
-      setCompanySelectError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
-    }
-    finally {
-      setLoading(false);
-    }
-  };
+    // State for multi-company selection
+    const [isCompanySelectOpen, setIsCompanySelectOpen] = useState(false);
+    const [memberships, setMemberships] = useState([]);
+    const [tempUserId, setTempUserId] = useState(null);
+    const [selectedCompanyId, setSelectedCompanyId] = useState("");
+    const [companySelectError, setCompanySelectError] = useState("");
 
-  return (
-    <>
-      <Fade in={true} timeout={500}>
-        <Box sx={{ width: '100%', maxWidth: '400px', p: 4, boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', borderRadius: '16px', backgroundColor: 'white', position: 'relative' }}> {/* Added position: 'relative' */}
-                        <Box sx={{ display: { xs: 'none', sm: 'flex' }, justifyContent: 'center', mb: 2, height: { xs: 60, sm: 150 } }}>
-          <img src={logo} alt="logo" style={{ height: '100%' }} />
-        </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography component="h1" variant="h5" sx={{ fontSize: { xs: '1.5rem', sm: '1.5rem' } }}>
-                            {t("title")}
-                          </Typography>
-                          <FormControl>
-                            <Select
-                              value={i18n.language}
-                              onChange={(e) => i18n.changeLanguage(e.target.value)}
-                              sx={{
-                                height: { xs: 30, sm: 40 },
-                                boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-                                '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                                '& .MuiSelect-select': { paddingRight: '24px', fontSize: { xs: '0.8rem', sm: '1rem' } },
-                                '& .MuiSvgIcon-root': { fontSize: { xs: '1rem', sm: '1.5rem' } },
-                              }}
-                            >
-                              <MenuItem value="en" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>English</MenuItem>
-                              <MenuItem value="fr" sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>Français</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Box>
-                        {error && (
-                          <Alert severity="error" sx={{ width: "100%", mt: 2 }}>
-                            {error}
-                          </Alert>
-                        )}
-                        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
-                          <TextField
-                            margin="dense"
-                            required
-                            fullWidth
-                            id="email"
-                            label={t("email")}
-                            name="email"
-                            autoComplete="email"
-                            autoFocus
-                            value={email}
-                            onChange={(e) => {
-                              setEmail(e.target.value);
-                              setEmailError(validateEmail(e.target.value));
-                            }}
-                            error={!!emailError}
-                            helperText={emailError}
-                          />
-                          <TextField
-                            margin="dense"            required
-            fullWidth
-            name="password"
-            label={t("password")}
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2, borderRadius: '8px', backgroundColor: '#ad9407ff', color: 'white', padding: '10px 0', fontSize: '1rem', '&:hover': { backgroundColor: '#9a7f06ff' } }} disabled={loading || !!emailError}>
-            {loading ? t('loggingIn') : t("button")}
-          </Button>
-          <Grid container justifyContent="space-around" sx={{ mt: 2 }}>
-            <Grid item>
-              <MuiLink component={RouterLink} to="/forgot-password" variant="body2" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
-                {t("forgotPassword")}
-              </MuiLink>
-            </Grid>
-            <Grid item>
-              <MuiLink component={RouterLink} to="/signup" variant="body2" sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
-                {t("noAccount")}
-              </MuiLink>
-            </Grid>
-            <Grid item>
-              <MuiLink component={RouterLink} to="/join-team" variant="body2" sx={{ color: "#ad9407ff", textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
-                {t("joinTeam")}
-              </MuiLink>
-            </Grid>
-                    </Grid>
-                  </Box>
-                </Box>
-              </Fade>
-                {/* Company Selection Dialog */}
-                <Dialog open={isCompanySelectOpen} onClose={() => setIsCompanySelectOpen(false)} disableEscapeKeyDown>
-                  <DialogTitle>{t('selectCompanyTitle')}</DialogTitle>
-                  <DialogContent>
-                    {companySelectError && <Alert severity="error" sx={{ mb: 2 }}>{companySelectError}</Alert>}
-                    <Typography>{t('selectCompanyMessage')}</Typography>
-                    <FormControl fullWidth margin="normal">
-                      <InputLabel id="company-select-label">{t('company')}</InputLabel>
-                      <Select
-                        labelId="company-select-label"
-                        value={selectedCompanyId}
-                        label={t('company')}
-                        onChange={(e) => setSelectedCompanyId(e.target.value)}
-                      >
-                        {memberships.map((membership) => (
-                          <MenuItem key={membership.company_id} value={membership.company_id}>
-                            {membership.company_name} ({membership.role})
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleCompanySelection} disabled={loading}>
-                      {loading ? t('loggingIn') : t('select', { ns: 'common' })}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </>
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setError("");
+        setEmailError("");
+
+        const emailValidationError = validateEmail(email);
+        if (emailValidationError) {
+            setEmailError(emailValidationError);
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const result = await login(email, password);
+
+            if (result.success_code === "multiple_companies_choose_one") {
+                setTempUserId(result.userId);
+                setMemberships(result.memberships);
+                setIsCompanySelectOpen(true);
+            } else {
+                if (result.role === "manager") {
+                    navigate("/dashboard", { replace: true });
+                } else if (
+                    [
+                        "serveur",
+                        "barman",
+                        "commis",
+                        "hote",
+                        "cuisinier",
+                    ].includes(result.role)
+                ) {
+                    const employeeDashboardPath = "/employee/dashboard";
+                    navigate(employeeDashboardPath, { replace: true });
+                }
+            }
+        } catch (err) {
+            setError(
+                t(err.message, { ns: "errors" }) ||
+                    t("somethingWentWrong", { ns: "common" })
             );
-          };
-          
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCompanySelection = async () => {
+        if (!selectedCompanyId) {
+            setCompanySelectError(t("selectCompanyRequired"));
+            return;
+        }
+        setLoading(true);
+        setCompanySelectError("");
+        try {
+            const user = await selectCompanyAndLogin(
+                tempUserId,
+                selectedCompanyId
+            );
+            if (user.role === "manager") {
+                navigate("/dashboard", { replace: true });
+            } else if (
+                ["serveur", "barman", "commis", "hote", "cuisinier"].includes(
+                    user.role
+                )
+            ) {
+                const employeeDashboardPath = "/employee/dashboard";
+                navigate(employeeDashboardPath, { replace: true });
+            }
+            setIsCompanySelectOpen(false);
+        } catch (err) {
+            setCompanySelectError(
+                t(err.message, { ns: "errors" }) ||
+                    t("somethingWentWrong", { ns: "common" })
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        // Ce Box remplace tout l'ancien conteneur de structure
+        <Box sx={{ width: "100%", p: { xs: 0, sm: 4 } }}>
+            {/* Logo mobile (Visible uniquement sur les petits écrans) */}
+
+
+            <Typography
+                component="h2"
+                variant="h4"
+                sx={{ fontWeight: 600, mb: 1, color: "#333" }}
+            >
+                {t("welcomeBack")}
+            </Typography>
+            <Typography variant="body1" sx={{ color: "#666", mb: 4 }}>
+                {t("loginToContinue")}
+            </Typography>
+
+            {/* Le sélecteur de langue a été déplacé dans AuthLayout */}
+
+            {error && (
+                <Alert severity="error" sx={{ width: "100%", mt: 2, mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+
+            <Box
+                component="form"
+                onSubmit={handleSubmit}
+                noValidate
+                sx={{ mt: 1, width: "100%" }}
+            >
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label={t("email")}
+                    name="email"
+                    autoComplete="email"
+                    autoFocus
+                    value={email}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError(validateEmail(e.target.value));
+                    }}
+                    error={!!emailError}
+                    helperText={emailError}
+                    sx={{ mb: 2 }}
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="password"
+                    label={t("password")}
+                    type="password"
+                    id="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    sx={{ mb: 1 }}
+                />
+
+                <Grid container justifyContent="flex-end" sx={{ mb: 3 }}>
+                    <Grid item>
+                        <MuiLink
+                            component={RouterLink}
+                            to="/forgot-password"
+                            className="lien"
+                            variant="body2"
+                            sx={{ color: "#ad9407ff" }}
+                        >
+                            {t("forgotPassword")}
+                        </MuiLink>
+                    </Grid>
+                </Grid>
+
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    sx={{
+                        mt: 1,
+                        mb: 3,
+                        borderRadius: "8px",
+                        backgroundColor: "#ad9407ff",
+                        color: "white",
+                        padding: "12px 0",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        "&:hover": { backgroundColor: "#9a7f06ff" },
+                    }}
+                    disabled={loading || !!emailError}
+                >
+                    {loading ? t("loggingIn") : t("button")}
+                </Button>
+
+                {/* Liens "Don't have an account?" et "Join team" */}
+                <Grid container justifyContent="center" sx={{ mt: 2 }}>
+                    <Grid item>
+                        <Typography variant="body2" sx={{ color: "#666" }}>
+                            {t("noAccount")}{" "}
+                            <MuiLink
+                                component={RouterLink}
+                                to="/signup"
+                                className="lien"
+                                sx={{ color: "#ad9407ff" }}
+                            >
+                                {t("signUpHere")}
+                            </MuiLink>
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={12} sx={{ textAlign: "center", mt: 1 }}>
+                        <MuiLink
+                            component={RouterLink}
+                            to="/join-team"
+                            className="lien"
+                            sx={{ color: "#ad9407ff" }}
+                        >
+                            {t("joinTeam")}
+                        </MuiLink>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            {/* Le dialogue de sélection de compagnie reste inchangé */}
+            <Dialog
+                open={isCompanySelectOpen}
+                onClose={() => setIsCompanySelectOpen(false)}
+                disableEscapeKeyDown
+            >
+                <DialogTitle>{t("selectCompanyTitle")}</DialogTitle>
+                <DialogContent>
+                    {companySelectError && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                            {companySelectError}
+                        </Alert>
+                    )}
+                    <Typography>{t("selectCompanyMessage")}</Typography>
+                    <FormControl fullWidth margin="normal">
+                        <Select
+                            value={selectedCompanyId}
+                            label={t("company")}
+                            onChange={(e) =>
+                                setSelectedCompanyId(e.target.value)
+                            }
+                        >
+                            {memberships.map((membership) => (
+                                <MenuItem
+                                    key={membership.company_id}
+                                    value={membership.company_id}
+                                >
+                                    {membership.company_name} ({membership.role}
+                                    )
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCompanySelection} disabled={loading}>
+                        {loading
+                            ? t("loggingIn")
+                            : t("select", { ns: "common" })}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
+    );
+};
 
 export default LoginPage;

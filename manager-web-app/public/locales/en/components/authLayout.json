@@ -1,0 +1,26 @@
+{
+  "loginTitle": "Tip Management 2.0. Connect to Performance.",
+  "loginWelcome": "Welcome to Cheftips: The tool that automates Tip-Out distribution and ensures total transparency with every service.",
+  "loginAccessPrompt": "Whether you are a Manager or Employee, access in one click:",
+  "loginReportDeclaration": "Simplified declaration of your daily reports (Collector).",
+  "loginPoolHistory": "Precise and verified history of all your pool earnings (Beneficiary).",
+  "loginCallToAction": "Less stress, more clarity. Enter your credentials.",
+
+  "signupTitle": "Join the Transparency Revolution. Create Your Manager Account.",
+  "signupDescription": "Cheftips simplifies the management of your Tip-Outs, secures your cash flow, and eliminates errors. Registration is quick.",
+  "signupFeature1": "Quick configuration of distribution rules.",
+  "signupFeature2": "Real-time performance dashboard.",
+  "signupFeature3": "Automated payroll period management.",
+  "signupCallToAction": "Take control of your Tip-Outs in a few clicks.",
+
+  "joinTeamTitle": "Team Validation. Secure Access.",
+  "joinTeamWelcome": "You are one step away from joining the Cheftips team!",
+  "joinTeamBenefit1": "Confirmation of your role and permissions.",
+  "joinTeamBenefit2": "Direct link to your personal dashboard.",
+  "joinTeamBenefit3": "Immediate start of your Tip-Out collection.",
+  "joinTeamCallToAction": "Verify your employee information to validate your access.",
+
+  "forgotPasswordTitle": "No Worries, Easily Recover Your Access.",
+  "forgotPasswordInstructions": "We know it happens. Simply enter the email address associated with your account to receive reset instructions.",
+  "forgotPasswordCallToAction": "A few clicks, and you'll be back to performance."
+}
