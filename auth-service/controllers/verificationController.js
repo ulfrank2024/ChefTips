@@ -118,9 +118,55 @@ const setupPassword = async (req, res) => {
     }
 };
 
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ error: "EMAIL_REQUIRED" });
+    }
+    try {
+        const user = await UserModel.findUserByEmail(email);
+        if (user) {
+            const token = await TokenModel.createPasswordResetToken(user.id);
+            const resetLink = `https://www.cheftips.app/reset-password?token=${token}`;
+            // Note: You should have an email template for password resets.
+            // Using a generic one for now.
+            await sendEmail(email, "Réinitialisation de mot de passe / Password Reset", 'signup', { otp: token }, user.preferred_language || 'en');
+        }
+        // Always return success to prevent email enumeration
+        res.status(200).json({ success_code: "PASSWORD_RESET_LINK_SENT" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "INTERNAL_SERVER_ERROR" });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    const { token, password } = req.body;
+    if (!token || !password) {
+        return res.status(400).json({ error: "TOKEN_AND_PASSWORD_REQUIRED" });
+    }
+    try {
+        const resetRequest = await TokenModel.findPasswordResetToken(token);
+        if (!resetRequest) {
+            return res.status(400).json({ error: "INVALID_OR_EXPIRED_TOKEN" });
+        }
+
+        await UserModel.updatePassword(resetRequest.user_id, password);
+        await TokenModel.deletePasswordResetToken(token);
+
+        res.status(200).json({ success_code: "PASSWORD_RESET_SUCCESSFUL" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "INTERNAL_SERVER_ERROR" });
+    }
+};
+
+
 module.exports = {
     verifyOtp,
     resendOtp,
     verifyInvitation,
     setupPassword,
+    forgotPassword,
+    resetPassword,
 };

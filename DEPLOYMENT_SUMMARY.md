@@ -497,3 +497,149 @@ Cette section détaille les étapes de débogage et les ajustements de configura
     *   **Rechargement/Reconstruction de l'application mobile :** Effectuer un rechargement complet de l'application pour que les changements de code et de configuration système soient pris en compte.
 
 ---
+
+## 9. Ajustements Récents pour la Stabilité et la Fonctionnalité (Novembre 2025)
+
+Cette section récapitule les modifications et configurations effectuées pour résoudre les problèmes de communication entre le frontend (`manager-web-app`) et le backend (`auth-service`), ainsi que pour activer des fonctionnalités clés.
+
+### 9.1. Modifications du `auth-service`
+
+*   **`auth-service/routes/authRoutes.js` :**
+    *   Les routes `/forgot-password` et `/reset-password` ont été décommentées et les fonctions `forgotPassword` et `resetPassword` ont été importées depuis `verificationController.js`. Cela active les fonctionnalités de réinitialisation de mot de passe côté backend.
+*   **`auth-service/server.js` :**
+    *   Le port d'écoute par défaut du service a été ajusté de `3001` à `3000`. Cette modification assure la cohérence avec le mappage de ports `3000:3000` configuré dans la définition de tâche ECS et le groupe cible de l'ALB.
+    *   L'origine `https://www.cheftips.app` a été ajoutée à la liste des origines CORS autorisées. Cette modification est cruciale pour permettre à l'application web déployée sur Vercel de communiquer avec le `auth-service` sans rencontrer d'erreurs `Access-Control-Allow-Origin`.
+
+### 9.2. Configuration de l'Infrastructure et du Déploiement
+
+*   **Enregistrement DNS (`api.cheftips.app`) :**
+    *   Un enregistrement CNAME pour `api.cheftips.app` a été créé dans les paramètres DNS du domaine, pointant vers le nom DNS de l'Application Load Balancer (`cheftips-alb-1697825470.us-east-1.elb.amazonaws.com`). Cela permet d'accéder au `auth-service` via un nom de domaine personnalisé et sécurisé.
+*   **Variables d'Environnement (`manager-web-app`) :**
+    *   La variable d'environnement `VITE_AUTH_API_URL` a été configurée :
+        *   **Localement :** Dans le fichier `.env` du projet `manager-web-app`.
+        *   **Sur Vercel :** Dans les paramètres des variables d'environnement du projet Vercel.
+    *   La valeur de cette variable est `https://api.cheftips.app/api/auth`, assurant que le frontend cible correctement le backend via l'ALB.
+
+### 9.3. Processus de Déploiement Post-Modifications
+
+*   **`auth-service` :**
+    1.  Reconstruction de l'image Docker du `auth-service` avec les modifications de code.
+    2.  Authentification de Docker auprès d'ECR en utilisant `aws ecr get-login-password`.
+    3.  Push de la nouvelle image Docker vers le dépôt ECR.
+    4.  Mise à jour du service ECS `auth-service` dans la console AWS, en forçant un nouveau déploiement pour que la nouvelle image soit utilisée.
+*   **`manager-web-app` :**
+    1.  Redéploiement de l'application web sur Vercel après la mise à jour des variables d'environnement et la propagation DNS.
+
+Ces ajustements garantissent une communication fluide et sécurisée entre le frontend et le backend, résolvent les problèmes CORS et activent les fonctionnalités de réinitialisation de mot de passe, améliorant ainsi la stabilité et la fonctionnalité globale du système.
+
+---
+
+## 10. Débogage et Résolution des Problèmes Post-Déploiement (Novembre 2025)
+
+Cette section documente les problèmes rencontrés et les solutions appliquées pour stabiliser le déploiement du `auth-service` et assurer son bon fonctionnement.
+
+### 10.1. Problème d'Erreur CORS Persistante
+
+*   **Problème :** Malgré une configuration CORS initiale, l'application frontend recevait toujours une erreur `Access-Control-Allow-Origin` bloquant les requêtes.
+*   **Analyse :** Le service `auth-service` plantait au démarrage, empêchant l'application des règles CORS.
+*   **Solution :**
+    *   **Mise à jour CORS du `tip-service` :** Ajout de `https://www.cheftips.app` aux origines autorisées dans `tip-service/server.js` pour cohérence.
+    *   **Correction du plantage du `auth-service` (TypeError) :**
+        *   **Cause :** Les fonctions `forgotPassword` et `resetPassword` étaient importées mais non définies/exportées dans `auth-service/controllers/verificationController.js`.
+        *   **Action :** Implémentation et exportation de ces fonctions dans `auth-service/controllers/verificationController.js`.
+    *   **Correction du plantage du `auth-service` (PathError) :**
+        *   **Cause :** La ligne `app.options('*', cors());` ajoutée dans `auth-service/server.js` provoquait une erreur de syntaxe dans le routeur Express au démarrage.
+        *   **Action :** Suppression de la ligne `app.options('*', cors());` de `auth-service/server.js`.
+
+### 10.2. Problème d'Erreur 503 du Load Balancer et Cibles Non Saines
+
+*   **Problème :** L'ALB renvoyait une erreur `503 Service Temporarily Unavailable` et les tâches du `auth-service` restaient "Unhealthy" ou n'étaient pas enregistrées.
+*   **Analyse :** Plusieurs problèmes de configuration empêchaient l'ALB de router le trafic vers le service.
+*   **Solution :**
+    *   **Endpoint de vérification de santé :**
+        *   **Cause :** Le service ne disposait pas d'un endpoint de vérification de santé (`/health`) et le chemin de vérification de l'ALB était incorrect.
+        *   **Action :** Ajout d'un endpoint `app.get('/health', ...)` à `auth-service/server.js` et mise à jour manuelle du chemin de vérification de santé du groupe cible `cheftips-auth-tg` vers `/health` dans la console AWS.
+    *   **Liaison du service ECS au groupe cible :**
+        *   **Cause :** Le service ECS `auth-service` n'était pas explicitement lié au groupe cible `cheftips-auth-tg`.
+        *   **Action :** Mise à jour du service ECS avec la commande `aws ecs update-service --load-balancers '[...]'` pour lier le service au groupe cible.
+    *   **Règle de groupe de sécurité de l'ALB :**
+        *   **Cause :** Le groupe de sécurité du `auth-service` bloquait le trafic des vérifications de santé de l'ALB.
+        *   **Action :** Ajout d'une règle d'entrée au groupe de sécurité du service (`sg-0b1553f902d01194c`) pour autoriser le trafic TCP sur le port 3000 depuis le groupe de sécurité de l'ALB (`sg-0add26ebea21ae35e`).
+    *   **Délai de grâce de la vérification de santé :**
+        *   **Cause :** Le `healthCheckGracePeriodSeconds` était à 0, ne laissant pas le temps au service de démarrer avant les vérifications.
+        *   **Action :** Mise à jour du service ECS avec `aws ecs update-service --health-check-grace-period-seconds 60`.
+
+### 10.3. Problème d'Erreur 500 du Backend (Connexion DB)
+
+*   **Problème :** Après la résolution des problèmes d'infrastructure, le `auth-service` renvoyait une erreur `500 Internal Server Error` lors des tentatives de connexion.
+*   **Analyse :** Deux causes principales ont été identifiées.
+*   **Solution :**
+    *   **Tables de base de données manquantes :**
+        *   **Cause :** Les tables nécessaires (`users`, `companies`, etc.) n'existaient pas dans la base de données RDS.
+        *   **Action :** Exécution du script `auth-service/init.sql` sur la base de données `auth_service_db`.
+    *   **Connexion `psql` impossible (timeout) :**
+        *   **Cause :** L'adresse IP locale de l'utilisateur n'était pas autorisée dans le groupe de sécurité de la base de données RDS.
+        *   **Action :** Ajout de l'adresse IP publique actuelle de l'utilisateur au groupe de sécurité RDS (`sg-0a5815e4c15b59501`) sur le port 5432.
+    *   **Connexion DB sans SSL (`no encryption`) :**
+        *   **Cause :** Le client PostgreSQL du `auth-service` tentait de se connecter sans SSL, ce qui était refusé par RDS.
+        *   **Action :** Ajout de l'option `ssl: { rejectUnauthorized: false }` à la configuration du pool de connexions dans `auth-service/models/userModel.js`.
+
+---
+
+**Conclusion :** Après ces multiples étapes de débogage et de correction, le `auth-service` est maintenant stable, accessible via l'ALB, et capable de se connecter à la base de données. Le login renvoie désormais l'erreur `401 INVALID_CREDENTIALS` attendue en l'absence d'utilisateurs enregistrés.
+
+# 11. Mise en place du système de migrations de base de données (Novembre 2025)
+
+Pour améliorer la gestion des changements de schéma de la base de données et automatiser les mises à jour, un système de migrations a été mis en place pour les services **`auth-service`** et **`tip-service`**.
+
+* **Objectif :** Remplacer la gestion manuelle du schéma via `init.sql` par un système de migrations versionnées et automatisées.
+* **Outils utilisés :** `node-pg-migrate` pour la gestion des migrations, `dotenv-cli` pour le chargement des variables d'environnement dans les scripts npm.
+
+---
+
+## 11.1. Étapes de configuration (répétées pour `auth-service` et `tip-service`)
+
+1.  **Installation des dépendances :**
+    * Ajout de `node-pg-migrate` et `dotenv-cli` aux `devDependencies` de chaque service.
+    ```bash
+    npm install --save-dev node-pg-migrate dotenv-cli
+    ```
+
+2.  **Mise à jour de `package.json` :**
+    * Ajout de scripts pour exécuter les migrations. Le script `start` a été modifié pour lancer les migrations avant de démarrer le serveur, assurant que la base de données est toujours à jour.
+    ```json
+    "scripts": {
+      "test": "jest",
+      "start": "npm run migrate up && node server.js",
+      "migrate": "dotenv -e .env -- node-pg-migrate -m migrations"
+    },
+    ```
+
+3.  **Création de la migration initiale :**
+    * Le contenu des fichiers `init.sql` respectifs a été transféré dans un premier fichier de migration (ex: `..._initial-schema.js`) dans le dossier `migrations` de chaque service.
+    * Ce fichier contient une fonction `up` pour créer les tables et une fonction `down` pour les supprimer.
+
+4.  **Mise à jour du `Dockerfile` :**
+    * La commande de démarrage a été modifiée pour utiliser le nouveau script `start`, automatisant ainsi l'exécution des migrations à chaque déploiement.
+    * **Ancienne commande :** `CMD [ "node", "server.js" ]`
+    * **Nouvelle commande :** `CMD [ "npm", "start" ]`
+
+5.  **Synchronisation de la base de données RDS :**
+    * Pour permettre au nouveau système de prendre le contrôle, les tables existantes ont été **supprimées manuellement** des bases de données RDS (`auth_service_db` et `tip_service_db`) via `psql`.
+    * Les services ont ensuite été redéployés. Au démarrage, le script `npm start` a exécuté la migration initiale, recréant proprement tout le schéma de la base de données.
+
+---
+
+## 11.2. Futur flux de travail pour les changements de base de données
+
+Pour toute modification future du schéma (par exemple, ajouter une colonne) :
+
+1.  **Créer une nouvelle migration :**
+    Dans le dossier du service concerné (`auth-service` ou `tip-service`)
+    ```bash
+    npm run migrate -- create nom_descriptif_de_la_migration
+    ```
+
+2.  **Modifier le fichier de migration :** Ajouter les changements SQL dans les fonctions `up` et `down` du nouveau fichier.
+
+3.  **Déployer le service :** Le processus de déploiement normal (`docker build`, `docker push`, `aws ecs update-service`) appliquera **automatiquement** la nouvelle migration à la base de données.tip-service

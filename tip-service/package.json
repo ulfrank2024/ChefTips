@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "npm run migrate up && node server.js",
+    "migrate": "dotenv -e .env -- node-pg-migrate -m migrations"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +25,10 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "jest": "^30.2.0",
+
+    "node-pg-migrate": "^8.0.3",
     "supertest": "^7.1.4"
   }
 }
