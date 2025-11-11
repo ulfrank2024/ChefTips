@@ -86,40 +86,6 @@ const AuthLayout = () => {
                                 >
                                     {t("loginWelcome", { ns: "components/authLayout" })}
                                 </Typography>
-                                <Typography
-                                    variant="body1"
-                                    sx={{ opacity: 0.8, mb: 1 }}
-                                    className={animClasses[2]}
-                                >
-                                    {t("loginAccessPrompt", { ns: "components/authLayout" })}
-                                </Typography>
-
-                                <Box
-                                    component="ul"
-                                    sx={{
-                                        listStylePosition: "inside",
-                                        paddingLeft: 0,
-                                        margin: "10px 0",
-                                        textAlign: "left",
-                                        fontWeight: "bold",
-                                    }}
-                                    className={animClasses[3]}
-                                >
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("loginReportDeclaration", { ns: "components/authLayout" })}
-                                    </li>
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("loginPoolHistory", { ns: "components/authLayout" })}
-                                    </li>
-                                </Box>
-
-                                <Typography
-                                    variant="body1"
-                                    sx={{ mt: 2, fontWeight: "bold" }}
-                                    className={animClasses[3]}
-                                >
-                                    {t("loginCallToAction", { ns: "components/authLayout" })}
-                                </Typography>
                             </Box>
                         </Box>
                     </>
@@ -168,36 +134,6 @@ const AuthLayout = () => {
                                     className={animClasses[1]}
                                 >
                                     {t("signupDescription", { ns: "components/authLayout" })}
-                                </Typography>
-
-                                <Box
-                                    component="ul"
-                                    style={{
-                                        textAlign: "left",
-                                        listStylePosition: "inside",
-                                        paddingLeft: 0,
-                                        margin: "10px 0",
-                                        fontWeight: "bold",
-                                    }}
-                                    className={animClasses[2]}
-                                >
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("signupFeature1", { ns: "components/authLayout" })}
-                                    </li>
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("signupFeature2", { ns: "components/authLayout" })}
-                                    </li>
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("signupFeature3", { ns: "components/authLayout" })}
-                                    </li>
-                                </Box>
-
-                                <Typography
-                                    variant="body1"
-                                    sx={{ mt: 2, fontWeight: "bold" }}
-                                    className={animClasses[3]}
-                                >
-                                    {t("signupCallToAction", { ns: "components/authLayout" })}
                                 </Typography>
                             </Box>
                         </Box>
@@ -248,36 +184,6 @@ const AuthLayout = () => {
                                 >
                                     {t("joinTeamWelcome", { ns: "components/authLayout" })}
                                 </Typography>
-
-                                <Box
-                                    component="ul"
-                                    style={{
-                                        textAlign: "left",
-                                        listStylePosition: "inside",
-                                        paddingLeft: 0,
-                                        margin: "10px 0",
-                                        fontWeight: "bold",
-                                    }}
-                                    className={animClasses[2]}
-                                >
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("joinTeamBenefit1", { ns: "components/authLayout" })}
-                                    </li>
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("joinTeamBenefit2", { ns: "components/authLayout" })}
-                                    </li>
-                                    <li style={{ marginBottom: "5px" }}>
-                                        {t("joinTeamBenefit3", { ns: "components/authLayout" })}
-                                    </li>
-                                </Box>
-
-                                <Typography
-                                    variant="body1"
-                                    sx={{ mt: 2, fontWeight: "bold" }}
-                                    className={animClasses[3]}
-                                >
-                                    {t("joinTeamCallToAction", { ns: "components/authLayout" })}
-                                </Typography>
                             </Box>
                         </Box>
                     </>
@@ -297,24 +203,6 @@ const AuthLayout = () => {
                         >
                             {t("forgotPasswordTitle", { ns: "components/authLayout" })}
                         </Typography>
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                lineHeight: 1.6,
-                                opacity: 0.8,
-                                mb: 2,
-                            }}
-                            className={animClasses[1]}
-                        >
-                            {t("forgotPasswordInstructions", { ns: "components/authLayout" })}
-                        </Typography>
-                        <Typography
-                            variant="body1"
-                            sx={{ mt: 2, fontWeight: "bold" }}
-                            className={animClasses[2]}
-                        >
-                            {t("forgotPasswordCallToAction", { ns: "components/authLayout" })}
-                        </Typography>
                     </>
                 );
             } else {
@@ -332,24 +220,6 @@ const AuthLayout = () => {
                         >
                             {t("verifyOtpTitle", { ns: "components/authLayout" })}
                         </Typography>
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                lineHeight: 1.6,
-                                opacity: 0.8,
-                                mb: 2,
-                            }}
-                            className={animClasses[1]}
-                        >
-                            {t("verifyOtpInstructions", { ns: "components/authLayout" })}
-                        </Typography>
-                        <Typography
-                            variant="body1"
-                            sx={{ mt: 2, fontWeight: "bold" }}
-                            className={animClasses[2]}
-                        >
-                            {t("verifyOtpCallToAction", { ns: "components/authLayout" })}
-                        </Typography>
                     </>
                 );
             } else {
@@ -366,24 +236,6 @@ const AuthLayout = () => {
                             className={animClasses[0]}
                         >
                             {t("resetPasswordTitle", { ns: "components/authLayout" })}
-                        </Typography>
-                        <Typography
-                            variant="h6"
-                            sx={{
-                                lineHeight: 1.6,
-                                opacity: 0.8,
-                                mb: 2,
-                            }}
-                            className={animClasses[1]}
-                        >
-                            {t("resetPasswordInstructions", { ns: "components/authLayout" })}
-                        </Typography>
-                        <Typography
-                            variant="body1"
-                            sx={{ mt: 2, fontWeight: "bold" }}
-                            className={animClasses[2]}
-                        >
-                            {t("resetPasswordCallToAction", { ns: "components/authLayout" })}
                         </Typography>
                     </>
                 );
