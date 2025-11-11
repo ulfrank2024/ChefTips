@@ -30,5 +30,8 @@
 
   "resetPasswordTitle": "Reset Your Password. Secure Access.",
   "resetPasswordInstructions": "Create a new password for your account. Make sure it's strong and secure.",
-  "resetPasswordCallToAction": "Set your new password to regain access."
+  "resetPasswordCallToAction": "Set your new password to regain access.",
+
+  "setupPasswordTitle": "Set Up Your Password. Secure Access.",
+  "setupInvitedPasswordTitle": "Welcome! Set Up Your Password."
 }

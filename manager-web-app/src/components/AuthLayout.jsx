@@ -23,8 +23,8 @@ const AuthLayout = () => {
 
     const isJoinTeamPage = location.pathname === "/join-team";
 
-    const desktopImage = location.pathname === "/signup" ? "/inscription.png" : (location.pathname === "/forgot-password" || location.pathname === "/reset-password" || location.pathname === "/verify-otp" ? "/autrepage.png" : (isJoinTeamPage ? "/team.png" : "/login.png"));
-    const mobileImage = location.pathname === "/signup" ? "/inscription.png" : (location.pathname === "/forgot-password" || location.pathname === "/reset-password" || location.pathname === "/verify-otp" ? "/autrepage.png" : (isJoinTeamPage ? "/teamMobile.png" : "/loginmobile.png"));
+    const desktopImage = location.pathname === "/signup" ? "/inscription.png" : (location.pathname === "/forgot-password" || location.pathname === "/reset-password" || location.pathname === "/verify-otp" || location.pathname === "/setup-password" || location.pathname === "/setup-invited-password" ? "/autrepage.png" : (isJoinTeamPage ? "/team.png" : "/login.png"));
+    const mobileImage = location.pathname === "/signup" ? "/inscription.png" : (location.pathname === "/forgot-password" || location.pathname === "/reset-password" || location.pathname === "/verify-otp" || location.pathname === "/setup-password" || location.pathname === "/setup-invited-password" ? "/autrepage.png" : (isJoinTeamPage ? "/teamMobile.png" : "/loginmobile.png"));
 
     const getMarketingContent = (pathname, isDesktop) => {
         const animClasses = [
@@ -236,6 +236,40 @@ const AuthLayout = () => {
                             className={animClasses[0]}
                         >
                             {t("resetPasswordTitle", { ns: "components/authLayout" })}
+                        </Typography>
+                    </>
+                );
+            } else {
+                content = null;
+            }
+        } else if (pathname === "/setup-password") {
+            if (isDesktop) {
+                content = (
+                    <>
+                        <Typography
+                            component="h1"
+                            variant="h3"
+                            sx={{ fontWeight: 700, mb: 2 }}
+                            className={animClasses[0]}
+                        >
+                            {t("setupPasswordTitle", { ns: "components/authLayout" })}
+                        </Typography>
+                    </>
+                );
+            } else {
+                content = null;
+            }
+        } else if (pathname === "/setup-invited-password") {
+            if (isDesktop) {
+                content = (
+                    <>
+                        <Typography
+                            component="h1"
+                            variant="h3"
+                            sx={{ fontWeight: 700, mb: 2 }}
+                            className={animClasses[0]}
+                        >
+                            {t("setupInvitedPasswordTitle", { ns: "components/authLayout" })}
                         </Typography>
                     </>
                 );

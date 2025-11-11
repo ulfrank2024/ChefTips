@@ -30,5 +30,8 @@
 
   "resetPasswordTitle": "Réinitialisez Votre Mot de Passe. Accès Sécurisé.",
   "resetPasswordInstructions": "Créez un nouveau mot de passe pour votre compte. Assurez-vous qu'il est fort et sécurisé.",
-  "resetPasswordCallToAction": "Définissez votre nouveau mot de passe pour retrouver l'accès."
+  "resetPasswordCallToAction": "Définissez votre nouveau mot de passe pour retrouver l'accès.",
+
+  "setupPasswordTitle": "Configurez Votre Mot de Passe. Accès Sécurisé.",
+  "setupInvitedPasswordTitle": "Bienvenue ! Configurez Votre Mot de Passe."
 }
