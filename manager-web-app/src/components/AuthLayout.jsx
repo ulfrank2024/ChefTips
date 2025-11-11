@@ -125,16 +125,7 @@ const AuthLayout = () => {
                     </>
                 );
             } else {
-                content = (
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        sx={{ fontWeight: 800, color: "white" }}
-                        className={animClasses[0]}
-                    >
-                        {t("loginTitle", { ns: "components/authLayout" })}
-                    </Typography>
-                );
+                content = null;
             }
         } else if (pathname === "/signup") {
             if (isDesktop) {
@@ -213,16 +204,7 @@ const AuthLayout = () => {
                     </>
                 );
             } else {
-                content = (
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: "white" }}
-                        className={animClasses[0]}
-                    >
-                        {t("signupTitle", { ns: "components/authLayout" })}
-                    </Typography>
-                );
+                content = null;
             }
         } else if (pathname === "/join-team") {
             if (isDesktop) {
@@ -301,16 +283,7 @@ const AuthLayout = () => {
                     </>
                 );
             } else {
-                content = (
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: "white" }}
-                        className={animClasses[0]}
-                    >
-                        {t("joinTeamTitle", { ns: "components/authLayout" })}
-                    </Typography>
-                );
+                content = null;
             }
         } else if (pathname === "/forgot-password") {
             if (isDesktop) {
@@ -345,16 +318,7 @@ const AuthLayout = () => {
                     </>
                 );
             } else {
-                content = (
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: "white" }}
-                        className={animClasses[0]}
-                    >
-                        {t("forgotPasswordTitle", { ns: "components/authLayout" })}
-                    </Typography>
-                );
+                content = null;
             }
         } else if (pathname === "/verify-otp") {
             if (isDesktop) {
@@ -389,16 +353,7 @@ const AuthLayout = () => {
                     </>
                 );
             } else {
-                content = (
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: "white" }}
-                        className={animClasses[0]}
-                    >
-                        {t("verifyOtpTitle", { ns: "components/authLayout" })}
-                    </Typography>
-                );
+                content = null;
             }
         } else if (pathname === "/reset-password") {
             if (isDesktop) {
@@ -433,16 +388,7 @@ const AuthLayout = () => {
                     </>
                 );
             } else {
-                content = (
-                    <Typography
-                        component="h1"
-                        variant="h6"
-                        sx={{ fontWeight: 700, color: "white" }}
-                        className={animClasses[0]}
-                    >
-                        {t("resetPasswordTitle", { ns: "components/authLayout" })}
-                    </Typography>
-                );
+                content = null;
             }
         }
 
@@ -470,7 +416,7 @@ const AuthLayout = () => {
             <Box
                 sx={{
                     width: { xs: "100%", sm: "50%" },
-                    height: { xs: "200px", sm: "100%" },
+                    height: { xs: "250px", sm: "100%" },
                     overflow: "hidden",
                     display: "block",
                     borderBottomLeftRadius: { xs: "20px", sm: 0 },
@@ -499,7 +445,6 @@ const AuthLayout = () => {
                         left: 0,
                         width: "100%",
                         height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.67)",
                         display: "flex",
                         justifyContent: "flex-start",
                         alignItems: "flex-start",
@@ -542,7 +487,7 @@ const AuthLayout = () => {
                     <img
                         src={LOGO_SRC}
                         alt="App Logo"
-                        style={{ height: "60px" }}
+                        style={{ height: "70px" }}
                     />
                     <FormControl size="small">
                         <Select
