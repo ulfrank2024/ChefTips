@@ -24,7 +24,18 @@ const AuthLayout = () => {
     const isJoinTeamPage = location.pathname === "/join-team";
 
     const desktopImage = location.pathname === "/signup" ? "/inscription.png" : (location.pathname === "/forgot-password" || location.pathname === "/reset-password" || location.pathname === "/verify-otp" || location.pathname === "/setup-password" || location.pathname === "/setup-invited-password" ? "/autrepage.png" : (isJoinTeamPage ? "/team.png" : "/login.png"));
-    const mobileImage = location.pathname === "/signup" ? "/inscription.png" : (location.pathname === "/forgot-password" || location.pathname === "/reset-password" || location.pathname === "/verify-otp" || location.pathname === "/setup-password" || location.pathname === "/setup-invited-password" ? "/autrepage.png" : (isJoinTeamPage ? "/teamMobile.png" : "/loginmobile.png"));
+    const mobileImage =
+        location.pathname === "/signup"
+            ? "/inscriptionmob1.png"
+            : location.pathname === "/forgot-password" ||
+              location.pathname === "/reset-password" ||
+              location.pathname === "/verify-otp" ||
+              location.pathname === "/setup-password" ||
+              location.pathname === "/setup-invited-password"
+            ? "/autrepage.png"
+            : isJoinTeamPage
+            ? "/teamMobile.png"
+            : "/loginmobile.png";
 
     const getMarketingContent = (pathname, isDesktop) => {
         const animClasses = [
@@ -308,10 +319,13 @@ const AuthLayout = () => {
                     borderBottomLeftRadius: { xs: "20px", sm: 0 },
                     borderBottomRightRadius: { xs: "20px", sm: 0 },
                     boxShadow: {
-                        xs: "0px 5px 15px rgba(0, 0, 0, 0.1)",
+                        xs: "0px 5px 15px rgba(0, 0,0, 0.1)",
                         sm: "none",
                     },
-                    position: "relative",
+                    position: { xs: "fixed", sm: "relative" },
+                    top: 0,
+                    left: 0,
+                    zIndex: 1,
                 }}
             >
                 <img
@@ -345,29 +359,34 @@ const AuthLayout = () => {
             <Box
                 sx={{
                     width: { xs: "100%", sm: "50%" },
-                    height: { xs: "calc(100vh - 200px)", sm: "100%" },
+                    height: { xs: "100vh", sm: "100%" },
                     backgroundColor: { xs: "#f0f2f5", sm: "white" },
                     display: "flex",
-                    justifyContent: "center",
+                    justifyContent: "flex-start", 
                     alignItems: "center",
+                    flexDirection: "column",
                     position: "relative",
                     overflowY: "auto",
                     p: { xs: 0, sm: 4 },
+                    mt: { xs: '250px', sm: 0 }
                 }}
             >
 
 
                 <Box
                     sx={{
-                        position: "absolute",
-                        top: { xs: 16, sm: 40 },
-                        left: { xs: 16, sm: 40 },
-                        right: { xs: 16, sm: 40 },
+                        position: { xs: "fixed", sm: "absolute" },
+                        top: { xs: 250, sm: 40 },
+                        left: { xs: 0, sm: 40 },
+                        right: { xs: 0, sm: 40 },
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        width: { xs: "calc(100% - 32px)", sm: "calc(100% - 80px)" },
+                        width: { xs: "100%", sm: "calc(100% - 80px)" },
                         zIndex: 10,
+                        p: { xs: 2, sm: 0 },
+                        boxSizing: 'border-box',
+                        backgroundColor: { xs: '#f0f2f5', sm: 'transparent' }
                     }}
                 >
                     <img
@@ -408,7 +427,7 @@ const AuthLayout = () => {
                         maxWidth: { xs: "90%", sm: "400px" },
                         my: { xs: 2, sm: 0 },
                         p: { xs: 2, sm: 0 },
-                        pt: { xs: "10px", sm: 0 }, // Add padding-top for mobile to account for the logo/language selector bar
+                        mt: { xs: '100px', sm: 0 }, 
                     }}
                 >
                     <Outlet />
