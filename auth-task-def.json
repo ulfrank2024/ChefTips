@@ -21,11 +21,13 @@
                 }
             ],
             "environment": [
-                { "name": "DB_HOST", "value": "auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
-                { "name": "DB_USER", "value": "tips_ulrich_2025" },
-                { "name": "DB_PASSWORD", "value": "123qweJesus" },
-                { "name": "DB_NAME", "value": "auth_service_db" },
-                { "name": "DB_PORT", "value": "5432" },
+                { "name": "PGHOST", "value": "auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
+                { "name": "PGUSER", "value": "tips_ulrich_2025" },
+                { "name": "PGPASSWORD", "value": "123qweJesus" },
+                { "name": "PGDATABASE", "value": "auth_service_db" },
+                { "name": "PGPORT", "value": "5432" },
+                { "name": "DB_SSL_ENABLED", "value": "true" },
+                { "name": "NODE_ENV", "value": "production" },
                 { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
                 { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
                 { "name": "SMTP_PORT", "value": "465" },

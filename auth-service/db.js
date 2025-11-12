@@ -1,11 +1,16 @@
 const { Pool } = require('pg');
 
+const sslConfig = process.env.DB_SSL_ENABLED === 'true'
+    ? { ssl: { rejectUnauthorized: false } }
+    : {};
+
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+    user: process.env.PGUSER,
+    host: process.env.PGHOST,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD,
+    port: process.env.PGPORT,
+    ...sslConfig
 });
 
 module.exports = pool;
