@@ -21,12 +21,7 @@
                 }
             ],
             "environment": [
-                { "name": "PGHOST", "value": "auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
-                { "name": "PGUSER", "value": "tips_ulrich_2025" },
-                { "name": "PGPASSWORD", "value": "123qweJesus" },
-                { "name": "PGDATABASE", "value": "auth_service_db" },
-                { "name": "PGPORT", "value": "5432" },
-                { "name": "DB_SSL_ENABLED", "value": "true" },
+                { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/auth_service_db?sslmode=require" },
                 { "name": "NODE_ENV", "value": "production" },
                 { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
                 { "name": "SMTP_HOST", "value": "smtp.gmail.com" },

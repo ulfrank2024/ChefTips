@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "npm run migrate && node server.js",
-    "migrate": "if [ \"$NODE_ENV\" = \"production\" ]; then node-pg-migrate -m migrations up; else dotenv -e .env -- node-pg-migrate -m migrations up; fi"
+    "migrate": "node-pg-migrate -m migrations up"
   },
   "jest": {
     "testPathIgnorePatterns": [

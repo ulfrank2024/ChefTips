@@ -21,11 +21,8 @@
             ],
             "environment": [
                 { "name": "PORT", "value": "4001" },
-                { "name": "DB_USER", "value": "tips_ulrich_2025" },
-                { "name": "DB_HOST", "value": "tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
-                { "name": "DB_NAME", "value": "tip_service_db" },
-                { "name": "DB_PASSWORD", "value": "123qweJesus" },
-                { "name": "DB_PORT", "value": "5432" },
+                { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/tip_service_db?sslmode=require" },
+                { "name": "NODE_ENV", "value": "production" },
                 { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
                 { "name": "SMTP_PORT", "value": "465" },
                 { "name": "SMTP_SECURE", "value": "true" },
