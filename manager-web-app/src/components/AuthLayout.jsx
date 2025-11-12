@@ -426,7 +426,8 @@ const AuthLayout = () => {
                         maxWidth: { xs: "90%", sm: "400px" },
                         my: { xs: 2, sm: 0 },
                         p: { xs: 2, sm: 0 },
-                        mt: { xs: '100px', sm: 0 }, 
+                        mt: { xs: '100px', sm: 0 },
+                        mx: 'auto', // Added for horizontal centering
                     }}
                 >
                     <Outlet />
