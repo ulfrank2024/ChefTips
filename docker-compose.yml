@@ -7,7 +7,8 @@ services:
       - ./auth-service/.env
     container_name: auth-service
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   tip-service:
     build: ./tip-service
@@ -19,7 +20,8 @@ services:
       AUTH_SERVICE_URL: http://auth-service:3001
     container_name: tip-service
     depends_on:
-      - tip_postgres
+      tip_postgres:
+        condition: service_healthy
     
 
   postgres:
@@ -34,6 +36,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tips_ulrich_2025 -d tips_app_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   tip_postgres:
     build:
@@ -47,6 +54,11 @@ services:
       - "5434:5432"
     volumes:
       - tip_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tip_user -d tip_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4
@@ -56,8 +68,10 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - postgres
-      - tip_postgres
+      postgres:
+        condition: service_healthy
+      tip_postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

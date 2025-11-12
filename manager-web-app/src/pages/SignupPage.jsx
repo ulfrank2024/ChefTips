@@ -132,6 +132,7 @@ const SignupPage = () => {
                             value={formData.firstName}
                             onChange={handleChange}
                             size="small"
+                            sx={{ mb: { xs: 1, sm: 2 } }}
                         />
                         <TextField
                             margin="normal"
@@ -144,6 +145,7 @@ const SignupPage = () => {
                             value={formData.lastName}
                             onChange={handleChange}
                             size="small"
+                            sx={{ mb: { xs: 1, sm: 2 } }}
                         />
                         <TextField
                             margin="normal"
@@ -156,19 +158,20 @@ const SignupPage = () => {
                             value={formData.companyName}
                             onChange={handleChange}
                             size="small"
+                            sx={{ mb: { xs: 1, sm: 2 } }}
                         />
                         <Button
                             fullWidth
                             variant="contained"
                             onClick={nextStep}
                             sx={{
-                                mt: 3,
-                                mb: 2,
+                                mt: { xs: 2, sm: 3 },
+                                mb: { xs: 1, sm: 2 },
                                 borderRadius: "8px",
                                 backgroundColor: "#ad9407ff",
                                 color: "white",
-                                padding: "12px 0",
-                                fontSize: "1rem",
+                                padding: { xs: "8px 0", sm: "12px 0" },
+                                fontSize: { xs: "0.9rem", sm: "1rem" },
                                 fontWeight: 600,
                                 "&:hover": { backgroundColor: "#9a7f06ff" },
                             }}
@@ -197,6 +200,7 @@ const SignupPage = () => {
                             error={!!emailError}
                             helperText={emailError}
                             size="small"
+                            sx={{ mb: { xs: 1, sm: 2 } }}
                         />
                         <TextField
                             margin="normal"
@@ -210,6 +214,7 @@ const SignupPage = () => {
                             value={formData.password}
                             onChange={handleChange}
                             size="small"
+                            sx={{ mb: { xs: 1, sm: 2 } }}
                         />
                         <TextField
                             margin="normal"
@@ -223,13 +228,15 @@ const SignupPage = () => {
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             size="small"
+                            sx={{ mb: { xs: 1, sm: 2 } }}
                         />
-                        <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
+                        <Grid container spacing={2} sx={{ mt: { xs: 1, sm: 2 }, mb: { xs: 1, sm: 2 } }}>
                             <Grid item xs={12} sm={6}>
                                 <Button
                                     fullWidth
                                     variant="outlined"
                                     onClick={prevStep}
+                                    sx={{ padding: { xs: "8px 0", sm: "12px 0" }, fontSize: { xs: "0.9rem", sm: "1rem" } }}
                                 >
                                     {t("back", { ns: "common" })}
                                 </Button>
@@ -244,6 +251,8 @@ const SignupPage = () => {
                                         borderRadius: "8px",
                                         backgroundColor: "#ad9407ff",
                                         color: "white",
+                                        padding: { xs: "8px 16px", sm: "12px 0" },
+                                        fontSize: { xs: "0.9rem", sm: "1rem" },
                                         "&:hover": { backgroundColor: "#9a7f06ff" },
                                     }}
                                 >

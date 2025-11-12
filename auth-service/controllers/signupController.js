@@ -22,9 +22,11 @@ const signup = async (req, res) => {
         await MembershipModel.createMembership(user.id, company.id, 'manager');
 
         const otp = await TokenModel.createEmailVerificationOtp(user.id);
+        const verificationLink = `${process.env.FRONTEND_URL}/verify-otp?email=${encodeURIComponent(email)}`;
 
         const templateData = {
             otp,
+            verificationLink,
             currentYear: new Date().getFullYear(),
         };
 

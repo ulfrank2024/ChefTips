@@ -177,7 +177,8 @@ const LoginPage = () => {
                     }}
                     error={!!emailError}
                     helperText={emailError}
-                    sx={{ mb: 2 }}
+                    sx={{ mb: { xs: 1, sm: 2 } }}
+                    size="small"
                 />
                 <TextField
                     margin="normal"
@@ -190,10 +191,11 @@ const LoginPage = () => {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    sx={{ mb: 1 }}
+                    sx={{ mb: { xs: 0.5, sm: 1 } }}
+                    size="small"
                 />
 
-                <Grid container justifyContent="flex-end" sx={{ mb: 3 }}>
+                <Grid container justifyContent="flex-end" sx={{ mb: { xs: 2, sm: 3 } }}>
                     <Grid item>
                         <MuiLink
                             component={RouterLink}
@@ -212,13 +214,13 @@ const LoginPage = () => {
                     fullWidth
                     variant="contained"
                     sx={{
-                        mt: 1,
-                        mb: 3,
+                        mt: { xs: 1, sm: 1 },
+                        mb: { xs: 2, sm: 3 },
                         borderRadius: "8px",
                         backgroundColor: "#ad9407ff",
                         color: "white",
-                        padding: "12px 0",
-                        fontSize: "1rem",
+                        padding: { xs: "8px 0", sm: "12px 0" },
+                        fontSize: { xs: "0.9rem", sm: "1rem" },
                         fontWeight: 600,
                         "&:hover": { backgroundColor: "#9a7f06ff" },
                     }}
@@ -228,7 +230,7 @@ const LoginPage = () => {
                 </Button>
 
                 {/* Liens "Don't have an account?" et "Join team" */}
-                <Grid container justifyContent="center" sx={{ mt: 2 }}>
+                <Grid container justifyContent="center" sx={{ mt: { xs: 1, sm: 2 } }}>
                     <Grid item>
                         <Typography variant="body2" sx={{ color: "#666" }}>
                             {t("noAccount")}{" "}
@@ -242,7 +244,7 @@ const LoginPage = () => {
                             </MuiLink>
                         </Typography>
                     </Grid>
-                    <Grid item xs={12} sx={{ textAlign: "center", mt: 1 }}>
+                    <Grid item xs={12} sx={{ textAlign: "center", mt: { xs: 0.5, sm: 1 } }}>
                         <MuiLink
                             component={RouterLink}
                             to="/join-team"
