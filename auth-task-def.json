@@ -8,6 +8,7 @@
     "cpu": "256",
     "memory": "512",
     "executionRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
     "containerDefinitions": [
         {
             "name": "auth-service",
@@ -21,7 +22,7 @@
                 }
             ],
             "environment": [
-                { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/auth_service_db?sslmode=require" },
+                { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/auth_service_db?ssl=true" },
                 { "name": "NODE_ENV", "value": "production" },
                 { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
                 { "name": "SMTP_HOST", "value": "smtp.gmail.com" },

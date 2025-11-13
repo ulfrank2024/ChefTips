@@ -1,4 +1,4 @@
-._*
 node_modules
-._.env
+npm-debug.log
 .env
+.DS_Store

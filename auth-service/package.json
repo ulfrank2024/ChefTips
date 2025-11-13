@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "npm run migrate && node server.js",
-    "migrate": "node-pg-migrate -m migrations up"
+    "migrate": "node migrate-db.js"
   },
   "jest": {
     "testPathIgnorePatterns": [
