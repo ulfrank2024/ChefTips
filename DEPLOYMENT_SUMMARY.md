@@ -329,6 +329,7 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
         "cpu": "256",
         "memory": "512",
         "executionRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+        "taskRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
         "containerDefinitions": [
             {
                 "name": "tip-service",
@@ -343,18 +344,17 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
                 ],
                 "environment": [
                     { "name": "PORT", "value": "4001" },
-                    { "name": "DB_USER", "value": "tips_ulrich_2025" },
-                    { "name": "DB_HOST", "value": "tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
-                    { "name": "DB_NAME", "value": "tip_service_db" },
-                    { "name": "DB_PASSWORD", "value": "[REDACTED]" },
-                    { "name": "DB_PORT", "value": "5432" },
+                    { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/tip_service_db?ssl=true&rejectUnauthorized=false" },
+                    { "name": "NODE_ENV", "value": "production" },
                     { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
                     { "name": "SMTP_PORT", "value": "465" },
                     { "name": "SMTP_SECURE", "value": "true" },
                     { "name": "SMTP_USER", "value": "frranklinlontsi99@gmail.com" },
-                    { "name": "SMTP_PASSWORD", "value": "[REDACTED]" },
+                    { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
                     { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" },
-                    { "name": "JWT_SECRET", "value": "[REDACTED]" }
+                    { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
+                    { "name": "AUTH_SERVICE_ENDPOINT", "value": "http://18.206.193.5:3000" },
+                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" }
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
@@ -643,3 +643,183 @@ Pour toute modification future du schéma (par exemple, ajouter une colonne) :
 2.  **Modifier le fichier de migration :** Ajouter les changements SQL dans les fonctions `up` et `down` du nouveau fichier.
 
 3.  **Déployer le service :** Le processus de déploiement normal (`docker build`, `docker push`, `aws ecs update-service`) appliquera **automatiquement** la nouvelle migration à la base de données.tip-service
+---
+
+# 12. Débogage des Erreurs de Connexion à la Base de Données (Novembre 2025)
+
+Cette section documente la session de débogage intensive menée pour résoudre les erreurs de connexion entre le `auth-service` et la base de données RDS.
+
+### 12.1. Problème 1 : Erreur de Certificat SSL (`SELF_SIGNED_CERT_IN_CHAIN`)
+
+*   **Symptôme :** Le service échouait au démarrage avec une erreur `Error: self-signed certificate in certificate chain`. L'erreur se produisait spécifiquement lors de l'exécution du script de migration `migrate-db.js`.
+*   **Analyse :**
+    1.  Le script de migration (`migrate-db.js`) utilisait `node-pg-migrate` mais ne semblait pas respecter le paramètre `rejectUnauthorized=false` présent dans la `DATABASE_URL`.
+    2.  Le fichier de configuration principal de la base de données (`db.js`) tentait de charger un fichier de certificat local (`dummy-ca.pem`) qui n'existe pas dans l'environnement conteneurisé.
+*   **Solution Appliquée :**
+    1.  **Pour le script de migration :** Modification de `auth-service/migrate-db.js` pour injecter la variable d'environnement `NODE_TLS_REJECT_UNAUTHORIZED: '0'` dans le processus `spawn` de la migration. Cela force Node.js à ignorer la validation du certificat pour ce processus spécifique.
+    2.  **Pour l'application principale :** Nettoyage du fichier `auth-service/db.js` en supprimant la ligne `ca: fs.readFileSync(...)` pour éviter un crash dû à un fichier manquant.
+
+### 12.2. Problème 2 : Timeout de Connexion Réseau (`ETIMEDOUT`)
+
+*   **Symptôme :** Après la résolution du problème SSL, le service démarrait mais les logs affichaient rapidement une erreur `Error: connect ETIMEDOUT 172.31.xx.xx:5432`, indiquant que le service ne parvenait pas à établir une connexion réseau avec la base de données.
+*   **Analyse et Investigation :**
+    1.  **Groupes de Sécurité (Security Groups) :** Vérification que le groupe de sécurité de la base de données (`sg-0a5815e4c15b59501`) avait bien une règle d'entrée autorisant le trafic sur le port `5432` depuis le groupe de sécurité du service ECS (`sg-0b1553f902d01194c`). La règle était déjà présente, confirmant que ce n'était pas la cause.
+    2.  **Sous-réseaux (Subnets) :** Vérification que le service ECS et l'instance RDS étaient configurés pour utiliser les mêmes sous-réseaux. C'était bien le cas.
+    3.  **Listes de Contrôle d'Accès Réseau (NACLs) :** Vérification des NACLs associées aux sous-réseaux. Celles-ci utilisaient les règles par défaut (ALLOW ALL), excluant un blocage à ce niveau.
+    4.  **Configuration de la Connexion :** L'hypothèse a été émise que la combinaison d'une `connectionString` dans la variable d'environnement `DATABASE_URL` et d'options de configuration SSL dans le code pouvait être mal interprétée par le client `node-postgres`.
+
+*   **Tentative de Résolution :**
+    1.  **Modification du code :** Le fichier `auth-service/db.js` a été modifié pour ne plus utiliser de `connectionString`. À la place, la configuration du `Pool` utilise désormais des variables d'environnement distinctes : `DB_USER`, `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, `DB_PORT`.
+    2.  **Modification de la Task Definition :** Le fichier `auth-task-def.json` a été mis à jour pour supprimer la variable `DATABASE_URL` et la remplacer par les variables individuelles correspondantes (`DB_HOST`, `DB_USER`, etc.).
+    3.  **Redéploiement :** L'image Docker a été reconstruite, la nouvelle définition de tâche a été enregistrée (`:22`), et le service ECS a été mis à jour pour utiliser cette nouvelle configuration.
+
+### 12.3. Problème 3 : `relation "users" does not exist` et `relation "companies" already exists`
+
+*   **Symptôme :** Le service se connecte à la DB, mais les tables n'existent pas, indiquant un échec de migration. Lors d'une tentative de migration manuelle, l'erreur `relation "companies" already exists` est apparue, confirmant que la connectivité DB est OK mais que les migrations sont soit partiellement appliquées, soit mal gérées.
+*   **Analyse :** La base de données était dans un état incohérent, probablement dû à des tentatives de migration précédentes ou à l'exécution partielle de `init.sql`.
+*   **Solution :** Suppression et recréation de la base de données `auth_service_db` pour garantir un état propre, puis exécution manuelle des migrations avec succès.
+
+### 12.4. Problème 4 : `CannotPullContainerError: pull image manifest does not contain descriptor matching platform 'linux/amd64'`
+
+*   **Symptôme :** L'image Docker avait été construite pour la mauvaise architecture (probablement `arm64` sur un Mac M1/M2) et Fargate ne pouvait pas la tirer.
+*   **Analyse :** L'image Docker n'était pas compatible avec l'architecture `linux/amd64` requise par AWS Fargate.
+*   **Solution :** Reconstruite l'image Docker avec `--platform linux/amd64` et ajout de `node_modules` au `.dockerignore` pour forcer `npm install` à l'intérieur du conteneur Docker pendant la construction de l'image pour la bonne architecture.
+
+### 12.5. Problème 5 : `Error: DATABASE_URL environment variable is not set.` dans les logs ECS
+
+*   **Symptôme :** Le service plantait au démarrage avec cette erreur, indiquant que la variable d'environnement `DATABASE_URL` n'était pas correctement passée au conteneur.
+*   **Analyse :** La variable `DATABASE_URL` n'était pas présente dans la définition de tâche ECS.
+*   **Solution :** La variable `DATABASE_URL` a été ajoutée à la définition de tâche `auth-task-def.json`.
+
+### 12.6. Problème 6 : `Error loading shared library ... bcrypt_lib.node: Exec format error`
+
+*   **Symptôme :** Le service plantait au démarrage avec cette erreur, indiquant que les dépendances natives `bcrypt` étaient construites pour la mauvaise architecture.
+*   **Analyse :** Les `node_modules` locaux (potentiellement compilés pour `arm64`) étaient copiés dans l'image Docker, causant une incompatibilité.
+*   **Solution :** Ajout de `node_modules` au `.dockerignore` pour forcer `npm install` à l'intérieur du conteneur Docker pendant la construction de l'image pour la bonne architecture.
+
+### 12.7. Problème 7 : `Fargate requires that the task definition has a task role ARN specified.`
+
+*   **Symptôme :** Le service ne pouvait pas être déployé avec l'erreur "Fargate requires that the task definition has a task role ARN specified."
+*   **Analyse :** La définition de tâche manquait de la propriété `taskRoleArn`.
+
+# 13. Débogage et Résolution des Problèmes du tip-service (Novembre 2025)
+
+Cette section documente les problèmes rencontrés et les solutions appliquées pour stabiliser le déploiement du `tip-service` et assurer son bon fonctionnement.
+
+### 13.1. Problème 1 : Erreur `getaddrinfo ENOTFOUND tip_postgres`
+
+*   **Symptôme :** Le `tip-service` échouait au démarrage avec l'erreur `Error: getaddrinfo ENOTFOUND tip_postgres`. Cela indiquait que le service tentait de se connecter à un hôte `tip_postgres` qui ne pouvait pas être résolu.
+*   **Analyse :** Le script `migrate` dans `tip-service/package.json` n'était pas configuré pour charger les variables d'environnement à partir du fichier `.env` avant d'exécuter `node-pg-migrate`. Par conséquent, la variable `DATABASE_URL` n'était pas définie, et `node-pg-migrate` tentait de se connecter à un hôte par défaut.
+*   **Solution :** Modification du script `migrate` dans `tip-service/package.json` pour inclure `dotenv -e .env --`.
+    *   **Modification du fichier `tip-service/package.json` :**
+        ```json
+        "scripts": {
+          "test": "jest",
+          "start": "npm run migrate && node server.js",
+          "migrate": "dotenv -e .env -- node-pg-migrate -m migrations up"
+        },
+        ```
+
+### 13.2. Problème 2 : Erreur de Certificat SSL (`SELF_SIGNED_CERT_IN_CHAIN`)
+
+*   **Symptôme :** Après la résolution du problème `ENOTFOUND`, le service échouait avec l'erreur `Error: self-signed certificate in certificate chain`, similaire à celle rencontrée par le `auth-service`.
+*   **Analyse :**
+    1.  Bien que `&ssl=true&rejectUnauthorized=false` ait été ajouté à la `DATABASE_URL` dans `tip-task-def.json`, le client `node-pg` ou `node-pg-migrate` ne semblait pas toujours respecter ce paramètre lorsqu'il était intégré à la chaîne de connexion.
+    2.  L'environnement d'exécution du conteneur ne désactivait pas globalement la vérification des certificats auto-signés pour les connexions TLS.
+*   **Solutions Appliquées :**
+    1.  **Ajout de `NODE_TLS_REJECT_UNAUTHORIZED='0'` au script `start` :** Modification du script `start` dans `tip-service/package.json` pour définir cette variable d'environnement spécifiquement pour la commande `npm run migrate`.
+        *   **Modification du fichier `tip-service/package.json` :**
+            ```json
+            "scripts": {
+              "test": "jest",
+              "start": "NODE_TLS_REJECT_UNAUTHORIZED='0' npm run migrate && node server.js",
+              "migrate": "dotenv -e .env -- node-pg-migrate -m migrations up"
+            },
+            ```
+    2.  **Ajout de `NODE_TLS_REJECT_UNAUTHORIZED='0'` à la Task Definition :** Pour une application plus globale au sein du conteneur, la variable d'environnement a été ajoutée directement à la définition de tâche `tip-task-def.json`.
+        *   **Modification du fichier `tip-task-def.json` :**
+            ```json
+            {
+                "name": "tip-service",
+                "image": "946358504020.dkr.ecr.us-east-1.amazonaws.com/tip-service:latest",
+                "essential": true,
+                "portMappings": [
+                    {
+                        "containerPort": 4001,
+                        "hostPort": 4001,
+                        "protocol": "tcp"
+                    }
+                ],
+                "environment": [
+                    { "name": "PORT", "value": "4001" },
+                    { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@tip-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/tip_service_db?ssl=true&rejectUnauthorized=false" },
+                    { "name": "NODE_ENV", "value": "production" },
+                    { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
+                    { "name": "SMTP_PORT", "value": "465" },
+                    { "name": "SMTP_SECURE", "value": "true" },
+                    { "name": "SMTP_USER", "value": "frranklinlontsi99@gmail.com" },
+                    { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
+                    { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" },
+                    { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
+                    { "name": "AUTH_SERVICE_ENDPOINT", "value": "http://18.206.193.5:3000" },
+                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" }
+                ],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/ecs/tip-service",
+                        "awslogs-region": "us-east-1",
+                        "awslogs-stream-prefix": "ecs"
+                    }
+                }
+            }
+        ]
+    }
+            ```
+
+### 13.3. Problème 3 : `Fargate requires that the task definition has a task role ARN specified.`
+
+*   **Symptôme :** Le service ne pouvait pas être déployé avec l'erreur "Fargate requires that the task definition has a task role ARN specified."
+*   **Analyse :** La définition de tâche manquait de la propriété `taskRoleArn`.
+*   **Solution :** Ajout de `"taskRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole"` à la définition de tâche `tip-task-def.json`.
+
+### 13.4. Recréation de la Base de Données et du Service
+
+*   **Contexte :** Pour garantir un état propre et s'assurer que toutes les modifications de configuration étaient appliquées, la base de données RDS `tip-db-instance` et le service ECS `tip-service` ont été supprimés puis recréés.
+*   **Étapes :**
+    1.  **Arrêt et suppression du service ECS `tip-service` :**
+        ```bash
+        aws ecs update-service --cluster tips-app-cluster --service tip-service --desired-count 0
+        aws ecs delete-service --cluster tips-app-cluster --service tip-service
+        ```
+    2.  **Suppression de l'instance RDS `tip-db-instance` :**
+        ```bash
+        aws rds delete-db-instance --db-instance-identifier tip-db-instance --skip-final-snapshot
+        ```
+    3.  **Attente de la suppression complète de l'instance RDS.**
+    4.  **Recréation de l'instance RDS `tip-db-instance` :**
+        ```bash
+        aws rds create-db-instance \
+          --db-instance-identifier tip-db-instance \
+          --db-instance-class db.t3.micro \
+          --engine postgres \
+          --master-username tips_ulrich_2025 \
+          --master-user-password 123qweJesus \
+          --allocated-storage 20 \
+          --db-name tip_service_db \
+          --vpc-security-group-ids sg-0a5815e4c15b59501 \
+          --db-subnet-group-name default \
+          --publicly-accessible
+        ```
+    5.  **Attente de la disponibilité de l'instance RDS.**
+    6.  **Reconstruction et push de l'image Docker du `tip-service`** (avec les dernières modifications de `package.json`).
+    7.  **Enregistrement de la nouvelle définition de tâche `tip-service-task`** (avec `taskRoleArn` et `NODE_TLS_REJECT_UNAUTHORIZED`).
+    8.  **Recréation du service ECS `tip-service` :**
+        ```bash
+        aws ecs create-service --cluster tips-app-cluster --service-name tip-service --task-definition tip-service-task:21 --desired-count 1 --launch-type FARGATE --network-configuration "awsvpcConfiguration={subnets=[subnet-09650ce60ec6aee63,subnet-0abe034e0cce968dc,subnet-0ded40f7696adc1f6,subnet-076f8b80777e29daa,subnet-0e6852c975bc9695b,subnet-0ee340078ad1e8fe4],securityGroups=[sg-0b1553f902d01194c],assignPublicIp=ENABLED}"
+        ```
+
+---
+
+**Conclusion :** Après ces étapes, le `tip-service` démarre correctement, les migrations s'exécutent sans erreur de certificat SSL, et le service est opérationnel.
+

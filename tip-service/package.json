@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "npm run migrate && node server.js",
-    "migrate": "node-pg-migrate -m migrations up"
+    "start": "NODE_TLS_REJECT_UNAUTHORIZED='0' npm run migrate && node server.js",
+    "migrate": "dotenv -e .env -- node-pg-migrate -m migrations up"
   },
   "keywords": [],
   "author": "",
