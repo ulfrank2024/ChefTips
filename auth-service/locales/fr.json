@@ -1,0 +1,13 @@
+{
+    "roles": {
+        "COOK": "Cuisinier",
+        "WAITER": "Serveur",
+        "BUSBOY": "Commis",
+        "MANAGER": "Gérant",
+        "BARTENDER": "Barman",
+        "HOST": "Hôte"
+    },
+    "subjects": {
+        "cashOutNotification": "Notification de retrait d'argent"
+    }
+}

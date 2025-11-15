@@ -4,10 +4,7 @@ ENV NODE_TLS_REJECT_UNAUTHORIZED=0
 COPY package*.json ./
 RUN npm install
 COPY . .
-# Explicitly copy db.js to ensure latest version is included
-COPY db.js ./db.js
-# Copy the dummy-ca.pem
-COPY dummy-ca.pem ./dummy-ca.pem
+RUN ls -l controllers/
 # Copy the RDS global certificate bundle
 COPY global-bundle.pem /usr/local/share/ca-certificates/global-bundle.pem
 # Install ca-certificates and update the CA certificates

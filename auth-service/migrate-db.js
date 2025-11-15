@@ -1,8 +1,8 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Load environment variables from .env file (if running locally)
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+console.log('NODE_ENV au début de migrate-db.js:', process.env.NODE_ENV);
+console.log('FRONTEND_URL au début de migrate-db.js:', process.env.FRONTEND_URL);
 
 const DATABASE_URL = process.env.DATABASE_URL;
 

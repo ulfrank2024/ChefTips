@@ -1,5 +1,7 @@
 const { sendEmail } = require('../services/emailService');
 const userModel = require('../models/userModel');
+const frTranslations = require("../locales/fr.json");
+const enTranslations = require("../locales/en.json");
 
 const sendCashOutNotification = async (req, res) => {
     const { recipient_user_id, sender_name, amount, role } = req.body;
@@ -14,14 +16,24 @@ const sendCashOutNotification = async (req, res) => {
             return res.status(404).json({ error: 'Recipient user not found.' });
         }
 
+        const language = recipient.preferred_language || 'en';
+        let translations;
+        if (language === 'fr') {
+            translations = frTranslations;
+        } else {
+            translations = enTranslations;
+        }
+
+        const translatedRole = translations.roles[role.toUpperCase()] || role;
+
         const emailData = {
             sender_name,
             amount: parseFloat(amount).toFixed(2),
-            role,
+            role: translatedRole,
             recipient_name: recipient.first_name,
         };
 
-        await sendEmail(recipient.email, 'cashOutNotification', emailData, recipient.preferred_language);
+        await sendEmail(recipient.email, 'cashOutNotification', emailData, language);
 
         res.status(200).json({ message: 'Cash out notification sent successfully.' });
     } catch (error) {

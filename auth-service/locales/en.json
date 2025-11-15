@@ -1,0 +1,13 @@
+{
+    "roles": {
+        "COOK": "Cook",
+        "WAITER": "Waiter",
+        "BUSBOY": "Busboy",
+        "MANAGER": "Manager",
+        "BARTENDER": "Bartender",
+        "HOST": "Host"
+    },
+    "subjects": {
+        "cashOutNotification": "Cash out notification"
+    }
+}

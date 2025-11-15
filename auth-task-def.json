@@ -25,12 +25,9 @@
                 { "name": "DATABASE_URL", "value": "postgres://tips_ulrich_2025:123qweJesus@auth-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com:5432/auth_service_db?ssl=true" },
                 { "name": "NODE_ENV", "value": "production" },
                 { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
-                { "name": "SMTP_HOST", "value": "smtp.gmail.com" },
-                { "name": "SMTP_PORT", "value": "465" },
-                { "name": "SMTP_SECURE", "value": "true" },
-                { "name": "SMTP_USER", "value": "frranklinlontsi99@gmail.com" },
-                { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
-                { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" }
+                { "name": "SES_FROM_EMAIL", "value": "noreply@cheftips.app" },
+                { "name": "AWS_REGION", "value": "us-east-1" },
+                { "name": "FRONTEND_URL", "value": "https://www.cheftips.app/" }
             ],
             "logConfiguration": {
                 "logDriver": "awslogs",

@@ -1,5 +1,7 @@
 // server.js
-require("dotenv").config();
+console.log('NODE_ENV au début de server.js:', process.env.NODE_ENV);
+console.log('FRONTEND_URL au début de server.js:', process.env.FRONTEND_URL);
+
 const express = require("express");
 const cors = require('cors'); // Add this line
 const authRoutes = require("./routes/authRoutes");
