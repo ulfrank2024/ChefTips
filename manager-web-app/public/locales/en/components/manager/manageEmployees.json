@@ -33,5 +33,6 @@
   "editEmployeeDescription": "Edit the employee's role and permissions.",
   "invite": "Invite",
   "areYouSureYouWantToDelete": "Are you sure you want to delete",
-  "confirmDeletion": "Confirm Deletion"
+  "confirmDeletion": "Confirm Deletion",
+  "manager": "Manager"
 }

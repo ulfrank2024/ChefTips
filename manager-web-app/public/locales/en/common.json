@@ -78,5 +78,10 @@
   "areYouSureToDeletePeriod": "Are you sure you want to delete the period {{periodName}}? This action cannot be undone.",
   "fromTipPool": "From Tip Pool",
   "dateHeader": "Date",
-  "payoutPeriod": "Payout Period"
+  "payoutPeriod": "Payout Period",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "allPeriods": "All Periods",
+  "destinationRole": "Destination Role",
+  "noPoolsFound": "No pools found."
 }

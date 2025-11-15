@@ -22,6 +22,7 @@ Pour que ces modifications prennent effet en production, vous devez suivre les �
     Vous pouvez le faire via la console AWS en forçant un nouveau déploiement pour le service `auth-service`, ou via la CLI avec une commande similaire à celle-ci (en supposant que votre définition de tâche est déjà enregistrée avec la révision correcte) :
     ```bash
   
+  
     aws ecs update-service --cluster tips-app-cluster --service auth-service --force-new-deployment --region us-east-1
     ```
 

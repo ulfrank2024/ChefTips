@@ -31,7 +31,7 @@
                 { "name": "SMTP_PASSWORD", "value": "qkolanimwgdvtpok" },
                 { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" },
                 { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
-                { "name": "AUTH_SERVICE_ENDPOINT", "value": "http://18.206.193.5:3000" },
+                { "name": "AUTH_SERVICE_URL", "value": "https://api.cheftips.app" },
                 { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" } 
             ],
             "logConfiguration": {

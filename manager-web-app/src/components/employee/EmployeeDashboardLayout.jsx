@@ -2,13 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Typography, Box, Drawer, List, ListItem, ListItemIcon, ListItemText,
-  CssBaseline, useTheme, useMediaQuery, Select, MenuItem, FormControl, InputLabel
+  CssBaseline, useTheme, useMediaQuery, Select, MenuItem, FormControl, InputLabel, IconButton, Tooltip
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonIcon from '@mui/icons-material/Person';
 import HistoryIcon from '@mui/icons-material/History';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Outlet, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useDrawer } from '../../context/DrawerContext';
@@ -22,6 +24,7 @@ const EmployeeDashboardLayout = () => {
   const { user, logout } = useAuth(); 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [desktopOpen, setDesktopOpen] = useState(true); // Sidebar state for desktop
   const location = useLocation();
   const navigate = useNavigate();
   const mainContentRef = useRef(null);
@@ -33,13 +36,23 @@ const EmployeeDashboardLayout = () => {
       setShowWelcome(true);
       sessionStorage.setItem('welcomeShown', 'true');
     } else {
-      setShowDashboardContent(true); // Show dashboard immediately if welcome modal is not needed
+      setShowDashboardContent(true);
     }
   }, [user]);
 
   const handleWelcomeClose = () => {
     setShowWelcome(false);
-    setShowDashboardContent(true); // Show dashboard once welcome modal is closed
+    setShowDashboardContent(true);
+  };
+
+  const handleDesktopToggle = () => {
+    setDesktopOpen(!desktopOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    if (isMobile) handleDrawerToggle();
+    navigate('/login');
   };
 
   useEffect(() => {
@@ -48,20 +61,18 @@ const EmployeeDashboardLayout = () => {
     }
   }, [location.pathname]);
 
-
   const menuItems = [
     { text: t('overview', { ns: 'pages/employeeDashboard' }), icon: <DashboardIcon />, path: '/employee/dashboard' },
     { text: t('myReceivedTips', { ns: 'pages/employeeDashboard' }), icon: <AttachMoneyIcon />, path: '/employee/dashboard/received-tips' },
     { text: t('profile', { ns: 'pages/employeeDashboard' }), icon: <PersonIcon />, path: '/employee/dashboard/profile' },
-    { text: t('logout', { ns: 'common' }), icon: <ExitToAppIcon />, onClick: () => { logout(); handleDrawerToggle(); navigate('/login'); }, path: '#' }, // Logout button
+    { text: t('logout', { ns: 'common' }), icon: <ExitToAppIcon />, onClick: handleLogout, path: '#' },
   ];
 
-  // Add collector-specific items if can_cash_out is true
   if (user?.can_cash_out) {
     menuItems.splice(1, 0, { text: t('myCashOutHistory', { ns: 'pages/employeeDashboard' }), icon: <HistoryIcon />, path: '/employee/dashboard/cashout-history' });
   }
 
-  const drawer = (
+  const drawerContent = (
       <Box
           sx={{
               height: "100%",
@@ -76,34 +87,22 @@ const EmployeeDashboardLayout = () => {
                       key={item.text}
                       component={RouterLink}
                       to={item.path}
-                      onClick={item.onClick ? item.onClick : handleDrawerToggle}
-                  sx={{
-                        color:'white',
-                          backgroundColor:
-                              location.pathname === item.path
-                                  ? "#ad9407ff"
-                                  : "transparent",
+                      onClick={item.onClick ? item.onClick : (isMobile ? handleDrawerToggle : undefined)}
+                      sx={{
+                          color:'white',
+                          backgroundColor: location.pathname === item.path ? "#ad9407ff" : "transparent",
                           "&:hover": {
-                              backgroundColor:
-                                  location.pathname === item.path
-                                      ? "#ad9407ff"
-                                      : "rgba(255, 255, 255, 0.08)", 
+                              backgroundColor: location.pathname === item.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)", 
                           },
                       }}
                   >
-                      <ListItemIcon
-                          sx={{
-                            padding:"20px",
-                            color: 'black'
-                          }}
-                      >
+                      <ListItemIcon sx={{ padding:"20px", color: 'black' }}>
                           {item.icon}
                       </ListItemIcon>
                       <ListItemText primary={item.text} sx={{ color: 'white' }} /> 
                   </ListItem>
               ))}
           </List>
-          {/* Language Selector */}
           <FormControl variant="outlined" sx={{ m: 2, minWidth: 120, backgroundColor: 'white', borderRadius: 1 }}>
             <InputLabel id="language-select-label">{t('language')}</InputLabel>
             <Select
@@ -125,47 +124,81 @@ const EmployeeDashboardLayout = () => {
       {showDashboardContent && (
         <Box sx={{ display: "flex" }}>
             <CssBaseline />
-            <Box
-                component="nav"
-                sx={{
-                    width: { sm: drawerWidth },
-                    flexShrink: { sm: 0 },
-                    color: "white",
+            <Drawer
+                variant={isMobile ? "temporary" : "persistent"}
+                open={isMobile ? mobileOpen : desktopOpen}
+                onClose={isMobile ? handleDrawerToggle : handleDesktopToggle}
+                ModalProps={{
+                    keepMounted: true,
                 }}
-                aria-label="mailbox folders"
+                sx={{
+                    width: drawerWidth,
+                    flexShrink: 0,
+                    [`& .MuiDrawer-paper`]: { 
+                        width: drawerWidth, 
+                        boxSizing: 'border-box',
+                        backgroundColor: theme.palette.primary.dark,
+                        transition: theme.transitions.create('width', {
+                          easing: theme.transitions.easing.sharp,
+                          duration: theme.transitions.duration.enteringScreen,
+                        }),
+                        overflowX: 'hidden',
+                        ...(!desktopOpen && !isMobile && {
+                          transition: theme.transitions.create('width', {
+                            easing: theme.transitions.easing.sharp,
+                            duration: theme.transitions.duration.leavingScreen,
+                          }),
+                          width: 0,
+                        }),
+                    },
+                }}
             >
-                <Drawer
-                    variant={isMobile ? "temporary" : "permanent"}
-                    open={isMobile ? mobileOpen : true}
-                    onClose={handleDrawerToggle}
-                    ModalProps={{
-                        keepMounted: true,
-                    }}
-                    sx={{
-                        display: { xs: "block", sm: "block" },
-                        "& .MuiDrawer-paper": {
-                            boxSizing: "border-box",
-                            width: drawerWidth,
-                            backgroundColor: 'red',
-                            zIndex: theme.zIndex.drawer,
-                        },
-                    }}
-                >
-                    {drawer}
-                </Drawer>
-            </Box>
+                {drawerContent}
+            </Drawer>
             <Box
                 component="main"
                 ref={mainContentRef}
                 sx={{
                     flexGrow: 1,
                     p: 3,
-                    width: { sm: `calc(100% - ${drawerWidth}px)` },
+                    transition: theme.transitions.create('margin', {
+                      easing: theme.transitions.easing.sharp,
+                      duration: theme.transitions.duration.leavingScreen,
+                    }),
+                    marginLeft: `-${drawerWidth}px`,
+                    ...(desktopOpen && !isMobile && {
+                      transition: theme.transitions.create('margin', {
+                        easing: theme.transitions.easing.easeOut,
+                        duration: theme.transitions.duration.enteringScreen,
+                      }),
+                      marginLeft: 0,
+                    }),
+                    width: '100%',
                     paddingTop: "50px",
                     height: "100vh",
                     overflow: "auto",
+                    position: 'relative',
                 }}
             >
+                {!isMobile && (
+                  <Tooltip title={desktopOpen ? t('closeMenu', { ns: 'common' }) : t('openMenu', { ns: 'common' })}>
+                    <IconButton 
+                      onClick={handleDesktopToggle}
+                      sx={{
+                        position: 'absolute',
+                        top: '90px', 
+                        left: '20px',
+                        zIndex: theme.zIndex.drawer + 2,
+                        backgroundColor: 'rgba(255,255,255,0.8)',
+                        '&:hover': {
+                          backgroundColor: 'white',
+                        }
+                      }}
+                    >
+                      {desktopOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                    </IconButton>
+                  </Tooltip>
+                )}
                 <Outlet />
             </Box>
         </Box>

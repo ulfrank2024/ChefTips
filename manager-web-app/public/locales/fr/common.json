@@ -31,5 +31,9 @@
   "netTips": "Due Back",
   "status": "Statut",
   "finalBalance": "Solde Final",
-  "recipient": "Bénéficiaire"
+  "recipient": "Bénéficiaire",
+  "openMenu": "Ouvrir le menu",
+  "closeMenu": "Fermer le menu",
+  "destinationRole": "Rôle de Destination",
+  "noPoolsFound": "Aucun pool trouvé."
 }

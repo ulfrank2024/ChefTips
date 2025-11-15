@@ -29,9 +29,10 @@
   "hote": "Hôte",
   "supportDeSalle": "Support de salle",
   "personneAyantPermission": "Personne avec permission d'encaissement",
-  "inviteEmployeeDescription": "Pour inviter un nouvel employé, veuillez saisir son adresse e-mail et sélectionner un rôle. Il recevra un e-mail avec des instructions pour rejoindre votre entreprise.",
+  "inviteEmployeeDescription": "Pour inviter un nouvel employé, veuillez saisir son adresse e-mail et sélectionner un rôle. Il recevra un un e-mail avec des instructions pour rejoindre votre entreprise.",
   "editEmployeeDescription": "Modifier le rôle et les permissions de l'employé.",
   "invite": "Inviter",
   "areYouSureYouWantToDelete": "Êtes-vous sûr de vouloir supprimer",
-  "confirmDeletion": "Confirmer la suppression"
+  "confirmDeletion": "Confirmer la suppression",
+  "manager": "Gérant"
 }

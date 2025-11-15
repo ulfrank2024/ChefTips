@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const authServiceApiClient = axios.create({
-    baseURL: 'http://auth-service:3001',
+    baseURL: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
 });
 
 const getAuthUserDetails = async (userId, token) => {

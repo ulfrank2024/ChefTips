@@ -57,5 +57,7 @@
   "receivedTipsHistory": "Received Tips History",
   "receivedTips": "Received Tips",
   "departmentContributions": "Department Contributions",
-  "distributedTips": "Distributed Tips"
+  "distributedTips": "Distributed Tips",
+  "cashOutReports": "Cash Out Reports",
+  "noDataFound": "No data found"
 }
