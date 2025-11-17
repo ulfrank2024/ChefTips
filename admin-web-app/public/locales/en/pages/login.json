@@ -1,0 +1,18 @@
+{
+  "title": "Login",
+  "welcomeBack": "Welcome Back!",
+  "loginToContinue": "Login to continue",
+  "email": "Email Address",
+  "password": "Password",
+  "button": "Sign In",
+  "noAccount": "Don't have an account? Sign Up",
+  "signUpHere": "Sign Up Here",
+  "forgotPassword": "Forgot Password?",
+  "loggingIn": "Logging in...",
+  "selectCompanyTitle": "Select Company",
+  "selectCompanyMessage": "You belong to multiple companies. Please select one to continue.",
+  "selectCompanyRequired": "Please select a company.",
+  "company": "Company",
+  "joinTeam": "Join a Team",
+  "admin_login_title": "Admin Sign In"
+}

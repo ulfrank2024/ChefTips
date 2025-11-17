@@ -57,10 +57,10 @@ const WelcomeModal = ({ open, onClose, firstName, lastName, companyName }) => {
                   alt="App Logo"
                   sx={{ width: 120, height: 120, mb: 2, objectFit: 'contain' }}
                 />
-                <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', fontSize: isMobile ? '1.5rem' : '2.125rem' }}>
                   {t('hello')}, {firstName} {lastName}!
                 </Typography>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ fontSize: isMobile ? '1rem' : '1.25rem' }}>
                   {t('welcomeTo', { companyName: companyName })}
                 </Typography>
               </>

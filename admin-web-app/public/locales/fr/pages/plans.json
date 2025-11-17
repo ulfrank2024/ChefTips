@@ -1,0 +1,19 @@
+{
+  "title": "Plans",
+  "create_new_plan": "Créer un nouveau plan",
+  "plan_name": "Nom du plan",
+  "monthly_fee": "Frais mensuels",
+  "transaction_fee": "Frais de transaction (%)",
+  "trial_days": "Jours d'essai",
+  "status": "Statut",
+  "actions": "Actions",
+  "loading": "Chargement...",
+  "edit": "Modifier",
+  "deactivate": "Désactiver",
+  "confirm_deactivate": "Êtes-vous sûr de vouloir désactiver ce plan ?",
+  "edit_plan": "Modifier le plan",
+  "is_active": "Est actif",
+  "cancel": "Annuler",
+  "update": "Mettre à jour",
+  "create": "Créer"
+}

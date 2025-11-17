@@ -4,7 +4,7 @@ const { authenticateToken } = require("../middleware/authMiddleware");
 
 // Import functions from new controllers
 const { createTipOutRule, getTipOutRules, updateTipOutRule, deleteTipOutRule } = require("../controllers/ruleController");
-const { createCashOutReport, getEmployeeCashOutDashboard, getCashOutsByCollector, createSimplifiedCashOut, calculateTipDistribution, getCashOutReports, getServerOverview } = require("../controllers/reportController"); // Added calculateTipDistribution
+const { createCashOutReport, getEmployeeCashOutDashboard, getCashOutsByCollector, createSimplifiedCashOut, calculateTipDistribution, getCashOutReports, getServerOverview, getGrossTipsVolume } = require("../controllers/reportController"); // Added calculateTipDistribution
 const { createPool, getPools, getPoolDetails, getPoolSummaryById, getEmployeeReceivedTips, getPayPeriodSummary } = require("../controllers/poolController");
 const { getCompanyEmployees, getCollectorEmployees } = require("../controllers/employeeController");
 
@@ -65,5 +65,9 @@ router.get("/server-overview", authenticateToken, isManager, getServerOverview);
 
 // Manager gets cash out reports
 router.get("/cash-out-reports", authenticateToken, isManager, getCashOutReports);
+
+// --- Inter-service Communication Routes ---
+// Used by billing-service to get total gross tips volume for a company over a period
+router.get("/internal/reports/gross-tips-volume", getGrossTipsVolume);
 
 module.exports = router;

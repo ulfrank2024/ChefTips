@@ -384,6 +384,99 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
     ```
 *   **IP Publique :** `3.81.215.233`
 
+#### 4.6 Déploiement du `billing-service`
+
+##### 4.6.1 Création du dépôt ECR
+
+*   **Commande :**
+    ```bash
+    aws ecr create-repository --repository-name billing-service --image-scanning-configuration scanOnPush=true
+    ```
+
+##### 4.6.2 Authentification Docker à ECR
+
+*   **Commande :**
+    ```bash
+    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 946358504020.dkr.ecr.us-east-1.amazonaws.com
+    ```
+
+##### 4.6.3 Construction et Push de l'image `billing-service`
+
+*   **Commandes :**
+    ```bash
+    find . -name '._*' -delete
+    docker buildx build --platform linux/amd64 -t billing-service:latest ./billing-service
+    docker tag billing-service:latest 946358504020.dkr.ecr.us-east-1.amazonaws.com/billing-service:latest
+    docker push 946358504020.dkr.ecr.us-east-1.amazonaws.com/billing-service:latest
+    ```
+
+##### 4.6.4 Création du fichier `billing-task-def.json`
+
+*   **Contenu :**
+    ```json
+    {
+        "family": "billing-service-task",
+        "networkMode": "awsvpc",
+        "requiresCompatibilities": [
+            "FARGATE"
+        ],
+        "cpu": "256",
+        "memory": "512",
+        "executionRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+        "taskRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+        "containerDefinitions": [
+            {
+                "name": "billing-service",
+                "image": "946358504020.dkr.ecr.us-east-1.amazonaws.com/billing-service:latest",
+                "essential": true,
+                "portMappings": [
+                    {
+                        "containerPort": 4002,
+                        "hostPort": 4002,
+                        "protocol": "tcp"
+                    }
+                ],
+                "environment": [
+                    { "name": "PORT", "value": "4002" },
+                    { "name": "DB_USER", "value": "billing_user" },
+                    { "name": "DB_HOST", "value": "billing-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
+                    { "name": "DB_NAME", "value": "billing_service_db" },
+                    { "name": "DB_PASSWORD", "value": "billing_password" },
+                    { "name": "DB_PORT", "value": "5432" },
+                    { "name": "NODE_ENV", "value": "production" },
+                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" },
+                    { "name": "STRIPE_SECRET_KEY", "value": "sk_test_YOUR_STRIPE_SECRET_KEY" },
+                    { "name": "STRIPE_WEBHOOK_SECRET", "value": "whsec_YOUR_STRIPE_WEBHOOK_SECRET" },
+                    { "name": "STRIPE_WEBHOOK_SECRET_LIVE", "value": "whsec_YOUR_STRIPE_WEBHOOK_SECRET_LIVE" }
+                ],
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": "/ecs/billing-service",
+                        "awslogs-region": "us-east-1",
+                        "awslogs-stream-prefix": "ecs"
+                    }
+                }
+            }
+        ]
+    }
+    ```
+
+##### 4.6.5 Enregistrement de la Task Definition
+
+*   **Commande :**
+    ```bash
+    aws ecs register-task-definition --cli-input-json file://billing-task-def.json
+    ```
+
+##### 4.6.6 Création du Service ECS
+
+*   **Commande :**
+    ```bash
+    aws ecs create-service --cluster tips-app-cluster --service-name billing-service --task-definition billing-service-task --desired-count 1 --launch-type FARGATE --network-configuration file://network-config.json
+    ```
+*   **IP Publique :** `[À DÉTERMINER APRÈS DÉPLOIEMENT]`
+
 ---
 
 ## Prochaines Étapes

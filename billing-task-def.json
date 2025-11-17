@@ -1,0 +1,47 @@
+{
+    "family": "billing-service-task",
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "executionRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::946358504020:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+            "name": "billing-service",
+            "image": "946358504020.dkr.ecr.us-east-1.amazonaws.com/billing-service:latest",
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 4002,
+                    "hostPort": 4002,
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+                { "name": "PORT", "value": "4002" },
+                { "name": "DB_USER", "value": "billing_user" },
+                { "name": "DB_HOST", "value": "billing-db-instance.cgt80m8q6ayi.us-east-1.rds.amazonaws.com" },
+                { "name": "DB_NAME", "value": "billing_service_db" },
+                { "name": "DB_PASSWORD", "value": "billing_password" },
+                { "name": "DB_PORT", "value": "5432" },
+                { "name": "NODE_ENV", "value": "production" },
+                { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" },
+                { "name": "STRIPE_SECRET_KEY", "value": "sk_test_YOUR_STRIPE_SECRET_KEY" },
+                { "name": "STRIPE_WEBHOOK_SECRET", "value": "whsec_YOUR_STRIPE_WEBHOOK_SECRET" },
+                { "name": "STRIPE_WEBHOOK_SECRET_LIVE", "value": "whsec_YOUR_STRIPE_WEBHOOK_SECRET_LIVE" }
+            ],
+
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/billing-service",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+.lien {
+    text-decoration: none;
+    color: inherit;
+    font-weight: 500;
+}
+
+.lien:hover {
+    text-decoration: underline;
+}

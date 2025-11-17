@@ -202,6 +202,17 @@ const TipModel = {
         return Math.abs(result.rows[0].total_tip_out_amount);
     },
 
+    // --- New method for billing service ---
+    async getGrossTipsVolumeByCompanyAndPeriod(companyId, startDate, endDate) {
+        const result = await pool.query(
+            `SELECT COALESCE(SUM(gross_tips), 0) as total_gross_tips_volume
+             FROM cash_outs
+             WHERE company_id = $1 AND service_date BETWEEN $2 AND $3`,
+            [companyId, startDate, endDate]
+        );
+        return parseFloat(result.rows[0].total_gross_tips_volume);
+    },
+
     // --- Pool Management ---
     async createPool(companyId, role, startDate, endDate, totalAmount, distributions) {
         const client = await pool.connect();

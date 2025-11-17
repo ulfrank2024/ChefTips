@@ -5,9 +5,14 @@ const { login, selectCompany } = require('../controllers/authController');
 const { inviteEmployee, removeEmployee, getCompanyEmployees, updateMembership } = require('../controllers/employeeController');
 const { verifyOtp, resendOtp, verifyInvitation, setupPassword, forgotPassword, resetPassword } = require('../controllers/verificationController');
 const { updateLanguagePreference, changePassword, updateProfile, getUserDetails } = require('../controllers/userController');
-const { sendCashOutNotification } = require('../controllers/emailController');
-const { getCompanyDepartments } = require('../controllers/companyController');
+const { sendCashOutNotification, sendInternalEmail } = require('../controllers/emailController');
+const { getCompanyDepartments, getAllCompanies, getCompanyById, suspendCompany, reactivateCompany } = require('../controllers/companyController');
 const { authenticateToken } = require("../middleware/authMiddleware");
+const { authenticateAdmin } = require('../middleware/adminMiddleware');
+
+// --- Admin Routes ---
+router.get("/companies", authenticateToken, authenticateAdmin, getAllCompanies);
+router.get("/companies/:id", authenticateToken, authenticateAdmin, getCompanyById);
 
 // --- User Account Routes ---
 // User signs up, creates a company, and becomes its manager
@@ -59,6 +64,12 @@ router.get("/departments", authenticateToken, getCompanyDepartments);
 router.get('/users/:userId/details', authenticateToken, getUserDetails);
 // Used by tip-service to notify user of a cashout
 router.post('/notify-cashout', authenticateToken, sendCashOutNotification);
+// Used by billing-service to suspend a company
+router.post('/internal/companies/:companyId/suspend', suspendCompany);
+// Used by billing-service to reactivate a company
+router.post('/internal/companies/:companyId/reactivate', reactivateCompany);
+// Used by other services to send emails
+router.post('/internal/send-email', sendInternalEmail);
 
 
 module.exports = router;

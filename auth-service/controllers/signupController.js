@@ -3,6 +3,7 @@ const { CompanyModel } = require("../models/companyModel");
 const { MembershipModel } = require("../models/membershipModel");
 const { TokenModel } = require("../models/tokenModel");
 const { sendEmail } = require("../services/emailService");
+const { createTrialSubscription } = require("../services/billingService"); // Import billingService
 
 const signup = async (req, res) => {
     console.log('Requête POST /api/auth/signup reçue');
@@ -27,6 +28,10 @@ const signup = async (req, res) => {
 
         await MembershipModel.createMembership(user.id, company.id, 'manager');
         console.log('Adhésion créée');
+
+        // Call billingService to create a trial subscription for the new company
+        await createTrialSubscription(company.id, company.name, email);
+        console.log(`Abonnement d'essai créé pour l'entreprise ${company.id}`);
 
         const otp = await TokenModel.createEmailVerificationOtp(user.id);
         const frontendUrl = process.env.FRONTEND_URL || 'https://www.cheftips.app'; // Valeur par défaut

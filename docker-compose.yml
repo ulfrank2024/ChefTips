@@ -2,10 +2,11 @@ services:
   auth-service:
     build: ./auth-service
     ports:
-      - "4000:3001"
+      - "4000:3000"
     env_file:
       - ./auth-service/.env
     container_name: auth-service
+    command: sh -c "npm run migrate up && npm start"
     depends_on:
       postgres:
         condition: service_healthy
@@ -23,6 +24,17 @@ services:
       tip_postgres:
         condition: service_healthy
     
+  billing-service:
+    build: ./billing-service
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./billing-service/.env
+    container_name: billing-service
+    command: npm start
+    depends_on:
+      billing_db:
+        condition: service_healthy
 
   postgres:
     build:
@@ -60,6 +72,24 @@ services:
       timeout: 5s
       retries: 5
 
+  billing_db:
+    build:
+      context: .
+      dockerfile: billing-db.Dockerfile
+    environment:
+      POSTGRES_DB: billing_service_db
+      POSTGRES_USER: billing_user
+      POSTGRES_PASSWORD: billing_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - billing_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billing_user -d billing_service_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   pgadmin:
     image: dpage/pgadmin4
     environment:
@@ -72,7 +102,10 @@ services:
         condition: service_healthy
       tip_postgres:
         condition: service_healthy
+      billing_db:
+        condition: service_healthy
 
 volumes:
   postgres_data:
   tip_postgres_data:
+  billing_postgres_data:

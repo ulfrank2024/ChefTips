@@ -42,6 +42,23 @@ const sendCashOutNotification = async (req, res) => {
     }
 };
 
+const sendInternalEmail = async (req, res) => {
+    const { to, subject, templateName, templateData, language = 'en' } = req.body;
+
+    if (!to || !subject || !templateName || !templateData) {
+        return res.status(400).json({ error: 'Missing required fields for internal email.' });
+    }
+
+    try {
+        await sendEmail(to, subject, templateName, templateData, language);
+        res.status(200).json({ message: 'Internal email sent successfully.' });
+    } catch (error) {
+        console.error('Error sending internal email:', error);
+        res.status(500).json({ error: 'Failed to send internal email.' });
+    }
+};
+
 module.exports = {
     sendCashOutNotification,
+    sendInternalEmail,
 };

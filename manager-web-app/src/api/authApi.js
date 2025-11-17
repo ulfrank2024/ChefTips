@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || "http://13.220.169.115:3000/api/auth";
 
@@ -8,6 +9,12 @@ const apiClient = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// This function will be called from App.jsx to set the navigate function
+let globalNavigate;
+export const setGlobalNavigate = (navigateFunc) => {
+    globalNavigate = navigateFunc;
+};
 
 apiClient.interceptors.request.use(config => {
     const token = localStorage.getItem('userToken');
@@ -19,6 +26,19 @@ apiClient.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
+apiClient.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 403 && error.response.data.error === 'COMPANY_INACTIVE') {
+            if (globalNavigate) {
+                globalNavigate('/billing');
+            }
+            // Prevent further processing of this error
+            return new Promise(() => {}); 
+        }
+        return Promise.reject(error);
+    }
+);
 
 const handleApiError = (error) => {
     if (error.response) {

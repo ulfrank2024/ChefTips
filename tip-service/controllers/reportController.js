@@ -369,6 +369,22 @@ const getServerOverview = async (req, res) => {
     }
 };
 
+const getGrossTipsVolume = async (req, res) => {
+    const { companyId, startDate, endDate } = req.query;
+
+    if (!companyId || !startDate || !endDate) {
+        return res.status(400).json({ error: "MISSING_REQUIRED_QUERY_PARAMETERS" });
+    }
+
+    try {
+        const totalGrossTipsVolume = await TipModel.getGrossTipsVolumeByCompanyAndPeriod(companyId, startDate, endDate);
+        res.status(200).json({ companyId, startDate, endDate, totalGrossTipsVolume });
+    } catch (err) {
+        console.error("[getGrossTipsVolume] Error:", err);
+        res.status(500).json({ error: "INTERNAL_SERVER_ERROR" });
+    }
+};
+
 
 module.exports = {
     createCashOutReport,
@@ -379,4 +395,5 @@ module.exports = {
     calculateTipDistribution,
     getCashOutReports,
     getServerOverview,
+    getGrossTipsVolume, // Export the new function
 };

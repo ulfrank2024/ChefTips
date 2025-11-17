@@ -15,6 +15,17 @@ const CompanyModel = {
         const values = [companyId];
         const { rows } = await pool.query(query, values);
         return rows;
+    },
+    async getAllCompanies() {
+        const result = await pool.query("SELECT * FROM companies");
+        return result.rows;
+    },
+    async updateCompanyStatus(companyId, isActive) {
+        const result = await pool.query(
+            "UPDATE companies SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+            [isActive, companyId]
+        );
+        return result.rows[0];
     }
 }
 

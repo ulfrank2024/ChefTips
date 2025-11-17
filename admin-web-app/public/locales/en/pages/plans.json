@@ -1,0 +1,19 @@
+{
+  "title": "Plans",
+  "create_new_plan": "Create New Plan",
+  "plan_name": "Plan Name",
+  "monthly_fee": "Monthly Fee",
+  "transaction_fee": "Transaction Fee (%)",
+  "trial_days": "Trial Days",
+  "status": "Status",
+  "actions": "Actions",
+  "loading": "Loading...",
+  "edit": "Edit",
+  "deactivate": "Deactivate",
+  "confirm_deactivate": "Are you sure you want to deactivate this plan?",
+  "edit_plan": "Edit Plan",
+  "is_active": "Is Active",
+  "cancel": "Cancel",
+  "update": "Update",
+  "create": "Create"
+}

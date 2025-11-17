@@ -1,0 +1,32 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import HttpApi from 'i18next-http-backend';
+
+i18n
+  .use(initReactI18next) // passes i18n down to react-i18next
+  .use(HttpApi) // use http backend to load translations
+  .init({
+    supportedLngs: ['en', 'fr'],
+    fallbackLng: 'en',
+    ns: [
+      'common',
+      'errors',
+      'pages/login',
+      'pages/dashboard',
+      'pages/restaurants',
+      'pages/restaurantDetails',
+      'pages/plans',
+      'pages/settings',
+      // Add other namespaces as needed
+    ],
+    defaultNS: 'common', // Fallback namespace
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json', // path to translation files
+    },
+    interpolation: {
+      escapeValue: false, // react already safes from xss
+    },
+    debug: true, // Set to false in production
+  });
+
+export default i18n;

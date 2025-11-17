@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AppBar, Toolbar, Button, Typography, Container, Box, Select, MenuItem, FormControl, InputLabel, IconButton, useMediaQuery, useTheme, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { AppBar, Toolbar, Button, Typography, Container, Box, Select, MenuItem, FormControl, InputLabel, IconButton, useMediaQuery, useTheme, Drawer, List, ListItem, ListItemIcon, ListItemText, Alert } from '@mui/material'; // Import Alert
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -14,17 +14,19 @@ import VerifyOtpPage from './pages/VerifyOtpPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import JoinTeamPage from './pages/JoinTeamPage';
 import SetupInvitedPasswordPage from './pages/SetupInvitedPasswordPage';
+import BillingPage from './pages/BillingPage'; // Import BillingPage
 
 // Component & Context Imports
 import ManagerProtectedRoute from './components/ManagerProtectedRoute';
 import EmployeeProtectedRoute from './components/EmployeeProtectedRoute';
-import { useAuth } from './context/AuthContext.jsx';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx'; // Import AuthProvider and useAuth
 import { AlertProvider } from './context/AlertContext.jsx';
 import { useDrawer } from './context/DrawerContext';
 import AlertDialog from './components/AlertDialog.jsx';
 import WelcomeModal from './components/WelcomeModal.jsx';
 import logo from './assets/logo.png';
 import AuthLayout from './components/AuthLayout.jsx'; // Import AuthLayout
+import { setGlobalNavigate } from './api/authApi'; // Import setGlobalNavigate
 
 // Employee Page Imports
 
@@ -48,7 +50,7 @@ import ManagePayoutPeriods from './components/manager/ManagePayoutPeriods';
 
 function App() {
   const { i18n, t } = useTranslation(['common', 'pages/login', 'pages/managerDashboard', 'pages/employeeDashboard']);
-  const { user, logout } = useAuth();
+  const { user, logout, subscriptionStatus } = useAuth(); // Get subscriptionStatus from AuthContext
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -65,6 +67,11 @@ function App() {
     }
   }, [user]);
 
+  // Set the global navigate function for axios interceptors
+  useEffect(() => {
+    setGlobalNavigate(navigate);
+  }, [navigate]);
+
   const handleCloseWelcomeModal = () => {
     setWelcomeModalOpen(false);
     if (user) {
@@ -75,10 +82,35 @@ function App() {
   const getTitle = () => {
       if (location.pathname.startsWith('/dashboard')) return t('title', { ns: 'pages/managerDashboard' });
       if (location.pathname.startsWith('/employee')) return t('title', { ns: 'pages/employeeDashboard' });
+      if (location.pathname.startsWith('/billing')) return 'Gestion de l\'Abonnement'; // New title for billing page
       return '';
     };
   
-    const showAppBar = user && (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/employee/dashboard'));
+    const showAppBar = user && (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/employee/dashboard') || location.pathname.startsWith('/billing'));
+
+    // Determine banner message and severity
+    let bannerMessage = null;
+    let bannerSeverity = 'info';
+    if (user && user.role === 'manager' && subscriptionStatus) {
+      if (subscriptionStatus.status === 'trialing') {
+        const trialEndsDate = new Date(subscriptionStatus.trial_ends_at);
+        const diffTime = trialEndsDate.getTime() - new Date().getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays > 0) {
+          bannerMessage = `Votre période d'essai se termine dans ${diffDays} jour(s).`;
+          bannerSeverity = 'info';
+        } else {
+          bannerMessage = `Votre période d'essai est terminée. Veuillez choisir un plan.`;
+          bannerSeverity = 'warning';
+        }
+      } else if (subscriptionStatus.status === 'past_due') {
+        bannerMessage = "Votre paiement a échoué. Pour éviter la suspension de votre compte, veuillez mettre à jour votre moyen de paiement.";
+        bannerSeverity = 'error';
+      } else if (subscriptionStatus.status === 'suspended') {
+        bannerMessage = "Votre compte est suspendu. Veuillez régler votre facture pour le réactiver.";
+        bannerSeverity = 'error';
+      }
+    }
 
     return (
         <AlertProvider>
@@ -110,6 +142,16 @@ function App() {
                   </Toolbar>
               </AppBar>
             )}
+            {bannerMessage && (user?.role === 'manager') && (
+              <Alert severity={bannerSeverity} sx={{ width: '100%', position: 'sticky', top: showAppBar ? '80px' : '0', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                {bannerMessage}
+                {(subscriptionStatus.status === 'trialing' || subscriptionStatus.status === 'past_due' || subscriptionStatus.status === 'suspended') && (
+                  <Button color="inherit" size="small" onClick={() => navigate('/billing')} sx={{ ml: 2 }}>
+                    {subscriptionStatus.status === 'trialing' ? 'Choisir un plan' : 'Gérer l\'abonnement'}
+                  </Button>
+                )}
+              </Alert>
+            )}
             <Box sx={{ paddingTop: showAppBar ? "80px" : 0 }}>
                 <Routes>
                     <Route element={<AuthLayout />}>
@@ -139,6 +181,7 @@ function App() {
                             <Route path="received-tips" element={<EmployeeReceivedTipsPage />} />
                             <Route path="employee-details/:employeeId" element={<EmployeeDetailsPage />} />
                         </Route>
+                        <Route path="/billing" element={<BillingPage />} /> {/* New Billing Route */}
                     </Route>
   
                     <Route element={<EmployeeProtectedRoute />}>
