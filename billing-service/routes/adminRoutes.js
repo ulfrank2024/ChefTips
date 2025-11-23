@@ -3,6 +3,7 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 
 router.get('/kpis', adminController.getKpis);
+router.get('/kpis/historical', adminController.getHistoricalKpis);
 
 router.post('/plans', adminController.createPlan);
 router.get('/plans', adminController.getPlans);

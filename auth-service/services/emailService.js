@@ -6,20 +6,20 @@ const enTranslations = require("../locales/en.json");
 
 const sesClient = new SESClient({ region: process.env.AWS_REGION || "us-east-1" });
 
-const getSubject = (templateName, language) => {
-    let translations;
-    if (language === 'fr') {
-        translations = frTranslations;
-    } else {
-        translations = enTranslations;
+const getSubject = (templateName) => {
+    const fr_subject = frTranslations.subjects[templateName] || '';
+    const en_subject = enTranslations.subjects[templateName] || '';
+
+    if (fr_subject && en_subject) {
+        return `${fr_subject} / ${en_subject}`;
     }
-    return translations.subjects[templateName] || templateName;
+    return fr_subject || en_subject || templateName;
 };
 
 const sendEmail = async (to, templateName, templateData, language = 'en') => {
     try {
         const { html } = await generateEmailTemplate(templateName, templateData, language);
-        const subject = getSubject(templateName, language);
+        const subject = getSubject(templateName);
 
         const sendCommand = new SendEmailCommand({
             Destination: {

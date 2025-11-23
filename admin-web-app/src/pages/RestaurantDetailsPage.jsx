@@ -12,6 +12,12 @@ import {
   InputLabel,
   TextField,
   Alert,
+  Snackbar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCompanyById, suspendCompany, reactivateCompany } from '../api/companyApi';
@@ -30,6 +36,9 @@ const RestaurantDetailsPage = () => {
 
   const [selectedPlan, setSelectedPlan] = useState('');
   const [newTrialEndDate, setNewTrialEndDate] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [actionToConfirm, setActionToConfirm] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,8 +51,10 @@ const RestaurantDetailsPage = () => {
         setCompany(companyData);
         setSubscription(subscriptionData);
         setPlans(plansData);
-        setSelectedPlan(subscriptionData.plan_id);
-        setNewTrialEndDate(subscriptionData.trial_ends_at ? subscriptionData.trial_ends_at.split('T')[0] : '');
+        if (subscriptionData) {
+          setSelectedPlan(subscriptionData.plan_id);
+          setNewTrialEndDate(subscriptionData.trial_ends_at ? subscriptionData.trial_ends_at.split('T')[0] : '');
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -54,14 +65,33 @@ const RestaurantDetailsPage = () => {
     fetchData();
   }, [id]);
 
-  const handleSuspendReactivate = async () => {
+  const handleOpenDialog = (action) => {
+    setActionToConfirm(() => action);
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setActionToConfirm(null);
+  };
+
+  const handleConfirmAction = () => {
+    if (actionToConfirm) {
+      actionToConfirm();
+    }
+    handleCloseDialog();
+  };
+
+  const suspendReactivateAction = async () => {
     try {
       if (company.is_active) {
         await suspendCompany(company.id);
         setCompany((prev) => ({ ...prev, is_active: false }));
+        setSnackbar({ open: true, message: t('company_suspended_success'), severity: 'success' });
       } else {
         await reactivateCompany(company.id);
         setCompany((prev) => ({ ...prev, is_active: true }));
+        setSnackbar({ open: true, message: t('company_reactivated_success'), severity: 'success' });
       }
     } catch (err) {
       setError(err.message);
@@ -71,10 +101,9 @@ const RestaurantDetailsPage = () => {
   const handlePlanChange = async () => {
     try {
       await updateSubscriptionPlan(subscription.id, selectedPlan);
-      // Optionally refetch subscription or update state
       const updatedSubscription = await getSubscriptionByCompanyId(id);
       setSubscription(updatedSubscription);
-      alert(t('plan_updated_success'));
+      setSnackbar({ open: true, message: t('plan_updated_success'), severity: 'success' });
     } catch (err) {
       setError(err.message);
     }
@@ -83,13 +112,19 @@ const RestaurantDetailsPage = () => {
   const handleTrialExtension = async () => {
     try {
       await updateTrialEndDate(subscription.id, newTrialEndDate);
-      // Optionally refetch subscription or update state
       const updatedSubscription = await getSubscriptionByCompanyId(id);
       setSubscription(updatedSubscription);
-      alert(t('trial_extended_success'));
+      setSnackbar({ open: true, message: t('trial_extended_success'), severity: 'success' });
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   if (loading) {
@@ -105,7 +140,7 @@ const RestaurantDetailsPage = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ py: 3 }}>
       <Typography variant="h4" gutterBottom>
         {t('title')} - {company.name}
       </Typography>
@@ -119,7 +154,7 @@ const RestaurantDetailsPage = () => {
             <Button
               variant="contained"
               color={company.is_active ? 'error' : 'primary'}
-              onClick={handleSuspendReactivate}
+              onClick={() => handleOpenDialog(suspendReactivateAction)}
               sx={{ mt: 2 }}
             >
               {company.is_active ? t('suspend_company') : t('reactivate_company')}
@@ -132,7 +167,7 @@ const RestaurantDetailsPage = () => {
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>{t('subscription_details')}</Typography>
               <Typography><strong>{t('subscription_status')}:</strong> {subscription.status}</Typography>
-              <Typography><strong>{t('current_plan')}:</strong> {plans.find(p => p.id === subscription.plan_id)?.name || 'N/A'}</Typography>
+              <Typography><strong>{t('current_plan')}:</strong> {plans.find(p => p.id === subscription.plan_id)?.name || t('na')}</Typography>
               <Typography><strong>{t('trial_ends_at')}:</strong> {subscription.trial_ends_at ? new Date(subscription.trial_ends_at).toLocaleDateString() : t('not_applicable')}</Typography>
 
               <Box sx={{ mt: 3 }}>
@@ -146,7 +181,7 @@ const RestaurantDetailsPage = () => {
                   >
                     {plans.map((plan) => (
                       <MenuItem key={plan.id} value={plan.id}>
-                        {plan.name} - ${plan.monthly_fee / 100}/month
+                        {plan.name} - ${plan.monthly_fee / 100}{t('per_month')}
                       </MenuItem>
                     ))}
                   </Select>
@@ -175,6 +210,28 @@ const RestaurantDetailsPage = () => {
           </Grid>
         )}
       </Grid>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+      >
+        <DialogTitle>{t('confirm_action')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t('are_you_sure_you_want_to_perform_this_action')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>{t('common:cancel')}</Button>
+          <Button onClick={handleConfirmAction} color="primary" autoFocus>
+            {t('common:confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

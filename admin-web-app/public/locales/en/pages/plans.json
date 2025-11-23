@@ -2,7 +2,7 @@
   "title": "Plans",
   "create_new_plan": "Create New Plan",
   "plan_name": "Plan Name",
-  "monthly_fee": "Monthly Fee",
+  "monthly_fee": "Monthly Fee (CAD)",
   "transaction_fee": "Transaction Fee (%)",
   "trial_days": "Trial Days",
   "status": "Status",
@@ -15,5 +15,18 @@
   "is_active": "Is Active",
   "cancel": "Cancel",
   "update": "Update",
-  "create": "Create"
+  "create": "Create",
+  "created_at": "Created At",
+  "updated_at": "Updated At",
+  "confirm_update_plan": "Confirm Plan Update",
+  "confirm_create_plan": "Confirm Plan Creation",
+  "please_review_changes": "Please review the changes:",
+  "old_value": "Old Value",
+  "new_value": "New Value",
+  "no_changes_made": "No changes were made.",
+  "confirm_update": "Confirm Update",
+  "confirm_create": "Confirm Create",
+  "confirm_deactivation_title": "Confirm Deactivation",
+  "confirm_deactivate_message": "Are you sure you want to deactivate the plan \"{{planName}}\"? This action cannot be undone.",
+  "plan_deactivated_success": "Plan deactivated successfully."
 }

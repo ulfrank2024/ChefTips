@@ -1,3 +1,14 @@
 {
-  "title": "Restaurants"
+  "title": "Restaurants",
+  "tableName": "Name",
+  "tableStatus": "Status",
+  "tableSubscriptionStatus": "Subscription Status",
+  "loading": "Loading...",
+  "active": "Active",
+  "inactive": "Inactive",
+  "na": "N/A",
+  "trialing": "Trialing",
+  "past_due": "Past Due",
+  "suspended": "Suspended",
+  "filter_by_name": "Filter by name"
 }

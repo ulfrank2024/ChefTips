@@ -1,3 +1,15 @@
 {
-  "title": "Restaurants"
+  "title": "Restaurants",
+  "tableName": "Nom",
+  "tableStatus": "Statut",
+  "tableSubscriptionStatus": "Statut d'abonnement",
+  "loading": "Chargement...",
+  "active": "Actif",
+  "inactive": "Inactif",
+  "na": "N/A",
+  "trialing": "En essai",
+  "past_due": "En retard",
+  "suspended": "Suspendu",
+  "filter_by_name": "Filtrer par nom"
 }
+

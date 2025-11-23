@@ -1,6 +1,14 @@
 {
   "title": "Paramètres",
-  "default_trial_days": "Jours d'essai par défaut",
-  "update_settings": "Mettre à jour les paramètres",
-  "settings_updated_success": "Paramètres mis à jour avec succès !"
+  "defaultTrialDaysLabel": "Jours d'essai par défaut",
+  "saveButton": "Enregistrer",
+  "updateSuccess": "Paramètres mis à jour avec succès !",
+  "noChanges": "Aucune modification à enregistrer.",
+  "confirmUpdateTitle": "Confirmer la mise à jour des paramètres",
+  "pleaseReviewChanges": "Veuillez vérifier les modifications :",
+  "oldValue": "Ancienne valeur",
+  "newValue": "Nouvelle valeur",
+  "confirmUpdate": "Confirmer la mise à jour",
+  "createdAt": "Créé le",
+  "updatedAt": "Mis à jour le"
 }

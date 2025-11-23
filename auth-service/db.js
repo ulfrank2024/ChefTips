@@ -2,12 +2,14 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    // ssl: {
-    //     rejectUnauthorized: false
-    // },
+    ssl: {
+        rejectUnauthorized: false
+    },
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 20000,
 });
+
+console.log('SSL config in db.js:', pool.options.ssl); // Added for debugging
 
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);

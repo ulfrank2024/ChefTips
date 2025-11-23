@@ -1,13 +1,12 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cron = require('node-cron');
 const stripeRoutes = require('./routes/stripeRoutes');
+const cors = require('cors'); // Import the cors middleware
+console.log('stripeRoutes loaded:', stripeRoutes);
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 const billingApiRoutes = require('./routes/billingApiRoutes'); // Import billing API routes
 const adminRoutes = require('./routes/adminRoutes');
 const { runMonthlyBilling } = require('./jobs/monthlyBillingJob');
-
-dotenv.config();
 
 const app = express();
 
@@ -16,9 +15,16 @@ app.use('/stripe', stripeRoutes); // Mount Stripe routes
 
 app.use(express.json()); // For parsing application/json
 
+// Configure CORS for http://localhost:5173
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://www.cheftips.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-auth']
+}));
+
 app.use('/subscriptions', subscriptionRoutes); // Mount subscription routes
 app.use('/api', billingApiRoutes); // Mount billing API routes
-app.use('/admin', adminRoutes);
+app.use('/api/billing/admin', adminRoutes);
 
 const PORT = process.env.PORT || 4002;
 

@@ -21,5 +21,10 @@
   "new_trial_end_date": "New Trial End Date",
   "extend_trial_button": "Extend Trial",
   "plan_updated_success": "Subscription plan updated successfully!",
-  "trial_extended_success": "Trial end date updated successfully!"
+  "trial_extended_success": "Trial end date updated successfully!",
+  "company_suspended_success": "Company suspended successfully.",
+  "company_reactivated_success": "Company reactivated successfully.",
+  "confirm_action": "Confirm Action",
+  "are_you_sure_you_want_to_perform_this_action": "Are you sure you want to perform this action?",
+  "per_month": "/month"
 }

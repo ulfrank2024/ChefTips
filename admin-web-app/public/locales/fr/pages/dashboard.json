@@ -1,3 +1,8 @@
 {
-  "title": "Tableau de bord"
+  "title": "Tableau de bord",
+  "historicalKpisTitle": "KPIs Historiques",
+  "mrr": "MRR (Revenu Mensuel Récurrent)",
+  "activeCustomers": "Clients Actifs",
+  "trialCustomers": "Clients en Essai",
+  "currencySymbol": "CAD"
 }

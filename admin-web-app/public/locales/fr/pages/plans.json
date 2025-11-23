@@ -2,7 +2,7 @@
   "title": "Plans",
   "create_new_plan": "Créer un nouveau plan",
   "plan_name": "Nom du plan",
-  "monthly_fee": "Frais mensuels",
+  "monthly_fee": "Frais mensuels (CAD)",
   "transaction_fee": "Frais de transaction (%)",
   "trial_days": "Jours d'essai",
   "status": "Statut",
@@ -15,5 +15,18 @@
   "is_active": "Est actif",
   "cancel": "Annuler",
   "update": "Mettre à jour",
-  "create": "Créer"
+  "create": "Créer",
+  "created_at": "Créé le",
+  "updated_at": "Mis à jour le",
+  "confirm_update_plan": "Confirmer la mise à jour du plan",
+  "confirm_create_plan": "Confirmer la création du plan",
+  "please_review_changes": "Veuillez vérifier les modifications :",
+  "old_value": "Ancienne valeur",
+  "new_value": "Nouvelle valeur",
+  "no_changes_made": "Aucune modification effectuée.",
+  "confirm_update": "Confirmer la mise à jour",
+  "confirm_create": "Confirmer la création",
+  "confirm_deactivation_title": "Confirmer la désactivation",
+  "confirm_deactivate_message": "Êtes-vous sûr de vouloir désactiver le plan \"{{planName}}\" ? Cette action est irréversible.",
+  "plan_deactivated_success": "Plan désactivé avec succès."
 }

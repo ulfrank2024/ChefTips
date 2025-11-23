@@ -41,6 +41,15 @@ export const getKpis = async () => {
     }
 };
 
+export const getHistoricalKpis = async () => {
+    try {
+        const response = await apiClient.get('/admin/kpis/historical');
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
 export const createPlan = async (planData) => {
     try {
         const response = await apiClient.post('/admin/plans', planData);

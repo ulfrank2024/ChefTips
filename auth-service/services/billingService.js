@@ -1,4 +1,9 @@
 const axios = require('axios');
+const https = require('https');
+
+const agent = new https.Agent({
+  rejectUnauthorized: false
+});
 
 const BILLING_SERVICE_URL = process.env.BILLING_SERVICE_URL || 'http://localhost:4002'; // Default to local billing-service
 
@@ -9,7 +14,7 @@ const createTrialSubscription = async (companyId, companyName, managerEmail) => 
             companyId,
             companyName,
             managerEmail,
-        });
+        }, { httpsAgent: agent });
         console.log(`Trial subscription created for company ${companyId} in billing-service.`);
         return response.data;
     } catch (error) {

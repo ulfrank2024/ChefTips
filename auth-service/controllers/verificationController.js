@@ -25,7 +25,7 @@ const verifyOtp = async (req, res) => {
 
         const currentYear = new Date().getFullYear();
 
-        await sendEmail(email, "Bienvenue / Welcome", 'welcome', { firstName: user.first_name, currentYear }, 'en');
+        await sendEmail(email, 'welcome', { firstName: user.first_name, currentYear }, user.preferred_language || 'en');
 
         res.status(200).json({ success_code: "EMAIL_VERIFIED_SUCCESSFULLY" });
     } catch (err) {
@@ -47,7 +47,7 @@ const resendOtp = async (req, res) => {
 
         const otp = await TokenModel.createEmailVerificationOtp(user.id);
         
-        await sendEmail(email, "Vérification OTP / OTP Verification", 'signup', { otp }, user.preferred_language || 'en');
+        await sendEmail(email, 'signup', { otp }, user.preferred_language || 'en');
 
         res.status(200).json({ success_code: "OTP_RESENT_SUCCESSFULLY" });
     } catch (err) {
@@ -107,7 +107,7 @@ const setupPassword = async (req, res) => {
 
         const currentYear = new Date().getFullYear();
 
-        await sendEmail(updatedUser.email, "Bienvenue dans l'équipe / Welcome to the team", 'welcomeEmployee', { firstName: updatedUser.first_name, companyName, currentYear }, 'en');
+        await sendEmail(updatedUser.email, 'welcomeEmployee', { firstName: updatedUser.first_name, companyName, currentYear }, updatedUser.preferred_language || 'en');
 
         await TokenModel.deletePasswordSetupToken(token);
 
@@ -128,9 +128,8 @@ const forgotPassword = async (req, res) => {
         if (user) {
             const token = await TokenModel.createPasswordResetToken(user.id);
             const resetLink = `https://www.cheftips.app/reset-password?token=${token}`;
-            // Note: You should have an email template for password resets.
-            // Using a generic one for now.
-            await sendEmail(email, "Réinitialisation de mot de passe / Password Reset", 'signup', { otp: token }, user.preferred_language || 'en');
+            const currentYear = new Date().getFullYear();
+            await sendEmail(email, 'passwordReset', { resetLink, currentYear }, user.preferred_language || 'en');
         }
         // Always return success to prevent email enumeration
         res.status(200).json({ success_code: "PASSWORD_RESET_LINK_SENT" });

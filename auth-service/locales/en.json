@@ -8,6 +8,10 @@
         "HOST": "Host"
     },
     "subjects": {
-        "cashOutNotification": "Cash out notification"
+        "cashOutNotification": "Cash out notification",
+        "signup": "OTP Verification",
+        "welcome": "Welcome to ChefTips",
+        "welcomeEmployee": "Welcome to the Team",
+        "passwordReset": "Password Reset"
     }
 }

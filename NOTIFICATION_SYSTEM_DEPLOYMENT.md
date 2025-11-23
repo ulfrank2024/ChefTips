@@ -1,3 +1,4 @@
+
 # Migration du Système de Notification vers AWS SES
 
 Ce document détaille les étapes nécessaires pour faire migrer le système d'envoi d'e-mails de l'application, en passant de `nodemailer` avec un fournisseur SMTP (Gmail) à **Amazon Simple Email Service (SES)**.

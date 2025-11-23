@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node server.js",
-    "migrate": "dotenv -e .env -- node-pg-migrate -m migrations"
+    "start": "node-pg-migrate -m migrations up --verbose && node server.js",
+    "migrate": "node-pg-migrate -m migrations"
   },
   "jest": {
     "testPathIgnorePatterns": [

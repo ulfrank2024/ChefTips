@@ -2,5 +2,13 @@
   "title": "Settings",
   "defaultTrialDaysLabel": "Default Trial Days",
   "saveButton": "Save",
-  "updateSuccess": "Settings updated successfully!"
+  "updateSuccess": "Settings updated successfully!",
+  "noChanges": "No changes to save.",
+  "confirmUpdateTitle": "Confirm Settings Update",
+  "pleaseReviewChanges": "Please review the changes:",
+  "oldValue": "Old Value",
+  "newValue": "New Value",
+  "confirmUpdate": "Confirm Update",
+  "createdAt": "Created At",
+  "updatedAt": "Updated At"
 }

@@ -207,7 +207,7 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
 
 *   **Objectif :** Définir les sous-réseaux et le groupe de sécurité pour les services.
 *   **ID du Groupe de Sécurité des Services :** `sg-0b1553f902d01194c`
-*   **Subnets :** `["subnet-09650ce60ec6aee63","subnet-0abe034e0cce968dc","subnet-0ded40f7696adc1f6","subnet-076f8b80777e29daa","subnet-0e6852c975bc9695b","subnet-0ee340078ad1e8fe4"]`
+*   **Subnets :** `["subnet-09650ce60ec6aee63","subnet-0abe034e0cce968dc","subnet-0ded40f7696adc1f6","subnet-076f8b80777e29daa","subnet-0e6852c975bc9695b","subnet-0ee340078ad1e8fe4"]
 
 ##### 4.3.1 Création du Groupe de Sécurité des Services
 
@@ -354,7 +354,7 @@ Ce document récapitule toutes les étapes, commandes et configurations effectu�
                     { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" },
                     { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
                     { "name": "AUTH_SERVICE_ENDPOINT", "value": "http://18.206.193.5:3000" },
-                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" }
+                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" } 
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
@@ -855,7 +855,7 @@ Cette section documente les problèmes rencontrés et les solutions appliquées 
                     { "name": "SMTP_FROM_EMAIL", "value": "frranklinlontsi99@gmail.com" },
                     { "name": "JWT_SECRET", "value": "a-very-secret-and-long-key-for-dev-only-!@#$%" },
                     { "name": "AUTH_SERVICE_ENDPOINT", "value": "http://18.206.193.5:3000" },
-                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" }
+                    { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" } 
                 ],
                 "logConfiguration": {
                     "logDriver": "awslogs",
@@ -916,3 +916,45 @@ Cette section documente les problèmes rencontrés et les solutions appliquées 
 
 **Conclusion :** Après ces étapes, le `tip-service` démarre correctement, les migrations s'exécutent sans erreur de certificat SSL, et le service est opérationnel.
 
+# 14. Création de l'utilisateur administrateur (Novembre 2025)
+
+Cette section documente les étapes et le débogage nécessaires à la création d'un utilisateur administrateur pour l'application.
+
+### 14.1. Objectif
+
+L'objectif était de créer un utilisateur administrateur avec les privilèges nécessaires pour gérer l'application via l'`admin-web-app`.
+
+### 14.2. Processus de création
+
+Le processus de création d'un utilisateur administrateur se déroule en deux étapes, en utilisant des scripts existants dans le `auth-service` :
+1.  **`seed.js`**: Crée l'enregistrement de l'utilisateur dans la table `users` avec le rôle `admin`.
+2.  **`create-admin-company.js`**: Crée une entreprise "Admin's Company" et y associe l'utilisateur administrateur avec un rôle de membre.
+
+### 14.3. Débogage et Résolution des Problèmes
+
+L'exécution de ces scripts dans l'environnement ECS a nécessité plusieurs étapes de débogage :
+
+1.  **Problème : `SessionManagerPlugin is not found`**
+    *   **Symptôme :** La commande `aws ecs execute-command` échouait car le plugin AWS Session Manager n'était pas installé sur la machine cliente.
+    *   **Solution :** L'utilisateur a été guidé pour installer le plugin Session Manager pour macOS.
+
+2.  **Problème : `execute command was not enabled`**
+    *   **Symptôme :** La commande `aws ecs execute-command` échouait car l'option n'était pas activée sur le service ECS.
+    *   **Solution :** Activation de l'option avec la commande `aws ecs update-service --cluster tips-app-cluster --service auth-service --enable-execute-command`.
+
+3.  **Problème : `TargetNotConnectedException`**
+    *   **Symptôme :** La commande `aws ecs execute-command` échouait car la tâche ECS ne parvenait pas à se connecter au service Session Manager.
+    *   **Analyse :** Le rôle IAM `ecsTaskExecutionRole` de la tâche ne disposait pas des permissions nécessaires pour SSM.
+    *   **Solution :** Attachement de la politique gérée `AmazonSSMManagedInstanceCore` au rôle `ecsTaskExecutionRole` avec la commande `aws iam attach-role-policy --role-name ecsTaskExecutionRole --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore`.
+
+4.  **Problème : `violates check constraint "company_memberships_role_check"`**
+    *   **Symptôme :** Le script `create-admin-company.js` échouait car le rôle `admin` n'était pas autorisé dans la table `company_memberships`.
+    *   **Analyse :** La contrainte de la table n'incluait pas `admin` comme rôle valide.
+    *   **Solution :**
+        1.  Création d'un nouveau fichier de migration (`1763442632789_add-admin-role-to-company-memberships.js`) pour ajouter le rôle `admin` à la contrainte `CHECK` de la table `company_memberships`.
+        2.  Débogage du processus de migration qui ne s'appliquait pas au démarrage du conteneur. Le problème a été résolu en corrigeant les scripts `start` et `migrate` dans `auth-service/package.json` pour s'assurer que `node-pg-migrate` s'exécute correctement.
+        3.  Reconstruction et redéploiement de l'image Docker `auth-service` pour appliquer la migration.
+
+### 14.4. Résultat
+
+Après avoir résolu ces problèmes, les scripts `seed.js` et `create-admin-company.js` ont été exécutés avec succès, créant l'utilisateur administrateur `elizabethpraisequeen@gmail.com` et l'associant à une entreprise d'administration.

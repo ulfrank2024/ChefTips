@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "migrate": "dotenv -e .env -- node-pg-migrate -m migrations",
+    "migrate": "node-pg-migrate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,13 +13,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "axios": "^1.7.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "node-cron": "^4.2.1",
     "node-pg-migrate": "^8.0.3",
     "pg": "^8.16.3",
-    "stripe": "^19.3.1",
-    "axios": "^1.7.2"
+    "stripe": "^19.3.1"
   },
   "devDependencies": {
     "dotenv-cli": "^11.0.0"

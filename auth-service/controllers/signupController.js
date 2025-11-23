@@ -43,7 +43,7 @@ const signup = async (req, res) => {
             currentYear: new Date().getFullYear(),
         };
 
-        await sendEmail(email, "Bienvenue / Welcome", 'signup', templateData, 'en');
+                await sendEmail(email, 'signup', templateData, 'en');
         console.log('Email de vérification envoyé');
 
         res.status(201).json({ success_code: "SIGNUP_SUCCESS_VERIFICATION_SENT" });

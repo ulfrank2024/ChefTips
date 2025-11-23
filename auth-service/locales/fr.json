@@ -8,6 +8,10 @@
         "HOST": "Hôte"
     },
     "subjects": {
-        "cashOutNotification": "Notification de retrait d'argent"
+        "cashOutNotification": "Notification de retrait d'argent",
+        "signup": "Vérification OTP",
+        "welcome": "Bienvenue chez ChefTips",
+        "welcomeEmployee": "Bienvenue dans l'équipe",
+        "passwordReset": "Réinitialisation de mot de passe"
     }
 }

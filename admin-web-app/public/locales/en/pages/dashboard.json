@@ -1,3 +1,8 @@
 {
-  "title": "Dashboard"
+  "title": "Dashboard",
+  "historicalKpisTitle": "Historical KPIs",
+  "mrr": "MRR (Monthly Recurring Revenue)",
+  "activeCustomers": "Active Customers",
+  "trialCustomers": "Trial Customers",
+  "currencySymbol": "CAD"
 }

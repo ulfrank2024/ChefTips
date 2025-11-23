@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "installCommand": "cd manager-web-app && npm install",
-  "buildCommand": "cd manager-web-app && npm run build",
-  "outputDirectory": "manager-web-app/dist",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}

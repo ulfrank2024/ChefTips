@@ -2,5 +2,6 @@
   "email": "Adresse e-mail",
   "password": "Mot de passe",
   "logging_in": "Connexion en cours...",
-  "select": "Sélectionner"
+  "select": "Sélectionner",
+  "language": "Langue"
 }

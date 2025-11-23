@@ -21,5 +21,10 @@
   "new_trial_end_date": "Nouvelle date de fin d'essai",
   "extend_trial_button": "Prolonger l'essai",
   "plan_updated_success": "Plan d'abonnement mis à jour avec succès !",
-  "trial_extended_success": "Date de fin d'essai mise à jour avec succès !"
+  "trial_extended_success": "Date de fin d'essai mise à jour avec succès !",
+  "company_suspended_success": "Entreprise suspendue avec succès.",
+  "company_reactivated_success": "Entreprise réactivée avec succès.",
+  "confirm_action": "Confirmer l'action",
+  "are_you_sure_you_want_to_perform_this_action": "Êtes-vous sûr de vouloir effectuer cette action ?",
+  "per_month": "/mois"
 }
