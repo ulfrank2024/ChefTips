@@ -34,3 +34,4 @@ temp_auth-task-def.json
 /.expo/
 /web-build/
 .vercel
+billing-task-def.json
