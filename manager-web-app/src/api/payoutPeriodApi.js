@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-// The base URL should point to the tip-service where the /api/payout-periods endpoint lives
-const serviceBaseUrl = import.meta.env.VITE_TIP_API_URL ? import.meta.env.VITE_TIP_API_URL.replace('/api/tips', '') : 'http://localhost:4001';
-const API_BASE_URL = `${serviceBaseUrl}/api/payout-periods`;
+const API_BASE_URL = import.meta.env.VITE_PAYOUT_PERIOD_API_URL || 'http://localhost:4001/api/payout-periods';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
