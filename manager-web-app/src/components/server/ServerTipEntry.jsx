@@ -47,13 +47,13 @@ const ServerTipEntry = () => {
     }
 
     try {
-      // This endpoint will need to be created in the tip-service
-      await axios.post(`${import.meta.env.VITE_TIP_SERVICE_URL}/api/tips/server-entry`, {
-        employeeId: user.id,
-        date: selectedDate.toISOString().split('T')[0],
-        grossTips: parseFloat(grossTips),
-        adjustments: parseFloat(adjustments),
-        netTips: netTips,
+      // Endpoint updated to match the backend route
+      await axios.post(`${import.meta.env.VITE_TIP_SERVICE_URL}/api/tips/cash-outs`, {
+        service_date: selectedDate.toISOString().split('T')[0],
+        gross_tips: parseFloat(grossTips),
+        cash_on_hand: parseFloat(adjustments), // 'adjustments' from form is mapped to 'cash_on_hand'
+        was_collector: true, // Assuming a server using this form is always a collector
+        // food_sales, alcohol_sales, etc., can be added if needed
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
