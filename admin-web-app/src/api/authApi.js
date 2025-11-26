@@ -26,16 +26,20 @@ apiClient.interceptors.request.use(config => {
     return Promise.reject(error);
 });
 
+import i18n from '../i18n'; // Import i18n instance
+
 const handleApiError = (error) => {
     if (error.response) {
         console.error("API Error Response:", error.response.data);
-        throw new Error(error.response.data.error || 'An unexpected error occurred.');
+        const errorKey = error.response.data.error || 'UNEXPECTED_ERROR';
+        const translatedError = i18n.t(errorKey, { ns: 'errors', defaultValue: i18n.t('UNEXPECTED_ERROR', { ns: 'errors' }) });
+        throw new Error(translatedError);
     } else if (error.request) {
         console.error("API Error Request:", error.request);
-        throw new Error('The server did not respond. Please try again later.');
+        throw new Error(i18n.t('SERVER_DID_NOT_RESPOND', { ns: 'errors', defaultValue: 'The server did not respond. Please try again later.' }));
     } else {
         console.error('API Error Message:', error.message);
-        throw new Error('An error occurred while setting up the request.');
+        throw new Error(i18n.t('REQUEST_SETUP_ERROR', { ns: 'errors', defaultValue: 'An error occurred while setting up the request.' }));
     }
 };
 

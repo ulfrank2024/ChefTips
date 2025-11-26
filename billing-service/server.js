@@ -17,13 +17,14 @@ app.use(express.json()); // For parsing application/json
 
 // Configure CORS for http://localhost:5173
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://www.cheftips.app'],
+  origin: ['http://localhost:5173', 'https://www.cheftips.app', 'https://admin-web-app-gray.vercel.app'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-auth']
 }));
 
-app.use('/subscriptions', subscriptionRoutes); // Mount subscription routes
-app.use('/api', billingApiRoutes); // Mount billing API routes
+// Harmonise les montages des routes pour correspondre aux attentes du frontend
+app.use('/api/billing/subscriptions', subscriptionRoutes);
+app.use('/api/billing/api', billingApiRoutes); // Adapter pour le préfixe /api/billing/api
 app.use('/api/billing/admin', adminRoutes);
 
 const PORT = process.env.PORT || 4002;

@@ -70,4 +70,13 @@ router.get("/cash-out-reports", authenticateToken, isManager, getCashOutReports)
 // Used by billing-service to get total gross tips volume for a company over a period
 router.get("/internal/reports/gross-tips-volume", getGrossTipsVolume);
 
+// Default route for /api/tips/
+router.get("/", authenticateToken, (req, res) => {
+    // This route is hit when the frontend makes a GET request to /api/tips/
+    // It's likely expecting a list of tips or some general tip-related information.
+    // For now, we return an empty array to resolve the 404 error.
+    // Further investigation might be needed to return meaningful data here.
+    res.status(200).json([]);
+});
+
 module.exports = router;
