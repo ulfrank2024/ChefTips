@@ -197,7 +197,7 @@ const DashboardPage = () => {
                                             {item.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={item.text} sx={{ color: 'white' }} />
-                                        {openSection === item.name ? <ExpandLess sx={{ color: 'white' }} /> : <ExpandMore sx={{ color: 'white' }} />}
+                                        {openSection === item.name ? <ExpandLess sx={{ color: 'black' }} /> : <ExpandMore sx={{ color: 'black' }} />}
                                     </ListItem>
                                     <Collapse in={openSection === item.name} timeout="auto" unmountOnExit>
                                         <List component="div" disablePadding>
@@ -211,9 +211,9 @@ const DashboardPage = () => {
                                                     sx={{
                                                         pl: 4,
                                                         color: 'white',
-                                                        backgroundColor: location.pathname === subItem.path ? "rgba(255, 255, 255, 0.05)" : "transparent",
+                                                        backgroundColor: 'transparent',
                                                         "&:hover": {
-                                                            backgroundColor: "rgba(255, 255, 255, 0.05)",
+                                                            backgroundColor: "rgba(255, 255, 255, 0.03)", // Très subtil au survol
                                                         },
                                                     }}
                                                 >
