@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Outlet, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Typography, Box, Drawer, List, ListItem, ListItemIcon, ListItemText,
-  CssBaseline, useTheme, Fade, IconButton, useMediaQuery, Tooltip
+  CssBaseline, useTheme, Fade, IconButton, useMediaQuery, Tooltip, Collapse
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
@@ -21,6 +21,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useDrawer } from '../context/DrawerContext.jsx';
 import WelcomeModal from '../components/WelcomeModal';
@@ -35,6 +38,7 @@ const DashboardPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { mobileOpen, handleDrawerToggle } = useDrawer();
   const [desktopOpen, setDesktopOpen] = useState(true); // Sidebar state for desktop
+  const [openSection, setOpenSection] = useState(""); // State for collapsible sections
   const location = useLocation();
   const navigate = useNavigate();
   const mainContentRef = useRef(null);
@@ -61,115 +65,193 @@ const DashboardPage = () => {
     setDesktopOpen(!desktopOpen);
   };
 
+    const handleSectionClick = (section) => {
+        setOpenSection(openSection === section ? "" : section);
+    };
+
   useEffect(() => {
     if (mainContentRef.current) {
       mainContentRef.current.scrollTo(0, 0);
     }
   }, [location.pathname]);
 
-  const menuItems = [
-      // ... (menu items remain the same)
-      {
-          text: t("overview", { ns: "pages/managerDashboard" }),
-          icon: <DashboardIcon />,
-          path: "/dashboard",
-      },
-      {
-          text: t("serverOverview", { ns: "pages/managerDashboard" }),
-          icon: <AssessmentIcon />,
-          path: "/dashboard/server-overview",
-      },
-      {
-          text: t("manageEmployees", { ns: "pages/managerDashboard" }),
-          icon: <PeopleIcon />,
-          path: "/dashboard/manage-employees",
-      },
-      {
-          text: t("manageRules", { ns: "pages/managerDashboard" }),
-          icon: <RuleIcon />,
-          path: "/dashboard/manage-rules",
-      },
-      {
-          text: t("managePayoutPeriods", { ns: "pages/managerDashboard" }),
-          icon: <DateRangeIcon />,
-          path: "/dashboard/manage-payout-periods",
-      },
-      {
-          text: t("createPool", { ns: "pages/managerDashboard" }),
-          icon: <PoolIcon />,
-          path: "/dashboard/create-pool",
-      },
-      {
-          text: t("poolHistory", { ns: "pages/managerDashboard" }),
-          icon: <HistoryIcon />,
-          path: "/dashboard/pool-history",
-      },
-      {
-          text: t("declareTips", { ns: "pages/managerDashboard" }),
-          icon: <ReceiptLongIcon />,
-          path: "/dashboard/declare-tips",
-          managerCanCashOut: true,
-      },
-      {
-          text: t("cashOutHistory", { ns: "pages/managerDashboard" }),
-          icon: <HistoryIcon />,
-          path: "/dashboard/cashout-history",
-          managerCanCashOut: true,
-      },
-      {
-          text: t("receivedTipsHistory", { ns: "pages/managerDashboard" }),
-          icon: <AttachMoneyIcon />,
-          path: "/dashboard/received-tips",
-          managerCanCashOut: true,
-      },
-      {
-          text: t("profile", { ns: "pages/managerDashboard" }),
-          icon: <PersonIcon />,
-          path: "/dashboard/profile",
-      },
-      {
-          text: t("logout", { ns: "common" }),
-          icon: <ExitToAppIcon />,
-          onClick: handleLogout,
-          path: "#",
-      },
-  ];
+    const menuItems = [
+        {
+            text: t("overview", { ns: "pages/managerDashboard" }),
+            icon: <DashboardIcon />,
+            path: "/dashboard",
+        },
+        {
+            text: t("manageEmployees", { ns: "pages/managerDashboard" }),
+            icon: <PeopleIcon />,
+            path: "/dashboard/manage-employees",
+        },
+        {
+            text: t("poolManagement", { ns: "pages/managerDashboard" }),
+            icon: <PoolIcon />,
+            name: "pools",
+            subItems: [
+                {
+                    text: t("createPool", { ns: "pages/managerDashboard" }),
+                    icon: <PoolIcon />,
+                    path: "/dashboard/create-pool",
+                },
+                {
+                    text: t("poolHistory", { ns: "pages/managerDashboard" }),
+                    icon: <HistoryIcon />,
+                    path: "/dashboard/pool-history",
+                },
+            ],
+        },
+        {
+            text: t("reports", { ns: "pages/managerDashboard" }),
+            icon: <AssessmentIcon />,
+            name: "reports",
+            subItems: [
+                {
+                    text: t("serverOverview", { ns: "pages/managerDashboard" }),
+                    icon: <AssessmentIcon />,
+                    path: "/dashboard/server-overview",
+                },
+                {
+                    text: t("cashOutHistory", { ns: "pages/managerDashboard" }),
+                    icon: <HistoryIcon />,
+                    path: "/dashboard/cashout-history",
+                    managerCanCashOut: true,
+                },
+                {
+                    text: t("receivedTipsHistory", { ns: "pages/managerDashboard" }),
+                    icon: <AttachMoneyIcon />,
+                    path: "/dashboard/received-tips",
+                    managerCanCashOut: true,
+                },
+            ],
+        },
+        {
+            text: t("settings", { ns: "pages/managerDashboard" }),
+            icon: <SettingsIcon />,
+            name: "settings",
+            subItems: [
+                {
+                    text: t("manageRules", { ns: "pages/managerDashboard" }),
+                    icon: <RuleIcon />,
+                    path: "/dashboard/manage-rules",
+                },
+                {
+                    text: t("managePayoutPeriods", { ns: "pages/managerDashboard" }),
+                    icon: <DateRangeIcon />,
+                    path: "/dashboard/manage-payout-periods",
+                },
+            ],
+        },
+        {
+            text: t("declareTips", { ns: "pages/managerDashboard" }),
+            icon: <ReceiptLongIcon />,
+            path: "/dashboard/declare-tips",
+            managerCanCashOut: true,
+        },
+        {
+            text: t("profile", { ns: "pages/managerDashboard" }),
+            icon: <PersonIcon />,
+            path: "/dashboard/profile",
+        },
+        {
+            text: t("logout", { ns: "common" }),
+            icon: <ExitToAppIcon />,
+            onClick: handleLogout,
+            path: "#",
+        },
+    ];
 
-  const drawerContent = (
-      <Box
-          sx={{
-              height: "100%",
-              paddingTop: "130px", 
-              paddingLeft: "10px",
-              paddingRight: "10px",
-          }}
-      >
-          <List>
-              {menuItems
-                  .filter(item => !item.managerCanCashOut || user?.can_cash_out)
-                  .map((item) => (
-                  <ListItem
-                      key={item.text}
-                      component={RouterLink}
-                      to={item.path}
-                      onClick={item.onClick ? item.onClick : (isMobile ? handleDrawerToggle : undefined)}
-                      sx={{
-                          color:'white',
-                          backgroundColor: location.pathname === item.path ? "#ad9407ff" : "transparent",
-                          "&:hover": {
-                              backgroundColor: location.pathname === item.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)", 
-                          },
-                      }}
-                  >
-                      <ListItemIcon sx={{ padding:"20px", color: 'black' }}>
-                          {item.icon}
-                      </ListItemIcon>
-                      <ListItemText primary={item.text} sx={{ color: 'white' }} /> 
-                  </ListItem>
-              ))}
-          </List>
-      </Box>
-  );
+
+    const drawerContent = (
+        <Box
+            sx={{
+                height: "100%",
+                paddingTop: "130px",
+                paddingLeft: "10px",
+                paddingRight: "10px",
+            }}
+        >
+            <List>
+                {menuItems
+                    .filter(item => !item.managerCanCashOut || user?.can_cash_out)
+                    .map((item) => {
+                        if (item.subItems) {
+                            const filteredSubItems = item.subItems.filter(subItem => !subItem.managerCanCashOut || user?.can_cash_out);
+                            if (filteredSubItems.length === 0) return null;
+
+                            return (
+                                <React.Fragment key={item.name}>
+                                    <ListItem
+                                        button
+                                        onClick={() => handleSectionClick(item.name)}
+                                        sx={{
+                                            color: 'white',
+                                            "&:hover": {
+                                                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                                            },
+                                        }}
+                                    >
+                                        <ListItemIcon sx={{ padding: "20px", color: 'black' }}>
+                                            {item.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={item.text} sx={{ color: 'white' }} />
+                                        {openSection === item.name ? <ExpandLess sx={{ color: 'white' }} /> : <ExpandMore sx={{ color: 'white' }} />}
+                                    </ListItem>
+                                    <Collapse in={openSection === item.name} timeout="auto" unmountOnExit>
+                                        <List component="div" disablePadding>
+                                            {filteredSubItems.map(subItem => (
+                                                <ListItem
+                                                    key={subItem.text}
+                                                    button
+                                                    component={RouterLink}
+                                                    to={subItem.path}
+                                                    onClick={isMobile ? handleDrawerToggle : undefined}
+                                                    sx={{
+                                                        pl: 4,
+                                                        color: 'white',
+                                                        backgroundColor: location.pathname === subItem.path ? "#ad9407ff" : "transparent",
+                                                        "&:hover": {
+                                                            backgroundColor: location.pathname === subItem.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.1)",
+                                                        },
+                                                    }}
+                                                >
+                                                    <ListItemIcon sx={{ padding: "20px", color: 'black' }}>
+                                                        {subItem.icon}
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={subItem.text} sx={{ color: 'white' }} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Collapse>
+                                </React.Fragment>
+                            );
+                        }
+                        return (
+                            <ListItem
+                                key={item.text}
+                                component={RouterLink}
+                                to={item.path}
+                                onClick={item.onClick ? item.onClick : (isMobile ? handleDrawerToggle : undefined)}
+                                sx={{
+                                    color: 'white',
+                                    backgroundColor: location.pathname === item.path ? "#ad9407ff" : "transparent",
+                                    "&:hover": {
+                                        backgroundColor: location.pathname === item.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
+                                    },
+                                }}
+                            >
+                                <ListItemIcon sx={{ padding: "20px", color: 'black' }}>
+                                    {item.icon}
+                                </ListItemIcon>
+                                <ListItemText primary={item.text} sx={{ color: 'white' }} />
+                            </ListItem>
+                        );
+                    })}
+            </List>
+        </Box>
+    );
 
   return (
     <>

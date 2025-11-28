@@ -59,5 +59,8 @@
   "departmentContributions": "Department Contributions",
   "distributedTips": "Distributed Tips",
   "cashOutReports": "Cash Out Reports",
-  "noDataFound": "No data found"
+  "noDataFound": "No data found",
+  "poolManagement": "Pool Management",
+  "reports": "Reports",
+  "settings": "Settings"
 }

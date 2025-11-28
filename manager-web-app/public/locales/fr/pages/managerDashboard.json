@@ -60,5 +60,8 @@
   "receivedTips": "Pourboires Reçus",
   "departmentContributions": "Contributions aux Départements",
   "distributedTips": "Pourboires Distribués",
-  "noDataFound": "Aucune donnée trouvée"
+  "noDataFound": "Aucune donnée trouvée",
+  "poolManagement": "Gestion des Pools",
+  "reports": "Rapports",
+  "settings": "Paramètres"
 }
