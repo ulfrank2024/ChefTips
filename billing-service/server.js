@@ -24,7 +24,7 @@ app.use(cors({
 
 // Harmonise les montages des routes pour correspondre aux attentes du frontend
 app.use('/api/billing/subscriptions', subscriptionRoutes);
-app.use('/api/billing/api', billingApiRoutes); // Adapter pour le préfixe /api/billing/api
+app.use('/api/billing', billingApiRoutes); // Corrigé pour le préfixe /api/billing
 app.use('/api/billing/admin', adminRoutes);
 
 const PORT = process.env.PORT || 4002;

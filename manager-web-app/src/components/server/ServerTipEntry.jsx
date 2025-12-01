@@ -48,7 +48,7 @@ const ServerTipEntry = () => {
 
     try {
       // Endpoint updated to match the backend route
-      await axios.post(`${import.meta.env.VITE_TIP_SERVICE_URL}/api/tips/cash-outs`, {
+      await axios.post(`${import.meta.env.VITE_TIP_API_URL || 'https://api.cheftips.app/api/tips'}/cash-outs`, {
         service_date: selectedDate.toISOString().split('T')[0],
         gross_tips: parseFloat(grossTips),
         cash_on_hand: parseFloat(adjustments), // 'adjustments' from form is mapped to 'cash_on_hand'

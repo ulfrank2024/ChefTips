@@ -38,7 +38,7 @@ const DashboardPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { mobileOpen, handleDrawerToggle } = useDrawer();
   const [desktopOpen, setDesktopOpen] = useState(true); // Sidebar state for desktop
-  const [openSection, setOpenSection] = useState("pools"); // State for collapsible sections
+  const [openSection, setOpenSection] = useState(""); // State for collapsible sections
   const location = useLocation();
   const navigate = useNavigate();
   const mainContentRef = useRef(null);
@@ -57,8 +57,16 @@ const DashboardPage = () => {
 
   const handleLogout = () => {
     logout();
+    setOpenSection(""); // Close any open section
     if (isMobile) handleDrawerToggle();
     navigate('/login');
+  };
+
+  const handleSimpleLinkClick = () => {
+    setOpenSection(""); // Close any open section
+    if (isMobile) {
+        handleDrawerToggle();
+    }
   };
 
   const handleDesktopToggle = () => {
@@ -68,6 +76,8 @@ const DashboardPage = () => {
     const handleSectionClick = (section) => {
         setOpenSection(openSection === section ? "" : section);
     };
+
+
 
   useEffect(() => {
     if (mainContentRef.current) {
@@ -188,8 +198,9 @@ const DashboardPage = () => {
                                         onClick={() => handleSectionClick(item.name)}
                                         sx={{
                                             color: 'white',
+                                            backgroundColor: openSection === item.name ? "#ad9407ff" : "transparent",
                                             "&:hover": {
-                                                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                                                backgroundColor: openSection === item.name ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
                                             },
                                         }}
                                     >
@@ -211,10 +222,12 @@ const DashboardPage = () => {
                                                     sx={{
                                                         pl: 4,
                                                         color: 'white',
-                                                        backgroundColor: 'transparent',
+                                                        backgroundColor: location.pathname === subItem.path ? "#ad9407ff" : 'rgba(0, 0, 0, 0.2)',
                                                         "&:hover": {
-                                                            backgroundColor: "rgba(255, 255, 255, 0.03)", // Très subtil au survol
+                                                            backgroundColor: location.pathname === subItem.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
                                                         },
+                                                        border: 'none',
+                                                        boxShadow: 'none',
                                                     }}
                                                 >
                                                     <ListItemText primary={subItem.text} sx={{ color: 'white' }} />
@@ -230,12 +243,12 @@ const DashboardPage = () => {
                                 key={item.text}
                                 component={RouterLink}
                                 to={item.path}
-                                onClick={item.onClick ? item.onClick : (isMobile ? handleDrawerToggle : undefined)}
+                                onClick={item.onClick ? item.onClick : handleSimpleLinkClick}
                                 sx={{
                                     color: 'white',
-                                    backgroundColor: location.pathname === item.path ? "#ad9407ff" : "transparent",
+                                    backgroundColor: (location.pathname === item.path && openSection === "") ? "#ad9407ff" : "transparent",
                                     "&:hover": {
-                                        backgroundColor: location.pathname === item.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
+                                        backgroundColor: (location.pathname === item.path && openSection === "") ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
                                     },
                                 }}
                             >

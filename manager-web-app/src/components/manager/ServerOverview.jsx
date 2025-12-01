@@ -127,7 +127,7 @@ const ServerOverview = () => {
         })
       };
       console.log("Fetching cash out reports with params:", params);
-      const { data } = await axios.get(`${import.meta.env.VITE_TIP_SERVICE_URL}/api/tips/cash-out-reports`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_TIP_API_URL || 'https://api.cheftips.app/api/tips'}/cash-out-reports`, {
         params,
         headers: { Authorization: `Bearer ${token}` },
       });

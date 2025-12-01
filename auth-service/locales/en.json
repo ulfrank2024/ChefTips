@@ -12,6 +12,8 @@
         "signup": "OTP Verification",
         "welcome": "Welcome to ChefTips",
         "welcomeEmployee": "Welcome to the Team",
-        "passwordReset": "Password Reset"
+        "passwordReset": "Password Reset",
+        "inviteNewUser": "Invitation to join the team",
+        "inviteExistingUser": "Invitation to join the team"
     }
 }

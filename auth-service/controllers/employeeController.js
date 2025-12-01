@@ -28,9 +28,9 @@ const inviteEmployee = async (req, res) => {
         if (isNewUser) {
             const code = await TokenModel.createInvitationCode(user.id);
             const setupPasswordUrl = `${process.env.FRONTEND_URL}/setup-password?token=${code}`;
-            await sendEmail(email, "Invitation à rejoindre l'équipe / Invitation to join the team", 'inviteNewUser', { setupPasswordUrl, code, managerCompanyName }, managerLang);
+            await sendEmail(email, 'inviteNewUser', { setupPasswordUrl, code, managerCompanyName }, managerLang);
         } else {
-            await sendEmail(email, "Invitation à rejoindre l'équipe / Invitation to join the team", 'inviteExistingUser', { managerCompanyName }, user.preferred_language || managerLang);
+            await sendEmail(email, 'inviteExistingUser', { managerCompanyName }, user.preferred_language || managerLang);
         }
 
         res.status(200).json({ success_code: "INVITATION_SENT_SUCCESSFULLY" });
@@ -77,7 +77,7 @@ const removeEmployee = async (req, res) => {
         const user = await UserModel.findUserById(membership.user_id);
         await MembershipModel.deleteMembership(membershipId);
         if (user) {
-            await sendEmail(user.email, "Suppression de l'équipe / Team Removal", 'removeEmployee', { managerCompanyName: req.user.company_name }, user.preferred_language || req.user.preferred_language);
+            await sendEmail(user.email, 'removeEmployee', { managerCompanyName: req.user.company_name }, user.preferred_language || req.user.preferred_language);
         }
         res.status(200).json({ success_code: "EMPLOYEE_REMOVED_SUCCESSFULLY" });
     } catch (err) {

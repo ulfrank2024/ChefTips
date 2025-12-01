@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL || 'http://localhost:4002/api/billing';
+const BILLING_API_URL = import.meta.env.VITE_BILLING_API_URL || 'https://api.cheftips.app/api/billing';
 
 const billingApi = axios.create({
   baseURL: BILLING_API_URL,

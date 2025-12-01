@@ -12,6 +12,8 @@
         "signup": "Vérification OTP",
         "welcome": "Bienvenue chez ChefTips",
         "welcomeEmployee": "Bienvenue dans l'équipe",
-        "passwordReset": "Réinitialisation de mot de passe"
+        "passwordReset": "Réinitialisation de mot de passe",
+        "inviteNewUser": "Invitation à rejoindre l'équipe",
+        "inviteExistingUser": "Invitation à rejoindre l'équipe"
     }
 }

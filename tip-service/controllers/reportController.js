@@ -320,7 +320,7 @@ const getCashOutReports = async (req, res) => {
         const employeeMap = new Map(employees.map(emp => [emp.id, `${emp.first_name} ${emp.last_name}`]));
 
         const enrichedCashOuts = cashOutData.map(cashOut => {
-            const enrichedAdjustments = cashOut.adjustments.map(adj => {
+            const enrichedAdjustments = (cashOut.adjustments || []).map(adj => {
                 if (adj.related_user_id) {
                     const employee = employees.find(emp => emp.id === adj.related_user_id);
                     return { 

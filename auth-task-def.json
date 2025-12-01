@@ -28,7 +28,7 @@
                 { "name": "SES_FROM_EMAIL", "value": "noreply@cheftips.app" },
                 { "name": "AWS_REGION", "value": "us-east-1" },
                 { "name": "FRONTEND_URL", "value": "https://www.cheftips.app/" },
-                { "name": "BILLING_SERVICE_URL", "value": "https://api.cheftips.app" },
+                { "name": "BILLING_SERVICE_URL", "value": "http://54.167.122.141:4002/api/billing" },
                 { "name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0" }
             ],
             "logConfiguration": {

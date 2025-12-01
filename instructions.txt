@@ -27,3 +27,4 @@ Pour que ces modifications prennent effet en production, vous devez suivre les �
     ```
 
 Après ces étapes, veuillez tester le processus d'inscription et vérifier l'e-mail reçu pour confirmer que le lien de vérification est maintenant correct.
+mots de passe email : Cheftips_Cont2025!
