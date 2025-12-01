@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const authServiceApiClient = axios.create({
-    baseURL: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+    baseURL: process.env.AUTH_SERVICE_ENDPOINT || 'https://api.cheftips.app',
 });
 
 const getAuthUserDetails = async (userId, token) => {
@@ -21,7 +21,7 @@ const getAuthUserDetails = async (userId, token) => {
 
 const notifyCashOut = async (token, recipient_user_id, sender_name, amount, role) => {
     try {
-        const response = await authServiceApiClient.post('/notify-cashout', {
+        const response = await authServiceApiClient.post('/api/auth/notify-cashout', {
             recipient_user_id,
             sender_name,
             amount,
