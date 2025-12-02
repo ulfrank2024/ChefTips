@@ -161,6 +161,7 @@ function App() {
                       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                       <Route path="/reset-password" element={<ResetPasswordPage />} />
                       <Route path="/join-team" element={<JoinTeamPage />} />
+                      <Route path="/verify-invitation" element={<VerifyInvitationPage />} /> {/* New Route */}
                       <Route path="/setup-password" element={<SetupInvitedPasswordPage />} />
                       <Route path="/" element={<LoginPage />} />
                     </Route>
