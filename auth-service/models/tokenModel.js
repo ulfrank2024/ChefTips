@@ -26,7 +26,7 @@ const TokenModel = {
 
     async createPasswordSetupToken(userId) {
         const token = uuidv4();
-        const expires_at = new Date(Date.now() + 24 * 3600000); // 24 hours from now
+        const expires_at = new Date(Date.now() + 7 * 24 * 3600000); // 7 days from now
         await pool.query(
             "INSERT INTO password_setup_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)",
             [userId, token, expires_at]
