@@ -85,13 +85,21 @@ const verifyInvitation = async (req, res) => {
 
 const setupPassword = async (req, res) => {
     const { token, password, firstName, lastName } = req.body;
+    console.log('[setupPassword] Received token:', token);
+    console.log('[setupPassword] Received password (length):', password ? password.length : 0);
+    console.log('[setupPassword] Received firstName:', firstName);
+    console.log('[setupPassword] Received lastName:', lastName);
+
     if (!token || !password || !firstName || !lastName) {
+        console.log('[setupPassword] Error: ALL_FIELDS_REQUIRED');
         return res.status(400).json({ error: "ALL_FIELDS_REQUIRED" });
     }
 
     try {
         const setup = await TokenModel.findPasswordSetupToken(token);
+        console.log('[setupPassword] TokenModel.findPasswordSetupToken result:', setup);
         if (!setup) {
+            console.log('[setupPassword] Error: INVALID_OR_EXPIRED_TOKEN - Token not found or expired in DB');
             return res.status(400).json({ error: "INVALID_OR_EXPIRED_TOKEN" });
         }
 

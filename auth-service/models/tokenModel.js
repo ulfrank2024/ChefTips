@@ -35,10 +35,19 @@ const TokenModel = {
     },
 
     async findPasswordSetupToken(token) {
-        const result = await pool.query(
-            "SELECT * FROM password_setup_tokens WHERE token = $1 AND expires_at > NOW()",
-            [token]
-        );
+        console.log('[TokenModel.findPasswordSetupToken] Looking for token:', token);
+        const query = "SELECT * FROM password_setup_tokens WHERE token = $1 AND expires_at > NOW()";
+        console.log('[TokenModel.findPasswordSetupToken] Query:', query, 'with params:', [token]);
+        const result = await pool.query(query, [token]);
+        console.log('[TokenModel.findPasswordSetupToken] Query result:', result.rows[0]);
+        if (result.rows[0]) {
+            // Fetch current time from DB to compare, to check for clock skew issues
+            const dbTimeResult = await pool.query("SELECT NOW()");
+            const dbNow = dbTimeResult.rows[0].now;
+            console.log('[TokenModel.findPasswordSetupToken] Token expires_at:', result.rows[0].expires_at);
+            console.log('[TokenModel.findPasswordSetupToken] DB NOW():', dbNow);
+            console.log('[TokenModel.findPasswordSetupToken] Is expires_at > NOW()?:', result.rows[0].expires_at > dbNow);
+        }
         return result.rows[0];
     },
 
