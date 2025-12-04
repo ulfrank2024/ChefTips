@@ -14,10 +14,9 @@ const ResetPasswordPage = () => {
     const { t } = useTranslation(["pages/resetPassword", "common", "errors"]);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const email = searchParams.get("email");
+    const token = searchParams.get("token");
 
     const [formData, setFormData] = useState({
-        otp: "",
         password: "",
         confirmPassword: "",
     });
@@ -26,10 +25,10 @@ const ResetPasswordPage = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!email) {
-            setError(t("EMAIL_REQUIRED", { ns: 'errors' }));
+        if (!token) {
+            setError(t("INVALID_OR_EXPIRED_TOKEN", { ns: 'errors' }));
         }
-    }, [email, t]);
+    }, [token, t]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,10 +43,14 @@ const ResetPasswordPage = () => {
             setError(t("PASSWORD_MISMATCH", { ns: 'errors' }));
             return;
         }
+        if (!token) {
+            setError(t("INVALID_OR_EXPIRED_TOKEN", { ns: 'errors' }));
+            return;
+        }
 
         setLoading(true);
         try {
-            await apiResetPassword(email, formData.otp, formData.password);
+            await apiResetPassword(token, formData.password);
             setSuccess(t('successMessage', { ns: 'pages/resetPassword' }));
             setTimeout(() => {
                 navigate("/login");
@@ -71,7 +74,7 @@ const ResetPasswordPage = () => {
                 {t("title")}
             </Typography>
             <Typography variant="body1" sx={{ color: "#666", mb: 4 }}>
-                {t("instruction", { email })}
+                {t("instruction")}
             </Typography>
 
             {error && (
@@ -91,19 +94,6 @@ const ResetPasswordPage = () => {
                 noValidate
                 sx={{ mt: 1, width: "100%" }}
             >
-                <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="otp"
-                    label={t("otpPlaceholder")}
-                    name="otp"
-                    autoFocus
-                    value={formData.otp}
-                    onChange={handleChange}
-                    inputProps={{ maxLength: 6 }}
-                    size="small"
-                />
                 <TextField
                     margin="normal"
                     required
@@ -132,7 +122,7 @@ const ResetPasswordPage = () => {
                     type="submit"
                     fullWidth
                     variant="contained"
-                    disabled={loading || !!success}
+                    disabled={loading || !!success || !token}
                     sx={{
                         mt: 3,
                         mb: 2,

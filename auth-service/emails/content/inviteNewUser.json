@@ -8,6 +8,7 @@
     "linkText": "Complete Registration",
     "body3": "Your unique invitation code is:",
     "body4": "This code ensures your account is linked correctly. If you did not expect this invitation, please ignore this email.",
+    "recoveryInstruction": "P.S. If you start the setup process but don't finish, simply use the 'Forgot Password' feature on our login page with your email address to receive a new setup link.",
     "closing": "We look forward to welcoming you!",
     "teamName": "The ChefTips Team",
     "bilingual_intro": "English version below:"
@@ -21,6 +22,7 @@
     "linkText": "Compléter l'inscription",
     "body3": "Votre code d'invitation unique est :",
     "body4": "Ce code garantit que votre compte est correctement lié. Si vous n'attendiez pas cette invitation, veuillez ignorer cet e-mail.",
+    "recoveryInstruction": "P.S. Si vous commencez le processus de configuration mais ne le terminez pas, utilisez simplement la fonction « Mot de passe oublié » sur notre page de connexion avec votre adresse e-mail pour recevoir un nouveau lien de configuration.",
     "closing": "Nous sommes impatients de vous accueillir !",
     "teamName": "L'équipe ChefTips"
   }

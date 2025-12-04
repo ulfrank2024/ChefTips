@@ -15,6 +15,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import JoinTeamPage from './pages/JoinTeamPage';
 import SetupInvitedPasswordPage from './pages/SetupInvitedPasswordPage';
 import BillingPage from './pages/BillingPage'; // Import BillingPage
+import VerifyInvitationPage from "./pages/VerifyInvitationPage";
 
 // Component & Context Imports
 import ManagerProtectedRoute from './components/ManagerProtectedRoute';

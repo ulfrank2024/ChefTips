@@ -216,9 +216,9 @@ export const forgotPassword = async (email) => {
     }
 };
 
-export const resetPassword = async (email, otp, password) => {
+export const resetPassword = async (token, password) => {
     try {
-        const response = await apiClient.post('/reset-password', { email, otp, password });
+        const response = await apiClient.post('/reset-password', { token, password });
         return response.data;
     } catch (error) {
         handleApiError(error);

@@ -134,10 +134,21 @@ const forgotPassword = async (req, res) => {
     try {
         const user = await UserModel.findUserByEmail(email);
         if (user) {
-            const token = await TokenModel.createPasswordResetToken(user.id);
-            const resetLink = `https://www.cheftips.app/reset-password?token=${token}`;
             const currentYear = new Date().getFullYear();
-            await sendEmail(email, 'passwordReset', { resetLink, currentYear }, user.preferred_language || 'en');
+            // User exists but has not set a password (invited user flow)
+            if (user.password === null) {
+                const token = await TokenModel.createPasswordSetupToken(user.id);
+                const setupLink = `https://www.cheftips.app/setup-password?token=${token}`;
+                // Send an email that leads back to the setup page
+                await sendEmail(email, 'finishInvitationSetup', { setupLink, currentYear }, user.preferred_language || 'en');
+                // Return a specific success code for this case
+                return res.status(200).json({ success_code: "SETUP_EMAIL_SENT" });
+            } else {
+                // Standard password reset flow for existing users
+                const token = await TokenModel.createPasswordResetToken(user.id);
+                const resetLink = `https://www.cheftips.app/reset-password?token=${token}`;
+                await sendEmail(email, 'passwordReset', { resetLink, currentYear }, user.preferred_language || 'en');
+            }
         }
         // Always return success to prevent email enumeration
         res.status(200).json({ success_code: "PASSWORD_RESET_LINK_SENT" });

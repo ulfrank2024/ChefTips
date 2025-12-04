@@ -14,6 +14,7 @@
         "welcomeEmployee": "Bienvenue dans l'équipe",
         "passwordReset": "Réinitialisation de mot de passe",
         "inviteNewUser": "Invitation à rejoindre l'équipe",
-        "inviteExistingUser": "Invitation à rejoindre l'équipe"
+        "inviteExistingUser": "Invitation à rejoindre l'équipe",
+        "finishInvitationSetup": "Finalisez la création de votre compte"
     }
 }

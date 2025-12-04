@@ -1,0 +1,7 @@
+{
+    "title": "Verify Your Invitation",
+    "instruction": "To finalize your registration, please enter the 6-digit code sent to {{email}}.",
+    "invitationCodePlaceholder": "Invitation Code",
+    "verifyButton": "Verify",
+    "verificationSuccessMessage": "Success! Redirecting you to set up your password..."
+}

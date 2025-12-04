@@ -1,0 +1,12 @@
+{
+    "en": {
+        "title": "Complete Your Account Setup",
+        "body": "You recently requested to set up your account. To complete the process and set your password, please click the secure link below:",
+        "button": "Set Up Your Account"
+    },
+    "fr": {
+        "title": "Finalisez la création de votre compte",
+        "body": "Vous avez récemment demandé à configurer votre compte. Pour terminer le processus et définir votre mot de passe, veuillez cliquer sur le lien sécurisé ci-dessous :",
+        "button": "Configurer votre compte"
+    }
+}

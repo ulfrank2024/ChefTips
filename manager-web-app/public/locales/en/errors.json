@@ -31,5 +31,8 @@
   "USER_NOT_FOUND": "User not found.",
   "COMPANY_ID_REQUIRED": "Company ID is required.",
   "COMPANY_NOT_FOUND": "Company not found.",
-  "COMPANY_INACTIVE": "Your company's account is currently inactive. Please contact support."
+  "COMPANY_INACTIVE": "Your company's account is currently inactive. Please contact support.",
+  "EMAIL_MISSING_FROM_URL": "Email is missing. Please use the link from your invitation.",
+  "INVITATION_CODE_REQUIRED": "Invitation code is required.",
+  "INVALID_INVITATION_CODE": "The invitation code is invalid or has expired."
 }

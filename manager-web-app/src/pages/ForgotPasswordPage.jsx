@@ -47,14 +47,15 @@ const ForgotPasswordPage = () => {
 
         setLoading(true);
         try {
-            await apiForgotPassword(email);
-            setSuccess(t("successMessage"));
-            setTimeout(() => {
+            const response = await apiForgotPassword(email);
+            if (response.success_code === 'SETUP_EMAIL_SENT') {
+                setSuccess(t("checkEmailForSetup"));
+            } else {
                 navigate(`/reset-password?email=${email}`);
-            }, 3000);
+            }
         } catch (err) {
             setError(
-                t(`error.${err.message}`) || t("common.somethingWentWrong")
+                t(err.message, { ns: 'errors' }) || t("somethingWentWrong", { ns: 'common' })
             );
         } finally {
             setLoading(false);
