@@ -27,8 +27,10 @@ const inviteEmployee = async (req, res) => {
 
         if (isNewUser) {
             const code = await TokenModel.createInvitationCode(user.id);
-            const setupPasswordUrl = `${process.env.FRONTEND_URL}/verify-invitation?email=${encodeURIComponent(email)}&code=${code}`;
-            await sendEmail(email, 'inviteNewUser', { setupPasswordUrl, code, managerCompanyName }, managerLang);
+            const frontendUrl = process.env.FRONTEND_URL || 'https://www.cheftips.app';
+            const setupPasswordUrl = `${frontendUrl}/verify-invitation?email=${encodeURIComponent(email)}&code=${code}`;
+            const loginPageUrl = `${frontendUrl}/login`;
+            await sendEmail(email, 'inviteNewUser', { setupPasswordUrl, code, managerCompanyName, loginPageUrl }, managerLang);
         } else {
             await sendEmail(email, 'inviteExistingUser', { managerCompanyName }, user.preferred_language || managerLang);
         }
