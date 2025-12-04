@@ -36,10 +36,12 @@ const signup = async (req, res) => {
         const otp = await TokenModel.createEmailVerificationOtp(user.id);
         const frontendUrl = process.env.FRONTEND_URL || 'https://www.cheftips.app'; // Valeur par défaut
         const verificationLink = `${frontendUrl}/verify-otp?email=${encodeURIComponent(email)}`;
+        const loginPageUrl = `${frontendUrl}/login`;
 
         const templateData = {
             otp,
             verificationLink,
+            loginPageUrl,
             currentYear: new Date().getFullYear(),
         };
 

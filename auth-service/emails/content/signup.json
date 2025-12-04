@@ -5,7 +5,7 @@
     "body1": "Please use the following code to verify your email address:",
     "otpLabel": "Verification Code:",
     "body2": "This code is valid for 10 minutes. If you did not request this code, please ignore this email.",
-    "body3": "If you are having trouble, you can also click the link below to go directly to the verification page:",
+    "body3": "P.S. If you start the setup process but don't finish, simply use the 'Forgot Password' feature on our login page with your email address to receive a new setup link.",
     "linkText": "Verify My Email",
     "closing": "The ChefTips Team",
     "bilingual_intro": "English version below:"
@@ -16,7 +16,7 @@
     "body1": "Veuillez utiliser le code suivant pour vérifier votre adresse e-mail :",
     "otpLabel": "Code de vérification :",
     "body2": "Ce code est valide pendant 10 minutes. Si vous n'avez pas demandé ce code, veuillez ignorer cet e-mail.",
-    "body3": "Si vous rencontrez des difficultés, vous pouvez également cliquer sur le lien ci-dessous pour accéder directement à la page de vérification :",
+    "body3": "P.S. Si vous commencez le processus de configuration mais ne le terminez pas, utilisez simplement la fonction « Mot de passe oublié » sur notre page de connexion avec votre adresse e-mail pour recevoir un nouveau lien de configuration.",
     "linkText": "Vérifier mon e-mail",
     "closing": "L'équipe ChefTips"
   }
