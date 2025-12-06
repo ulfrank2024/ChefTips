@@ -125,7 +125,7 @@ const VerifyOtpPage = () => {
                     sx={{
                         mt: 3,
                         mb: 2,
-                        borderRadius: "8px",
+                        borderRadius: "8px", 
                         backgroundColor: "#ad9407ff",
                         color: "white",
                         padding: "12px 0",
