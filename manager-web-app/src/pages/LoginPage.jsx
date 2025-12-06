@@ -74,15 +74,7 @@ const LoginPage = () => {
             } else {
                 if (result.role === "manager") {
                     navigate("/dashboard", { replace: true });
-                } else if (
-                    [
-                        "serveur",
-                        "barman",
-                        "commis",
-                        "hote",
-                        "cuisinier",
-                    ].includes(result.role)
-                ) {
+                } else if (result.role && result.role !== 'manager') {
                     const employeeDashboardPath = "/employee/dashboard";
                     navigate(employeeDashboardPath, { replace: true });
                 }
@@ -111,11 +103,7 @@ const LoginPage = () => {
             );
             if (user.role === "manager") {
                 navigate("/dashboard", { replace: true });
-            } else if (
-                ["serveur", "barman", "commis", "hote", "cuisinier"].includes(
-                    user.role
-                )
-            ) {
+            } else if (user.role && user.role !== 'manager') {
                 const employeeDashboardPath = "/employee/dashboard";
                 navigate(employeeDashboardPath, { replace: true });
             }
