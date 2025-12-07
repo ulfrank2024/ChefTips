@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const authServiceApiClient = axios.create({
-    baseURL: process.env.AUTH_SERVICE_ENDPOINT || 'https://api.cheftips.app',
+    baseURL: process.env.AUTH_SERVICE_URL || 'https://api.cheftips.app',
 });
 
 const getAuthUserDetails = async (userId, token) => {

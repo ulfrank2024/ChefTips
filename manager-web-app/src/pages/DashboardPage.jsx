@@ -38,7 +38,7 @@ const DashboardPage = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { mobileOpen, handleDrawerToggle } = useDrawer();
   const [desktopOpen, setDesktopOpen] = useState(true); // Sidebar state for desktop
-  const [openSection, setOpenSection] = useState(""); // State for collapsible sections
+  const [openSection, setOpenSection] = useState("pools"); // State for collapsible sections
   const location = useLocation();
   const navigate = useNavigate();
   const mainContentRef = useRef(null);
@@ -198,13 +198,19 @@ const DashboardPage = () => {
                                         onClick={() => handleSectionClick(item.name)}
                                         sx={{
                                             color: 'white',
-                                            backgroundColor: openSection === item.name ? "#ad9407ff" : "transparent",
-                                            "&:hover": {
-                                                backgroundColor: openSection === item.name ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
+                                            backgroundColor: "transparent", // Fond transparent
+                                            border: '1px solid rgba(255, 255, 255, 0.2)', // Cadre visuel
+                                            borderRadius: '8px',
+                                            mb: 1,
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
                                             },
+                                            ...(openSection === item.name && {
+                                                backgroundColor: 'rgba(255, 255, 255, 0.1)', // Fond légèrement visible si ouvert
+                                            }),
                                         }}
                                     >
-                                        <ListItemIcon sx={{ padding: "20px", color: 'black' }}>
+                                        <ListItemIcon sx={{ padding: "10px", color: 'white' }}>
                                             {item.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={item.text} sx={{ color: 'white' }} />
@@ -222,12 +228,14 @@ const DashboardPage = () => {
                                                     sx={{
                                                         pl: 4,
                                                         color: 'white',
-                                                        backgroundColor: location.pathname === subItem.path ? "#ad9407ff" : 'rgba(0, 0, 0, 0.2)',
+                                                        backgroundColor: location.pathname === subItem.path ? 'rgba(255, 255, 255, 0.1)' : 'transparent', // Fond transparent, légèrement visible si actif
                                                         "&:hover": {
-                                                            backgroundColor: location.pathname === subItem.path ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
+                                                            backgroundColor: "rgba(255, 255, 255, 0.05)", // Hover très subtil
                                                         },
                                                         border: 'none',
                                                         boxShadow: 'none',
+                                                        borderRadius: '4px', // Bords légèrement arrondis
+                                                        mb: 0.5, // Petit espacement
                                                     }}
                                                 >
                                                     <ListItemText primary={subItem.text} sx={{ color: 'white' }} />

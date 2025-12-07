@@ -23,7 +23,7 @@ import logo from "../assets/logo.png";
 
 const LoginPage = () => {
     const { t } = useTranslation("pages/login"); // i18n est géré dans AuthLayout
-    const { login, selectCompanyAndLogin } = useAuth();
+    const { login, selectCompanyAndLogin, logout } = useAuth();
     const navigate = useNavigate();
 
     // ... (Garder tous les useState et fonctions de validation/submit/handleCompanySelection intacts) ...
@@ -72,11 +72,14 @@ const LoginPage = () => {
                 setMemberships(result.memberships);
                 setIsCompanySelectOpen(true);
             } else {
-                if (result.role === "manager") {
+                const userRole = result.role.toLowerCase();
+                if (userRole === 'manager' || userRole === 'gerant') {
                     navigate("/dashboard", { replace: true });
-                } else if (result.role && result.role !== 'manager') {
-                    const employeeDashboardPath = "/employee/dashboard";
-                    navigate(employeeDashboardPath, { replace: true });
+                } else if (userRole === 'admin') {
+                    setError(t("ADMIN_NOT_ALLOWED", { ns: "errors" }));
+                    logout();
+                } else {
+                    navigate("/employee/dashboard", { replace: true });
                 }
             }
         } catch (err) {
@@ -101,11 +104,14 @@ const LoginPage = () => {
                 tempUserId,
                 selectedCompanyId
             );
-            if (user.role === "manager") {
+            const userRole = user.role.toLowerCase();
+            if (userRole === 'manager' || userRole === 'gerant') {
                 navigate("/dashboard", { replace: true });
-            } else if (user.role && user.role !== 'manager') {
-                const employeeDashboardPath = "/employee/dashboard";
-                navigate(employeeDashboardPath, { replace: true });
+            } else if (userRole === 'admin') {
+                setCompanySelectError(t("ADMIN_NOT_ALLOWED", { ns: "errors" }));
+                logout();
+            } else {
+                navigate("/employee/dashboard", { replace: true });
             }
             setIsCompanySelectOpen(false);
         } catch (err) {
