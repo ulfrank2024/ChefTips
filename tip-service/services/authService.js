@@ -38,8 +38,23 @@ const notifyCashOut = async (token, recipient_user_id, sender_name, amount, role
     }
 };
 
+const getCategories = async (token) => {
+    try {
+        const response = await authServiceApiClient.get('/api/auth/categories', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching categories from auth-service:', error.response ? error.response.data : error.message);
+        throw new Error('Failed to fetch categories.');
+    }
+};
+
 module.exports = {
     authServiceApiClient,
     getAuthUserDetails,
     notifyCashOut,
+    getCategories,
 };

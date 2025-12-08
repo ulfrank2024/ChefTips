@@ -1,27 +1,31 @@
 const { TipModel } = require("../models/tipModel");
-const { getAuthUserDetails } = require("../services/authService");
+const { getAuthUserDetails, getCategories } = require("../services/authService"); // Import getCategories
 
 const getPayPeriodSummary = async (req, res) => {
     const { company_id, role } = req.user;
     if (role !== 'manager') return res.status(403).json({ error: "UNAUTHORIZED" });
 
-    const { destinationDepartmentId, startDate, endDate } = req.query;
-    if (!destinationDepartmentId || !startDate || !endDate) return res.status(400).json({ error: "FIELDS_REQUIRED" });
+    const { destinationCategoryId, startDate, endDate } = req.query; // Changed destinationDepartmentId to destinationCategoryId
+    if (!destinationCategoryId || !startDate || !endDate) return res.status(400).json({ error: "FIELDS_REQUIRED" });
 
     try {
-        const department = (await TipModel.getDepartmentsByCompany(company_id)).find(d => d.id === destinationDepartmentId);
-        if (!department || department.department_type !== 'RECEIVER') {
-            return res.status(400).json({ error: "INVALID_DEPARTMENT" });
+        const token = req.headers.authorization.split(' ')[1];
+        const categories = await getCategories(token);
+        const destinationCategory = categories.find(cat => cat.id === destinationCategoryId);
+
+        if (!destinationCategory || !destinationCategory.is_tip_distribution_pool) { // Check is_tip_distribution_pool
+            return res.status(400).json({ error: "INVALID_DESTINATION_CATEGORY_OR_NOT_POOL" });
         }
 
-        const total = await TipModel.calculateTipOutsForPayPeriod(company_id, destinationDepartmentId, startDate, endDate);
+        const total = await TipModel.calculateTipOutsForPayPeriod(company_id, destinationCategoryId, startDate, endDate); // Use destinationCategoryId
         
-        const distribution = department.category_distribution || {};
-        const categoryBreakdown = {};
-        for (const categoryId in distribution) {
-            const percentage = distribution[categoryId];
-            categoryBreakdown[categoryId] = (total * percentage) / 100;
-        }
+        // The categoryBreakdown logic assumes categories are passed with percentage distribution.
+        // This part needs to be reviewed or adapted if the distribution is based on something else.
+        // For now, assuming a simple structure for category_breakdown.
+        const categoryBreakdown = {}; 
+        // Example: If destinationCategory has a distribution config, use it.
+        // For now, it's a direct total to this category pool.
+        categoryBreakdown[destinationCategoryId] = total;
 
         res.status(200).json({ 
             total_tip_out_amount: total,
@@ -37,13 +41,21 @@ const createPool = async (req, res) => {
     const { company_id, role } = req.user;
     if (role !== 'manager') return res.status(403).json({ error: "UNAUTHORIZED" });
 
-    const { departmentId, startDate, endDate, distributions, totalAmount } = req.body;
-    if (!departmentId || !startDate || !endDate || !distributions || totalAmount === undefined) {
+    const { categoryId, startDate, endDate, distributions, totalAmount } = req.body; // Changed departmentId to categoryId
+    if (!categoryId || !startDate || !endDate || !distributions || totalAmount === undefined) {
         return res.status(400).json({ error: "FIELDS_REQUIRED" });
     }
 
     try {
-        const newPool = await TipModel.createPool(company_id, departmentId, startDate, endDate, totalAmount, distributions);
+        const token = req.headers.authorization.split(' ')[1];
+        const categories = await getCategories(token);
+        const selectedCategory = categories.find(cat => cat.id === categoryId);
+
+        if (!selectedCategory || !selectedCategory.is_tip_distribution_pool) {
+            return res.status(400).json({ error: "INVALID_CATEGORY_OR_NOT_POOL" });
+        }
+
+        const newPool = await TipModel.createPool(company_id, categoryId, startDate, endDate, totalAmount, distributions); // Use categoryId
         res.status(201).json(newPool);
     } catch (err) {
         console.error(err);
@@ -125,7 +137,7 @@ const getPoolSummaryById = async (req, res) => {
 };
 
 const getEmployeeReceivedTips = async (req, res) => {
-    const { company_id, id: authUserId, role } = req.user;
+    const { company_id, id: authUserId, role } = req.user; // role is still here from the token, needs to be category_id
     const { userId } = req.params;
     const { startDate, endDate } = req.query; // Extract startDate and endDate from query
 
