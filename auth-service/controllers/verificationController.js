@@ -114,8 +114,10 @@ const setupPassword = async (req, res) => {
         const companyName = primaryMembership ? primaryMembership.company_name : '';
 
         const currentYear = new Date().getFullYear();
+        const frontendUrl = process.env.FRONTEND_URL || 'https://www.cheftips.app'; // Ensure frontendUrl is available
+        const loginPageUrl = `${frontendUrl}/login`;
 
-        await sendEmail(updatedUser.email, 'welcomeEmployee', { firstName: updatedUser.first_name, companyName, currentYear }, updatedUser.preferred_language || 'en');
+        await sendEmail(updatedUser.email, 'welcomeEmployee', { firstName: updatedUser.first_name, companyName, currentYear, loginPageUrl }, updatedUser.preferred_language || 'en');
 
         await TokenModel.deletePasswordSetupToken(token);
 

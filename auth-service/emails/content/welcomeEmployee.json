@@ -7,7 +7,9 @@
     "callToAction": "Start exploring all the features of our application.",
     "closing": "Thank you for choosing our service!",
     "teamName": "The ChefTips Team",
-    "bilingual_intro": "English version below:"
+    "bilingual_intro": "English version below:",
+    "login_prompt": "You can log in to your account here:",
+    "login_cta": "Go to Login Page"
   },
   "fr": {
     "subject": "Bienvenue sur ChefTips, {{firstName}} !",
@@ -16,6 +18,8 @@
     "companyJoinMessage": "Vous avez rejoint avec succès",
     "callToAction": "Commencez à explorer toutes les fonctionnalités de notre application.",
     "closing": "Merci d'avoir choisi notre service !",
-    "teamName": "L'équipe ChefTips"
+    "teamName": "L'équipe ChefTips",
+    "login_prompt": "Vous pouvez vous connecter à votre compte ici :",
+    "login_cta": "Aller à la page de connexion"
   }
 }
