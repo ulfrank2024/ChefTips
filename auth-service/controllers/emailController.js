@@ -31,11 +31,11 @@ const sendCashOutNotification = async (req, res) => {
             amount: parseFloat(amount).toFixed(2),
             role: translatedRole,
             recipient_name: recipient.first_name,
+            loginLink: `${process.env.AUTH_FRONTEND_URL}/login`
         };
 
-        await sendEmail(recipient.email, 'cashOutNotification', emailData, language);
-
-        res.status(200).json({ message: 'Cash out notification sent successfully.' });
+        await emailService.sendEmail(recipient.email, 'cashOutNotification', templateData, recipient.lang);
+        res.status(200).json({ message: "Cash out notification sent" });
     } catch (error) {
         console.error('Error sending cash out notification:', error);
         res.status(500).json({ error: 'Failed to send cash out notification.' });

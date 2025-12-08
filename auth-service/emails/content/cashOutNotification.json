@@ -4,8 +4,9 @@
         "title": "Tip-Out Received",
         "greeting": "Hello {{recipient_name}},",
         "line1": "You have received a tip-out of ${{amount}} from {{sender_name}} for your work as a {{role}}.",
-        "line2": "You can view the details by logging into your account.",
+        "line2": "To view your detailed tip reports and manage your profile, please log in:",
         "cta": "Go to Dashboard",
+        "login_cta": "Log In Now",
         "salutation": "Best regards,<br>The Tips App Team"
     },
     "fr": {
@@ -13,8 +14,9 @@
         "title": "Pourboire Reçu",
         "greeting": "Bonjour {{recipient_name}},",
         "line1": "Vous avez reçu un pourboire de {{amount}}$ de la part de {{sender_name}} pour votre travail en tant que {{role}}.",
-        "line2": "Vous pouvez voir les détails en vous connectant à votre compte.",
+        "line2": "Pour consulter vos rapports de pourboires détaillés et gérer votre profil, veuillez vous connecter :",
         "cta": "Aller au tableau de bord",
+        "login_cta": "Se connecter maintenant",
         "salutation": "Cordialement,<br>L'équipe de Tips App"
     }
 }

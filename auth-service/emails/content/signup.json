@@ -8,7 +8,9 @@
     "body3": "P.S. If you start the setup process but don't finish, simply use the 'Forgot Password' feature on our login page with your email address to receive a new setup link.",
     "linkText": "Verify My Email",
     "closing": "The ChefTips Team",
-    "bilingual_intro": "English version below:"
+    "bilingual_intro": "English version below:",
+    "login_prompt": "Once your email is verified, you can log in here:",
+    "login_cta": "Go to Login Page"
   },
   "fr": {
     "subject": "Votre code de vérification ChefTips",
@@ -18,6 +20,8 @@
     "body2": "Ce code est valide pendant 10 minutes. Si vous n'avez pas demandé ce code, veuillez ignorer cet e-mail.",
     "body3": "P.S. Si vous commencez le processus de configuration mais ne le terminez pas, utilisez simplement la fonction « Mot de passe oublié » sur notre page de connexion avec votre adresse e-mail pour recevoir un nouveau lien de configuration.",
     "linkText": "Vérifier mon e-mail",
-    "closing": "L'équipe ChefTips"
+    "closing": "L'équipe ChefTips",
+    "login_prompt": "Une fois votre adresse e-mail vérifiée, vous pouvez vous connecter ici :",
+    "login_cta": "Aller à la page de connexion"
   }
 }
