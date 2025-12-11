@@ -72,7 +72,7 @@ const LoginPage = () => {
                 setMemberships(result.memberships);
                 setIsCompanySelectOpen(true);
             } else {
-                const userRole = result.role.toLowerCase();
+                const userRole = (result.role || "employee").toLowerCase();
                 if (userRole === 'manager' || userRole === 'gerant') {
                     navigate("/dashboard", { replace: true });
                 } else if (userRole === 'admin') {
@@ -104,7 +104,7 @@ const LoginPage = () => {
                 tempUserId,
                 selectedCompanyId
             );
-            const userRole = user.role.toLowerCase();
+            const userRole = (user.role || "employee").toLowerCase();
             if (userRole === 'manager' || userRole === 'gerant') {
                 navigate("/dashboard", { replace: true });
             } else if (userRole === 'admin') {

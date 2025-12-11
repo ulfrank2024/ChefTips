@@ -2,14 +2,14 @@
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
-export const shorthands = undefined;
+const shorthands = undefined;
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const up = (pgm) => {
+const up = (pgm) => {
     // 1. Create categories table
     pgm.createTable('categories', {
         id: {
@@ -82,7 +82,7 @@ export const up = (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const down = (pgm) => {
+const down = (pgm) => {
     // Revert steps in reverse order
 
     // 1. Recreate departments table (if it was dropped)
@@ -135,3 +135,5 @@ export const down = (pgm) => {
     // 4. Drop categories table
     pgm.dropTable('categories');
 };
+
+module.exports = { shorthands, up, down };
