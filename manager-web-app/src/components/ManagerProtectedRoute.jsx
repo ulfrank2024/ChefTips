@@ -9,7 +9,7 @@ const ManagerProtectedRoute = () => {
         return <div>Loading...</div>; // Or a spinner
     }
 
-    if (!user || (user.role.toLowerCase() !== 'manager' && user.role.toLowerCase() !== 'gerant')) {
+    if (!user || (user.role?.toLowerCase() !== 'manager' && user.role?.toLowerCase() !== 'gerant')) {
         return <Navigate to="/login" replace />;
     }
 
