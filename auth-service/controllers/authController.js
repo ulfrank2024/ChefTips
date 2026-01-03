@@ -6,22 +6,20 @@ require("dotenv").config();
 
 const login = async (req, res) => {
     console.log('Requête POST /api/auth/login reçue');
-    const { email, password } = req.body;
-    if (!email || !password) {
+    const { email, password, app_context } = req.body; // app_context can be 'admin' or 'manager'
+    if (!email || !password || !app_context) {
         console.log('Erreur: LOGIN_FIELDS_REQUIRED');
         return res.status(400).json({ error: "LOGIN_FIELDS_REQUIRED" });
     }
+
     try {
         const user = await UserModel.findUserByEmail(email);
-        if (!user) {
-            console.log(`Utilisateur non trouvé pour l'email: ${email}`);
+        if (!user || !user.password || !user.email_validated) {
+            console.log(`Utilisateur non trouvé, non validé ou sans mot de passe pour l'email: ${email}`);
             return res.status(401).json({ error: "INVALID_CREDENTIALS_OR_UNVERIFIED" });
         }
         console.log(`Utilisateur trouvé: ${user.email}, Validé: ${user.email_validated}`);
-        if (!user.password || !user.email_validated) {
-            console.log('Erreur: Mot de passe manquant ou email non validé');
-            return res.status(401).json({ error: "INVALID_CREDENTIALS_OR_UNVERIFIED" });
-        }
+        
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             console.log('Erreur: Mot de passe incorrect');
@@ -29,10 +27,22 @@ const login = async (req, res) => {
         }
         console.log('Mot de passe correct');
 
-        const memberships = await MembershipModel.getMembershipsByUserId(user.id);
+        let memberships = await MembershipModel.getMembershipsByUserId(user.id);
         if (memberships.length === 0) {
             console.log('Erreur: NO_COMPANY_MEMBERSHIP');
             return res.status(403).json({ error: "NO_COMPANY_MEMBERSHIP" });
+        }
+
+        // Filter memberships based on app_context
+        if (app_context === 'admin') {
+            memberships = memberships.filter(m => m.role === 'admin');
+        } else if (app_context === 'manager') {
+            memberships = memberships.filter(m => m.role !== 'admin');
+        }
+
+        if (memberships.length === 0) {
+            console.log('Erreur: Rôle non autorisé pour cette application');
+            return res.status(403).json({ error: "ACCESS_DENIED_FOR_APP_CONTEXT" });
         }
 
         if (memberships.length === 1) {
@@ -67,19 +77,31 @@ const login = async (req, res) => {
 
 const selectCompany = async (req, res) => {
     console.log('Requête POST /api/auth/selectCompany reçue');
-    const { userId, companyId } = req.body;
-    if (!userId || !companyId) {
-        console.log('Erreur: USER_ID_AND_COMPANY_ID_REQUIRED');
-        return res.status(400).json({ error: "USER_ID_AND_COMPANY_ID_REQUIRED" });
+    const { userId, companyId, app_context } = req.body;
+    if (!userId || !companyId || !app_context) {
+        console.log('Erreur: USER_ID_COMPANY_ID_AND_APP_CONTEXT_REQUIRED');
+        return res.status(400).json({ error: "USER_ID_COMPANY_ID_AND_APP_CONTEXT_REQUIRED" });
     }
     try {
         const user = await UserModel.findUserById(userId);
         const memberships = await MembershipModel.getMembershipsByUserId(userId);
         const selectedMembership = memberships.find(m => m.company_id === companyId);
+
         if (!user || !selectedMembership) {
             console.log('Erreur: MEMBERSHIP_NOT_FOUND_OR_UNAUTHORIZED');
             return res.status(403).json({ error: "MEMBERSHIP_NOT_FOUND_OR_UNAUTHORIZED" });
         }
+
+        // Validate role against app_context
+        if (app_context === 'admin' && selectedMembership.role !== 'admin') {
+            console.log('Erreur: Rôle non-admin tentant d\'accéder à l\'application admin');
+            return res.status(403).json({ error: "ACCESS_DENIED_FOR_APP_CONTEXT" });
+        }
+        if (app_context === 'manager' && selectedMembership.role === 'admin') {
+            console.log('Erreur: Rôle admin tentant d\'accéder à l\'application manager');
+            return res.status(403).json({ error: "ACCESS_DENIED_FOR_APP_CONTEXT" });
+        }
+
         const payload = { 
             id: user.id, 
             email: user.email, 

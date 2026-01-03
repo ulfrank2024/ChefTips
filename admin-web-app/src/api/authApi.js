@@ -47,7 +47,16 @@ const handleApiError = (error) => {
 
 export const login = async (email, password) => {
     try {
-        const response = await apiClient.post('/login', { email, password });
+        const response = await apiClient.post('/login', { email, password, app_context: 'admin' });
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+export const selectCompany = async (userId, companyId) => {
+    try {
+        const response = await apiClient.post('/select-company', { userId, companyId, app_context: 'admin' });
         return response.data;
     } catch (error) {
         handleApiError(error);

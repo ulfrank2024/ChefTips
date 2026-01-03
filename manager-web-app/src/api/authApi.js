@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || "http://13.220.169.115:3000/api/auth";
 
@@ -66,7 +65,7 @@ export const signup = async (email, password, companyName, firstName, lastName) 
 
 export const login = async (email, password) => {
     try {
-        const response = await apiClient.post('/login', { email, password });
+        const response = await apiClient.post('/login', { email, password, app_context: 'manager' });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -75,7 +74,7 @@ export const login = async (email, password) => {
 
 export const selectCompany = async (userId, companyId) => {
     try {
-        const response = await apiClient.post('/select-company', { userId, companyId });
+        const response = await apiClient.post('/select-company', { userId, companyId, app_context: 'manager' });
         return response.data;
     } catch (error) {
         handleApiError(error);
