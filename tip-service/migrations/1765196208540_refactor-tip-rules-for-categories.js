@@ -14,8 +14,6 @@ const up = (pgm) => {
     pgm.addColumn('daily_reports', {
         category_id: {
             type: 'uuid',
-            references: '"auth_service_db"."public"."categories"(id)', // Reference auth-service's categories table
-            onDelete: 'SET NULL',
             allowNull: true,
         },
     });
@@ -24,8 +22,6 @@ const up = (pgm) => {
     pgm.addColumn('tip_out_rules', {
         destination_category_id: {
             type: 'uuid',
-            references: '"auth_service_db"."public"."categories"(id)', // Reference auth-service's categories table
-            onDelete: 'SET NULL',
             allowNull: true,
         },
     });
@@ -34,8 +30,6 @@ const up = (pgm) => {
     pgm.addColumn('tip_pools', {
         category_id: {
             type: 'uuid',
-            references: '"auth_service_db"."public"."categories"(id)', // Reference auth-service's categories table
-            onDelete: 'SET NULL',
             allowNull: true,
         },
     });
