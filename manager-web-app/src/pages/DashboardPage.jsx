@@ -203,18 +203,18 @@ const DashboardPage = () => {
                                             borderRadius: '8px',
                                             mb: 1,
                                             '&:hover': {
-                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                backgroundColor: openSection === item.name ? '#ad9407ff' : 'rgba(255, 255, 255, 0.05)',
                                             },
                                             ...(openSection === item.name && {
-                                                backgroundColor: 'rgba(255, 255, 255, 0.1)', // Fond légèrement visible si ouvert
+                                                backgroundColor: '#ad9407ff',
                                             }),
                                         }}
                                     >
-                                        <ListItemIcon sx={{ padding: "10px", color: 'white' }}>
+                                        <ListItemIcon sx={{ padding: "10px", color: theme.palette.text.primary }}>
                                             {item.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={item.text} sx={{ color: 'white' }} />
-                                        {openSection === item.name ? <ExpandLess sx={{ color: 'black' }} /> : <ExpandMore sx={{ color: 'black' }} />}
+                                        {openSection === item.name ? <ExpandLess sx={{ color: theme.palette.text.primary }} /> : <ExpandMore sx={{ color: theme.palette.text.primary }} />}
                                     </ListItem>
                                     <Collapse in={openSection === item.name} timeout="auto" unmountOnExit>
                                         <List component="div" disablePadding>
@@ -228,9 +228,9 @@ const DashboardPage = () => {
                                                     sx={{
                                                         pl: 4,
                                                         color: 'white',
-                                                        backgroundColor: location.pathname === subItem.path ? 'rgba(255, 255, 255, 0.1)' : 'transparent', // Fond transparent, légèrement visible si actif
+                                                        backgroundColor: location.pathname === subItem.path ? '#ad9407ff' : 'transparent',
                                                         "&:hover": {
-                                                            backgroundColor: "rgba(255, 255, 255, 0.05)", // Hover très subtil
+                                                            backgroundColor: location.pathname === subItem.path ? '#ad9407ff' : "rgba(255, 255, 255, 0.1)",
                                                         },
                                                         border: 'none',
                                                         boxShadow: 'none',
@@ -254,13 +254,16 @@ const DashboardPage = () => {
                                 onClick={item.onClick ? item.onClick : handleSimpleLinkClick}
                                 sx={{
                                     color: 'white',
-                                    backgroundColor: (location.pathname === item.path && openSection === "") ? "#ad9407ff" : "transparent",
-                                    "&:hover": {
-                                        backgroundColor: (location.pathname === item.path && openSection === "") ? "#ad9407ff" : "rgba(255, 255, 255, 0.08)",
+                                    backgroundColor: (location.pathname === item.path && openSection === "") ? '#ad9407ff' : 'transparent',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '8px',
+                                    mb: 1,
+                                    '&:hover': {
+                                        backgroundColor: (location.pathname === item.path && openSection === "") ? '#ad9407ff' : 'rgba(255, 255, 255, 0.05)',
                                     },
                                 }}
                             >
-                                <ListItemIcon sx={{ padding: "20px", color: 'black' }}>
+                                <ListItemIcon sx={{ padding: "10px", color: theme.palette.text.primary }}>
                                     {item.icon}
                                 </ListItemIcon>
                                 <ListItemText primary={item.text} sx={{ color: 'white' }} />

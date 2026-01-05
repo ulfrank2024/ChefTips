@@ -11,7 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { getCompanyEmployees, inviteEmployee, removeEmployee, updateEmployeeMembership } from '../../api/authApi';
 import { useAlert } from '../../context/AlertContext';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+
 import './ManageEmployees.css';
 
 import { useTheme, useMediaQuery } from '@mui/material';
@@ -20,7 +20,6 @@ const ManageEmployees = () => {
   const { t } = useTranslation(['common', 'errors', 'components/manager/manageEmployees']);
   const { showAlert } = useAlert();
   const { handleTokenUpdate } = useAuth();
-  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -170,19 +169,6 @@ const ManageEmployees = () => {
       setModalError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
       setModalLoading(false);
-    }
-  };
-
-  const handlePermissionChange = async (employee, checked) => {
-    try {
-      const data = await updateEmployeeMembership(employee.membership_id, { can_cash_out: checked });
-      if (data.token) {
-        handleTokenUpdate(data.token);
-      }
-      showAlert(t('success'), t('permissionUpdatedSuccessfully', { ns: 'components/manager/manageEmployees' }));
-      fetchData();
-    } catch (err) {
-      showAlert(t('error'), t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     }
   };
 

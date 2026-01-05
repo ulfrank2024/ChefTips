@@ -72,13 +72,17 @@ const LoginPage = () => {
                 setMemberships(result.memberships);
                 setIsCompanySelectOpen(true);
             } else {
+                // A user must have a company to log in to this app
+                if (!result.company_id) {
+                    setError(t("ACCESS_DENIED_NO_COMPANY", { ns: "errors" }));
+                    logout();
+                    return;
+                }
+
                 const userRole = (result.role || "employee").toLowerCase();
                 if (userRole === 'manager' || userRole === 'gerant') {
                     navigate("/dashboard", { replace: true });
-                } else if (userRole === 'admin') {
-                    setError(t("ADMIN_NOT_ALLOWED", { ns: "errors" }));
-                    logout();
-                } else {
+                } else { // All other roles default to employee view
                     navigate("/employee/dashboard", { replace: true });
                 }
             }
@@ -104,13 +108,12 @@ const LoginPage = () => {
                 tempUserId,
                 selectedCompanyId
             );
+            // The selectCompanyAndLogin function ensures a company context.
+            // We just need to route based on role.
             const userRole = (user.role || "employee").toLowerCase();
             if (userRole === 'manager' || userRole === 'gerant') {
                 navigate("/dashboard", { replace: true });
-            } else if (userRole === 'admin') {
-                setCompanySelectError(t("ADMIN_NOT_ALLOWED", { ns: "errors" }));
-                logout();
-            } else {
+            } else { // All other roles default to employee view
                 navigate("/employee/dashboard", { replace: true });
             }
             setIsCompanySelectOpen(false);

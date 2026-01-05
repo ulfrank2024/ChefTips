@@ -9,7 +9,7 @@ const EmployeeProtectedRoute = () => {
         return <div>Loading...</div>; // Or a spinner
     }
 
-    if (!user || user.role.toLowerCase() === 'manager' || user.role.toLowerCase() === 'admin') {
+    if (!user || (user.role || 'employee').toLowerCase() === 'manager' || (user.role || 'employee').toLowerCase() === 'admin') {
         return <Navigate to="/login" replace />;
     }
 

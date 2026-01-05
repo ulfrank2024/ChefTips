@@ -50,8 +50,8 @@ import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
 import ManagePayoutPeriods from './components/manager/ManagePayoutPeriods';
 
 function App() {
-  const { i18n, t } = useTranslation(['common', 'pages/login', 'pages/managerDashboard', 'pages/employeeDashboard']);
-  const { user, logout, subscriptionStatus } = useAuth(); // Get subscriptionStatus from AuthContext
+  const { t } = useTranslation(['common', 'pages/login', 'pages/managerDashboard', 'pages/employeeDashboard']);
+  const { user, subscriptionStatus } = useAuth(); // Get subscriptionStatus from AuthContext
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();

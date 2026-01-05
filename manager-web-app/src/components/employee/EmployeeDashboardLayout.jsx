@@ -155,50 +155,56 @@ const EmployeeDashboardLayout = () => {
             >
                 {drawerContent}
             </Drawer>
+            {!isMobile && (
+              <Tooltip title={desktopOpen ? t('closeMenu', { ns: 'common' }) : t('openMenu', { ns: 'common' })}>
+                <IconButton 
+                  onClick={handleDesktopToggle}
+                  sx={{
+                    position: 'fixed',
+                    top: '110px',
+                    left: desktopOpen ? `${drawerWidth + 10}px` : '10px',
+                    zIndex: theme.zIndex.drawer + 2,
+                    backgroundColor: '#fff',
+                    boxShadow: theme.shadows[3],
+                    '&:hover': {
+                      backgroundColor: '#f2f2f2',
+                    },
+                    transition: theme.transitions.create('left', {
+                      easing: theme.transitions.easing.sharp,
+                      duration: theme.transitions.duration.enteringScreen,
+                    }),
+                  }}
+                >
+                  {desktopOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
             <Box
                 component="main"
                 ref={mainContentRef}
                 sx={{
                     flexGrow: 1,
-                    p: 3,
+                    paddingTop: "50px",
+                    paddingRight: "24px",
+                    paddingBottom: "24px",
+                    paddingLeft: isMobile ? "24px" : "80px",
                     transition: theme.transitions.create('margin', {
                       easing: theme.transitions.easing.sharp,
                       duration: theme.transitions.duration.leavingScreen,
                     }),
-                    marginLeft: `-${drawerWidth}px`,
+                    marginLeft: isMobile ? 0 : (desktopOpen ? 0 : `-${drawerWidth}px`),
                     ...(desktopOpen && !isMobile && {
                       transition: theme.transitions.create('margin', {
                         easing: theme.transitions.easing.easeOut,
                         duration: theme.transitions.duration.enteringScreen,
                       }),
-                      marginLeft: 0,
                     }),
                     width: '100%',
-                    paddingTop: "50px",
                     height: "100vh",
                     overflow: "auto",
                     position: 'relative',
                 }}
             >
-                {!isMobile && (
-                  <Tooltip title={desktopOpen ? t('closeMenu', { ns: 'common' }) : t('openMenu', { ns: 'common' })}>
-                    <IconButton 
-                      onClick={handleDesktopToggle}
-                      sx={{
-                        position: 'absolute',
-                        top: '90px', 
-                        left: '20px',
-                        zIndex: theme.zIndex.drawer + 2,
-                        backgroundColor: 'rgba(255,255,255,0.8)',
-                        '&:hover': {
-                          backgroundColor: 'white',
-                        }
-                      }}
-                    >
-                      {desktopOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                    </IconButton>
-                  </Tooltip>
-                )}
                 <Outlet />
             </Box>
         </Box>

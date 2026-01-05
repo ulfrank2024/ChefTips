@@ -1,4 +1,7 @@
 // server.js
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 console.log('NODE_ENV au début de server.js:', process.env.NODE_ENV);
 console.log('FRONTEND_URL au début de server.js:', process.env.FRONTEND_URL);
 

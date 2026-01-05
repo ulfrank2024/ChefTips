@@ -6,7 +6,8 @@ const { inviteEmployee, removeEmployee, getCompanyEmployees, updateMembership } 
 const { verifyOtp, resendOtp, verifyInvitation, setupPassword, forgotPassword, resetPassword } = require('../controllers/verificationController');
 const { updateLanguagePreference, changePassword, updateProfile, getUserDetails } = require('../controllers/userController');
 const { sendCashOutNotification, sendInternalEmail } = require('../controllers/emailController');
-const { getCompanyDepartments, getAllCompanies, getCompanyById, suspendCompany, reactivateCompany } = require('../controllers/companyController');
+const { getAllCompanies, getCompanyById, suspendCompany, reactivateCompany } = require('../controllers/companyController'); // getCompanyDepartments removed
+const { createCategory, getCategories, updateCategory, deleteCategory } = require('../controllers/categoryController'); // New Category Controller
 const { authenticateToken } = require("../middleware/authMiddleware");
 const { authenticateAdmin } = require('../middleware/adminMiddleware');
 
@@ -46,18 +47,11 @@ router.put("/memberships/:membershipId", authenticateToken, updateMembership);
 router.delete("/memberships/:membershipId", authenticateToken, removeEmployee);
 // Manager gets all employees in their company
 router.get("/employees", authenticateToken, getCompanyEmployees);
-// Manager gets all departments in their company
-router.get("/departments", authenticateToken, getCompanyDepartments);
-
-// --- Manager: Category Management Routes ---
-// router.post("/categories", authenticateToken, createCategory);
-// router.get("/categories", authenticateToken, getCompanyCategories);
-// router.get("/categories/:categoryId", authenticateToken, getCategoryById);
-// router.put("/categories/:categoryId", authenticateToken, updateCategory);
-// router.delete("/categories/:categoryId", authenticateToken, deleteCategory);
-// // Manager updates an employee's category within their company
-// router.put("/memberships/:membershipId/category", authenticateToken, updateUserCategory);
-
+// Manager gets all categories in their company
+router.get("/categories", authenticateToken, getCategories); // Changed from /departments
+router.post("/categories", authenticateToken, createCategory); // New
+router.put("/categories/:categoryId", authenticateToken, updateCategory); // New
+router.delete("/categories/:categoryId", authenticateToken, deleteCategory); // New
 
 // --- Inter-service Communication Routes ---
 // Used by other services to get user details

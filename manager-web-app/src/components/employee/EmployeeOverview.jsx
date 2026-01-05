@@ -28,7 +28,6 @@ import { useMediaQuery, useTheme } from '@mui/material';
 import {
   getCashOutsByCollector,
   getEmployeeReceivedTips,
-  getPoolDetails,
   getCompanyEmployees,
 } from "../../api/tipApi";
 import { getPayoutPeriods } from "../../api/payoutPeriodApi";
@@ -94,7 +93,7 @@ const EmployeeOverview = ({ isManagerView = false }) => {
           const cashOuts = await getCashOutsByCollector(user.id, dayjs().subtract(2, 'year').format('YYYY-MM-DD'), dayjs().add(1, 'year').format('YYYY-MM-DD'));
           setAllCashOuts(cashOuts);
           if (cashOuts.length > 0) {
-            const sortedCashOuts = cashOuts.sort((a, b) => {
+            cashOuts.sort((a, b) => {
                 const dateComparison = dayjs.utc(b.service_date).unix() - dayjs.utc(a.service_date).unix();
                 if (dateComparison !== 0) {
                     return dateComparison;

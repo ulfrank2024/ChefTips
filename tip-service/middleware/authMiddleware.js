@@ -7,7 +7,9 @@ const authenticateToken = (req, res, next) => {
     if (token == null) return res.sendStatus(401); // if there isn't any token
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403); // if the token is no longer valid
+        if (err) {
+            return res.sendStatus(403); // if the token is no longer valid
+        }
         req.user = user;
         req.user.token = token; // Store the original token
         next(); // proceed to the next middleware or route handler

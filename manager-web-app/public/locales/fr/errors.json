@@ -35,5 +35,6 @@
   "EMAIL_MISSING_FROM_URL": "L'e-mail est manquant. Veuillez utiliser le lien de votre invitation.",
   "INVITATION_CODE_REQUIRED": "Le code d'invitation est requis.",
   "INVALID_INVITATION_CODE": "Le code d'invitation est invalide ou a expiré.",
-  "ADMIN_NOT_ALLOWED": "Les comptes administrateur ne peuvent pas se connecter à cette application."
+  "ADMIN_NOT_ALLOWED": "Les comptes administrateur ne peuvent pas se connecter à cette application.",
+  "ACCESS_DENIED_NO_COMPANY": "Accès refusé : Vous n'êtes affilié à aucune entreprise. Veuillez contacter le support."
 }

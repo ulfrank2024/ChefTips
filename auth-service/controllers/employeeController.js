@@ -8,8 +8,8 @@ const inviteEmployee = async (req, res) => {
     if (managerRole !== 'manager') {
         return res.status(403).json({ error: "UNAUTHORIZED_ACCESS" });
     }
-    const { email, role, can_cash_out } = req.body;
-    if (!email || !role) { return res.status(400).json({ error: "EMAIL_AND_ROLE_REQUIRED" }); }
+    const { email, can_cash_out = false } = req.body; // role removed from here
+    if (!email) { return res.status(400).json({ error: "EMAIL_REQUIRED" }); } // role validation removed
 
     try {
         let user = await UserModel.findUserByEmail(email);
@@ -23,7 +23,8 @@ const inviteEmployee = async (req, res) => {
             return res.status(409).json({ error: "USER_ALREADY_MEMBER_OF_COMPANY" });
         }
 
-        await MembershipModel.createMembership(user.id, managerCompanyId, role, can_cash_out);
+        // Pass null for categoryId initially. Manager will assign it later.
+        await MembershipModel.createMembership(user.id, managerCompanyId, null, can_cash_out); 
 
         if (isNewUser) {
             const code = await TokenModel.createInvitationCode(user.id);
@@ -44,7 +45,7 @@ const inviteEmployee = async (req, res) => {
 
 const updateMembership = async (req, res) => {
     const { membershipId } = req.params;
-    const { role, can_cash_out } = req.body;
+    const { categoryId, can_cash_out } = req.body; // Changed role to categoryId
     const { company_id: managerCompanyId, role: managerRole } = req.user;
 
     if (managerRole !== 'manager') {
@@ -57,7 +58,7 @@ const updateMembership = async (req, res) => {
             return res.status(404).json({ error: "MEMBERSHIP_NOT_FOUND_IN_COMPANY" });
         }
 
-        await MembershipModel.updateMembership(membershipId, { role, can_cash_out });
+        await MembershipModel.updateMembership(membershipId, { categoryId, can_cash_out }); // Passed categoryId
         res.status(200).json({ success_code: "MEMBERSHIP_UPDATED_SUCCESSFULLY" });
     } catch (err) {
         console.error(err);

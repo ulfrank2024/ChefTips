@@ -29,7 +29,6 @@ const CreatePool = () => {
   
   const [report, setReport] = useState(null);
   const [selectedEmployees, setSelectedEmployees] = useState({});
-  const [selectedRole, setSelectedRole] = useState(''); // New state for selected role
 
   const [payoutPeriods, setPayoutPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState('');

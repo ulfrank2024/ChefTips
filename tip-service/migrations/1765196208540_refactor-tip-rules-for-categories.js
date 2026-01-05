@@ -2,16 +2,16 @@
 /**
  * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
  */
-export const shorthands = undefined;
+const shorthands = undefined;
 
 /**
  * @param pgm {import('node-pg-migrate').MigrationBuilder}
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const up = (pgm) => {
-    // 1. Add category_id column to tip_reports table
-    pgm.addColumn('daily_reports', { // Changed from tip_reports to daily_reports based on tipModel.js
+const up = (pgm) => {
+    // 1. Add category_id column to daily_reports table
+    pgm.addColumn('daily_reports', {
         category_id: {
             type: 'uuid',
             references: '"auth_service_db"."public"."categories"(id)', // Reference auth-service's categories table
@@ -20,8 +20,8 @@ export const up = (pgm) => {
         },
     });
 
-    // 2. Add destination_category_id column to rules table
-    pgm.addColumn('tip_out_rules', { // Changed from rules to tip_out_rules based on tipModel.js
+    // 2. Add destination_category_id column to tip_out_rules table
+    pgm.addColumn('tip_out_rules', {
         destination_category_id: {
             type: 'uuid',
             references: '"auth_service_db"."public"."categories"(id)', // Reference auth-service's categories table
@@ -61,7 +61,7 @@ export const up = (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const down = (pgm) => {
+const down = (pgm) => {
     // Revert steps in reverse order
 
     // 1. Revert 'role' column in tip_pools table to NOT NULL
@@ -88,3 +88,5 @@ export const down = (pgm) => {
     // 6. Drop category_id column from daily_reports table
     pgm.dropColumn('daily_reports', 'category_id');
 };
+
+module.exports = { shorthands, up, down };
