@@ -5,7 +5,7 @@ const TipModel = {
     // --- Cash Out & Adjustment Methods ---
     async createCashOut(cashOutData, dailyReportId, adjustments) {
         const {
-            user_id, company_id, category_id, service_date, // Changed role to category_id
+            user_id, company_id, category_id, service_date,
             was_collector, total_sales, gross_tips, net_tips, service_end_time,
             food_sales, alcohol_sales, cash_difference, final_balance, cash_on_hand,
             payout_period_id
@@ -17,7 +17,7 @@ const TipModel = {
 
             const cashOutResult = await client.query(
                 `INSERT INTO cash_outs (user_id, company_id, category_id, service_date, was_collector, total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, daily_report_id, cash_on_hand, payout_period_id)
-                 VALUES (, $2, $3, $4, $5, $6, $7, $8, $9, 0, 1, 2, 3, 4, 5, 6) RETURNING *`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`,
                 [user_id, company_id, category_id, service_date, was_collector, total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, dailyReportId, cash_on_hand, payout_period_id]
             );
             const newCashOut = cashOutResult.rows[0];
@@ -28,7 +28,7 @@ const TipModel = {
                     const { adjustment_type, amount, description, related_user_id = null, rule_id = null } = adj;
                     const adjResult = await client.query(
                         `INSERT INTO report_adjustments (report_id, adjustment_type, amount, description, related_user_id, rule_id)
-                         VALUES (, $2, $3, $4, $5, $6) RETURNING *`,
+                         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
                         [dailyReportId, adjustment_type, amount, description, related_user_id, rule_id]
                     );
                     insertedAdjustments.push(adjResult.rows[0]);
@@ -49,15 +49,11 @@ const TipModel = {
         const result = await pool.query(
             `SELECT
                 co.*,
-                dr.category_id,
-                dr.category_name,
-                COALESCE(
-                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.daily_report_id),
-                    '[]'
-                ) as adjustments
+                dr.category_id
+                -- Removed cross-database selection of dr.category_name
              FROM cash_outs co
              JOIN daily_reports dr ON co.daily_report_id = dr.id
-             WHERE co.user_id =  AND co.company_id = $2 AND co.service_date BETWEEN $3 AND $4
+             WHERE co.user_id = $1 AND co.company_id = $2 AND co.service_date BETWEEN $3 AND $4
              ORDER BY co.service_date DESC`,
             [userId, companyId, startDate, endDate]
         );
@@ -68,15 +64,11 @@ const TipModel = {
         const result = await pool.query(
             `SELECT
                 co.*,
-                dr.category_id,
-                dr.category_name,
-                COALESCE(
-                    (SELECT json_agg(ra.*) FROM report_adjustments ra WHERE ra.report_id = co.daily_report_id),
-                    '[]'
-                ) as adjustments
+                dr.category_id
+                -- Removed cross-database selection of dr.category_name
              FROM cash_outs co
              JOIN daily_reports dr ON co.daily_report_id = dr.id
-             WHERE co.id = `,
+             WHERE co.id = $1`,
             [cashOutId]
         );
         return result.rows[0];
@@ -84,7 +76,7 @@ const TipModel = {
 
     async getCashOutByDailyReportId(dailyReportId) {
         const result = await pool.query(
-            `SELECT * FROM cash_outs WHERE daily_report_id = `,
+            `SELECT * FROM cash_outs WHERE daily_report_id = $1`,
             [dailyReportId]
         );
         return result.rows[0];
@@ -94,18 +86,20 @@ const TipModel = {
         const params = [companyId];
         let query = `SELECT
                 co.user_id as employee_id,
-                dr.category_id,
-                dr.category_name,
+                co.category_id, -- Use co.category_id directly
+                -- dr.category_name, -- Removed cross-database selection
                 co.service_date as date,
                 co.gross_tips,
                 co.net_tips,
                 (co.gross_tips - co.net_tips) as adjustments
              FROM cash_outs co
-             JOIN daily_reports dr ON co.daily_report_id = dr.id
-             WHERE co.company_id = `;
+             -- JOIN daily_reports dr ON co.daily_report_id = dr.id -- Not needed if dr.category_name is removed
+             WHERE co.company_id = $1`;
+
+        let paramIndex = 2; // Start index for additional parameters
 
         if (startDate && endDate) {
-            query += ` AND co.service_date BETWEEN $2 AND $3`;
+            query += ` AND co.service_date BETWEEN $${paramIndex++} AND $${paramIndex++}`;
             params.push(startDate, endDate);
         }
 
@@ -120,8 +114,8 @@ const TipModel = {
         let query = `SELECT
                 co.id,
                 co.user_id,
-                dr.category_id,
-                dr.category_name,
+                co.category_id, -- Use co.category_id directly
+                -- dr.category_name, -- Removed cross-database selection
                 co.service_date as date,
                 co.gross_tips as amount,
                 co.net_tips,
@@ -134,11 +128,13 @@ const TipModel = {
                     '[]'
                 ) as adjustments
              FROM cash_outs co
-             JOIN daily_reports dr ON co.daily_report_id = dr.id
-             WHERE co.company_id = `;
+             -- JOIN daily_reports dr ON co.daily_report_id = dr.id -- Not needed if dr.category_name is removed
+             WHERE co.company_id = $1`;
+
+        let paramIndex = 2; // Start index for additional parameters
 
         if (startDate && endDate) {
-            query += ` AND co.service_date BETWEEN $2 AND $3`;
+            query += ` AND co.service_date BETWEEN $${paramIndex++} AND $${paramIndex++}`;
             params.push(startDate, endDate);
         }
 
@@ -151,7 +147,7 @@ const TipModel = {
     async updateCashOut(cashOutId, cashOutData, adjustments) {
         const {
             total_sales, gross_tips, net_tips, service_end_time,
-            food_sales, alcohol_sales, cash_difference, final_balance, category_id // Added category_id
+            food_sales, alcohol_sales, cash_difference, final_balance, category_id
         } = cashOutData;
 
         const client = await pool.connect();
@@ -160,14 +156,14 @@ const TipModel = {
 
             const updateCashOutResult = await client.query(
                 `UPDATE cash_outs
-                 SET total_sales = , gross_tips = $2, net_tips = $3, service_end_time = $4, food_sales = $5, alcohol_sales = $6, cash_difference = $7, final_balance = $8, category_id = $9, updated_at = NOW()
-                 WHERE id = 0 RETURNING *`,
+                 SET total_sales = $1, gross_tips = $2, net_tips = $3, service_end_time = $4, food_sales = $5, alcohol_sales = $6, cash_difference = $7, final_balance = $8, category_id = $9, updated_at = NOW()
+                 WHERE id = $10 RETURNING *`,
                 [total_sales, gross_tips, net_tips, service_end_time, food_sales, alcohol_sales, cash_difference, final_balance, category_id, cashOutId]
             );
             const updatedCashOut = updateCashOutResult.rows[0];
 
             await client.query(
-                `DELETE FROM report_adjustments WHERE report_id =  AND adjustment_type = 'MANUAL'`,
+                `DELETE FROM report_adjustments WHERE report_id = $1 AND adjustment_type = 'MANUAL'`,
                 [cashOutId]
             );
 
@@ -177,7 +173,7 @@ const TipModel = {
                     const { adjustment_type, amount, description, related_user_id = null, rule_id = null } = adj;
                     const adjResult = await client.query(
                         `INSERT INTO report_adjustments (report_id, adjustment_type, amount, description, related_user_id, rule_id)
-                         VALUES (, $2, $3, $4, $5, $6) RETURNING *`,
+                         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
                         [cashOutId, adjustment_type, amount, description, related_user_id, rule_id]
                     );
                     insertedAdjustments.push(adjResult.rows[0]);
@@ -195,16 +191,16 @@ const TipModel = {
     },
 
     // --- Calculation/Read Methods for Reporting ---
-    async calculateTipOutsForPayPeriod(companyId, destinationCategoryId, startDate, endDate) { // Changed destinationRole to destinationCategoryId
+    async calculateTipOutsForPayPeriod(companyId, destinationCategoryId, startDate, endDate) {
         const result = await pool.query(
             `SELECT COALESCE(SUM(ra.amount), 0) as total_tip_out_amount
              FROM report_adjustments ra
              JOIN daily_reports dr ON ra.report_id = dr.id
              JOIN tip_out_rules tor ON ra.rule_id = tor.id
-             WHERE dr.company_id =  
+             WHERE dr.company_id = $1
                AND dr.service_date BETWEEN $2 AND $3
                AND ra.adjustment_type = 'TIP_OUT_AUTOMATIC'
-               AND tor.destination_category_id = $4 -- Changed destination_role to destination_category_id
+               AND tor.destination_category_id = $4
             `,
             [companyId, startDate, endDate, destinationCategoryId]
         );
@@ -216,21 +212,21 @@ const TipModel = {
         const result = await pool.query(
             `SELECT COALESCE(SUM(gross_tips), 0) as total_gross_tips_volume
              FROM cash_outs
-             WHERE company_id =  AND service_date BETWEEN $2 AND $3`,
+             WHERE company_id = $1 AND service_date BETWEEN $2 AND $3`,
             [companyId, startDate, endDate]
         );
         return parseFloat(result.rows[0].total_gross_tips_volume);
     },
 
     // --- Pool Management ---
-    async createPool(companyId, categoryId, startDate, endDate, totalAmount, distributions) { // Changed role to categoryId
+    async createPool(companyId, categoryId, startDate, endDate, totalAmount, distributions) {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
 
             const poolResult = await client.query(
                 `INSERT INTO tip_pools (company_id, category_id, start_date, end_date, total_amount)
-                 VALUES (, $2, $3, $4, $5) RETURNING *`,
+                 VALUES ($1, $2, $3, $4, $5) RETURNING *`,
                 [companyId, categoryId, startDate, endDate, totalAmount]
             );
             const newPool = poolResult.rows[0];
@@ -238,7 +234,7 @@ const TipModel = {
             for (const dist of distributions) {
                 await client.query(
                     `INSERT INTO pool_distributions (pool_id, user_id, hours_worked, distributed_amount)
-                     VALUES (, $2, $3, $4)`,
+                     VALUES ($1, $2, $3, $4)`,
                     [newPool.id, dist.user_id, dist.hours_worked, dist.distributed_amount]
                 );
             }
@@ -255,30 +251,33 @@ const TipModel = {
 
     async getPoolsByCompany(companyId, filterStartDate, filterEndDate, poolId = null) {
         const params = [companyId];
-        let conditions = [`tp.company_id = `];
+        let conditions = [`tp.company_id = $1`];
         let paramIndex = 2;
 
         if (filterStartDate && filterStartDate !== 'null') {
-            conditions.push(`tp.start_date >= ${paramIndex++}::DATE`);
+            conditions.push(`tp.start_date >= $${paramIndex}::DATE`);
             params.push(filterStartDate);
+            paramIndex++;
         }
         if (filterEndDate && filterEndDate !== 'null') {
-            conditions.push(`tp.end_date <= ${paramIndex++}::DATE`);
+            conditions.push(`tp.end_date <= $${paramIndex}::DATE`);
             params.push(filterEndDate);
+            paramIndex++;
         }
         if (poolId) {
-            conditions.push(`tp.id = ${paramIndex++}::uuid`);
+            conditions.push(`tp.id = $${paramIndex}::uuid`);
             params.push(poolId);
+            paramIndex++;
         }
 
-        let query = `SELECT tp.id, tp.start_date, tp.end_date, tp.total_amount, tp.created_at, cat.name as category_name, cat.is_tip_distribution_pool, -- Changed tp.role to cat.name
+        let query = `SELECT tp.id, tp.start_date, tp.end_date, tp.total_amount, tp.created_at, tp.category_id, -- Select category_id
                            COUNT(pd.user_id) as recipient_count,
                            COALESCE(SUM(pd.hours_worked), 0) as total_distributed_hours
                      FROM tip_pools tp
                      LEFT JOIN pool_distributions pd ON tp.id = pd.pool_id
-                     LEFT JOIN auth_service_db.public.categories cat ON tp.category_id = cat.id -- Join with auth_service categories
+                     -- LEFT JOIN auth_service_db.public.categories cat ON tp.category_id = cat.id -- Removed cross-database join
                      WHERE ${conditions.join(' AND ')}
-                     GROUP BY tp.id, cat.name, cat.is_tip_distribution_pool
+                     GROUP BY tp.id, tp.category_id -- Group by category_id
                      ORDER BY tp.start_date DESC, tp.created_at DESC`;
 
         const result = await pool.query(query, params);
@@ -287,10 +286,9 @@ const TipModel = {
 
     async getPoolDetailsById(poolId, companyId) {
         const poolResult = await pool.query(
-            `SELECT tp.id, tp.start_date, tp.end_date, tp.total_amount, cat.name as category_name, cat.is_tip_distribution_pool -- Changed tp.role to cat.name
+            `SELECT tp.id, tp.start_date, tp.end_date, tp.total_amount, tp.category_id
              FROM tip_pools tp
-             LEFT JOIN auth_service_db.public.categories cat ON tp.category_id = cat.id -- Join with auth_service categories
-             WHERE tp.id =  AND tp.company_id = $2`,
+             WHERE tp.id = $1 AND tp.company_id = $2`,
             [poolId, companyId]
         );
 
@@ -301,7 +299,7 @@ const TipModel = {
         const distributionsResult = await pool.query(
             `SELECT user_id, hours_worked, distributed_amount 
              FROM pool_distributions 
-             WHERE pool_id =  
+             WHERE pool_id = $1 
              ORDER BY distributed_amount DESC`,
             [poolId]
         );
@@ -317,19 +315,19 @@ const TipModel = {
 
     async getReceivedTipsByEmployee(userId, companyId, startDate, endDate) {
         const params = [userId, companyId];
-        let poolConditions = [`pd.user_id = `, `tp.company_id = $2`];
-        let individualConditions = [`ra.related_user_id = `, `dr.company_id = $2`, `ra.amount > 0`];
+        let poolConditions = [`pd.user_id = $1`, `tp.company_id = $2`];
+        let individualConditions = [`ra.related_user_id = $1`, `dr.company_id = $2`, `ra.amount > 0`];
         let paramIndex = 3;
 
         if (startDate) {
-            poolConditions.push(`tp.start_date >= ${paramIndex}::DATE`);
-            individualConditions.push(`dr.service_date >= ${paramIndex}::DATE`);
+            poolConditions.push(`tp.start_date >= $${paramIndex}::DATE`);
+            individualConditions.push(`dr.service_date >= $${paramIndex}::DATE`);
             params.push(startDate);
             paramIndex++;
         }
         if (endDate) {
-            poolConditions.push(`tp.end_date <= ${paramIndex}::DATE`);
-            individualConditions.push(`dr.service_date <= ${paramIndex}::DATE`);
+            poolConditions.push(`tp.end_date <= $${paramIndex}::DATE`);
+            individualConditions.push(`dr.service_date <= $${paramIndex}::DATE`);
             params.push(endDate);
             paramIndex++;
         }
@@ -340,13 +338,12 @@ const TipModel = {
                 tp.start_date,
                 tp.end_date,
                 tp.created_at as pool_created_at,
-                cat.name as category_name, -- Changed tp.role as department_name to cat.name
+                tp.category_id,
                 tp.id as pool_id,
                 'pool' as source,
                 NULL as sender_user_id
              FROM pool_distributions pd
              JOIN tip_pools tp ON pd.pool_id = tp.id
-             LEFT JOIN auth_service_db.public.categories cat ON tp.category_id = cat.id -- Join with auth_service categories
              WHERE ${poolConditions.join(' AND ')}`;
 
         const individualQuery = `SELECT
@@ -355,7 +352,7 @@ const TipModel = {
                 dr.service_date as start_date,
                 dr.service_date as end_date,
                 ra.created_at as pool_created_at,
-                dr.category_name, -- Changed ra.description as department_name to dr.category_name
+                dr.category_id,
                 ra.id as pool_id,
                 'individual' as source,
                 dr.user_id as sender_user_id
@@ -374,16 +371,16 @@ const TipModel = {
     async getDailyReport(userId, companyId, serviceDate) {
         const result = await pool.query(
             `SELECT * FROM daily_reports
-             WHERE user_id =  AND company_id = $2 AND service_date = $3`,
+             WHERE user_id = $1 AND company_id = $2 AND service_date = $3`,
             [userId, companyId, serviceDate]
         );
         return result.rows[0];
     },
 
-    async createDailyReport(userId, companyId, categoryId, serviceDate, was_collector) { // Changed role to categoryId
+    async createDailyReport(userId, companyId, categoryId, serviceDate, was_collector) {
         const result = await pool.query(
             `INSERT INTO daily_reports (user_id, company_id, category_id, service_date, was_collector)
-             VALUES (, $2, $3, $4, $5) RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
             [userId, companyId, categoryId, serviceDate, was_collector]
         );
         return result.rows[0];
