@@ -22,8 +22,6 @@ i18n
       'pages/employeeDashboard',
       'pages/employeeDetails',
       'pages/profilePage',
-      'components/manager/manageDepartments',
-      'components/manager/manageCategories',
       'components/manager/manageRules',
       'components/manager/manageEmployees',
       'components/manager/payPeriodReport',

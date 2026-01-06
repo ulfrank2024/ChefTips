@@ -11,7 +11,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { getPayPeriodSummary, createPool, getPools } from '../../api/tipApi';
-import { getCompanyEmployees, getCompanyDepartments } from '../../api/authApi';
+import { getCompanyEmployees, getCompanyCategories } from '../../api/authApi';
 import { getPayoutPeriods } from '../../api/payoutPeriodApi';
 
 dayjs.extend(utc);
@@ -33,25 +33,22 @@ const CreatePool = () => {
   const [payoutPeriods, setPayoutPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState('');
   const [pools, setPools] = useState([]);
-  const [departments, setDepartments] = useState([]);
-
-  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
+  const [categories, setCategories] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [emps, periods, existingPools, depts] = await Promise.all([
+      const [emps, periods, existingPools, cats] = await Promise.all([
         getCompanyEmployees(),
         getPayoutPeriods(),
-        getPools(), // Fetch existing pools
-        getCompanyDepartments()
+        getPools(),
+        getCompanyCategories()
       ]);
       setEmployees(emps);
-      // Filter periods to only show past periods
       const pastPeriods = periods.filter(period => dayjs.utc(period.end_date).isBefore(dayjs.utc(), 'day'));
       setPayoutPeriods(pastPeriods);
       setPools(existingPools);
-      setDepartments(depts);
+      setCategories(cats.filter(cat => cat.is_tip_distribution_pool));
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -68,7 +65,6 @@ const CreatePool = () => {
     setError('');
     setSuccess('');
     try {
-      // Check for existing pools for the selected period and role
       const existingPoolForPeriod = pools.some(pool =>
         dayjs.utc(pool.start_date).isSame(startDate, 'day') &&
         dayjs.utc(pool.end_date).isSame(endDate, 'day')
@@ -81,16 +77,15 @@ const CreatePool = () => {
       }
 
       const reports = await Promise.all(
-        predefinedRoles.map(role => {
-          const department = departments.find(d => d.name === role);
-          if (!department) return null;
-          return getPayPeriodSummary(department.id, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
+        categories.map(cat => {
+          if (!cat.is_tip_distribution_pool) return null;
+          return getPayPeriodSummary(cat.id, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
         })
       );
       
       const augmentedReports = reports.filter(r => r).map((r, index) => ({
         ...r,
-        role: predefinedRoles[index],
+        category: categories.filter(c => c.is_tip_distribution_pool)[index],
         editable_total_tip_out_amount: r.total_tip_out_amount
       }));
       setReport(augmentedReports);
@@ -101,53 +96,51 @@ const CreatePool = () => {
     }
   };
 
-  const handleTotalAmountChange = (deptIndex, newValue) => {
+  const handleTotalAmountChange = (catIndex, newValue) => {
     const newReport = [...report];
     const numericValue = parseFloat(newValue) || 0;
-    newReport[deptIndex].editable_total_tip_out_amount = numericValue;
+    newReport[catIndex].editable_total_tip_out_amount = numericValue;
     setReport(newReport);
   };
 
-  const handleEmployeeSelect = (deptId, empId) => {
+  const handleEmployeeSelect = (catId, empId) => {
     const newSelection = { ...selectedEmployees };
-    if (!newSelection[deptId]) newSelection[deptId] = {};
-    newSelection[deptId][empId] = { ...newSelection[deptId][empId], selected: !newSelection[deptId][empId]?.selected };
+    if (!newSelection[catId]) newSelection[catId] = {};
+    newSelection[catId][empId] = { ...newSelection[catId][empId], selected: !newSelection[catId][empId]?.selected };
     setSelectedEmployees(newSelection);
   };
 
-  const handleHoursChange = (deptId, empId, hours) => {
+  const handleHoursChange = (catId, empId, hours) => {
     const newSelection = { ...selectedEmployees };
-    if (!newSelection[deptId]) newSelection[deptId] = {};
-    newSelection[deptId][empId] = { ...newSelection[deptId][empId], hours: Number(hours) };
+    if (!newSelection[catId]) newSelection[catId] = {};
+    newSelection[catId][empId] = { ...newSelection[catId][empId], hours: Number(hours) };
     setSelectedEmployees(newSelection);
   };
 
-  const handleDistribute = async (role, totalAmount) => {
+  const handleDistribute = async (category, totalAmount) => {
     setError('');
     setSuccess('');
     setLoading(true);
 
-    const department = departments.find(d => d.name === role);
-    if (!department) {
-        setError(t('errors:INVALID_DEPARTMENT'));
+    if (!category) {
+        setError(t('errors:INVALID_CATEGORY'));
         setLoading(false);
         return;
     }
 
-    // Check for existing pool for this specific role and period before distributing
-    const existingPoolForRoleAndPeriod = pools.some(pool =>
-      pool.department_name === role &&
+    const existingPoolForCategoryAndPeriod = pools.some(pool =>
+      pool.category_id === category.id &&
       dayjs.utc(pool.start_date).isSame(startDate, 'day') &&
       dayjs.utc(pool.end_date).isSame(endDate, 'day')
     );
 
-    if (existingPoolForRoleAndPeriod) {
-      setError(t('errors:POOL_ALREADY_EXISTS_FOR_ROLE_AND_PERIOD', { role: t(role.toLowerCase(), { ns: 'components/manager/manageRules' }) }));
+    if (existingPoolForCategoryAndPeriod) {
+      setError(t('errors:POOL_ALREADY_EXISTS_FOR_CATEGORY_AND_PERIOD', { category: category.name }));
       setLoading(false);
       return;
     }
 
-    const distributions = Object.entries(selectedEmployees[role] || {})
+    const distributions = Object.entries(selectedEmployees[category.id] || {})
       .filter(([, data]) => data.selected)
 
     const missingHours = distributions.some(([, data]) => data.hours === undefined || data.hours === null || data.hours === '');
@@ -173,15 +166,14 @@ const CreatePool = () => {
 
     try {
       await createPool({
-        departmentId: department.id,
+        categoryId: category.id,
         startDate: startDate.format('YYYY-MM-DD'),
         endDate: endDate.format('YYYY-MM-DD'),
         distributions: finalDistributions,
-        totalAmount: totalAmount // Add this line
+        totalAmount: totalAmount
       });
       setSuccess(t('DISTRIBUTION_SUCCESS', { ns: 'common' }));
-      // Reset selections for the current department and refetch data to update existing pools
-      setSelectedEmployees(prev => ({...prev, [role]: {}}));
+      setSelectedEmployees(prev => ({...prev, [category.id]: {}}));
       fetchData(); 
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
@@ -256,18 +248,18 @@ const CreatePool = () => {
         </Grid>
       </Paper>
 
-      {report && report.map((deptReport, index) => {
-        const role = predefinedRoles[index];
-        const roleEmployees = employees.filter(emp => emp.role === role);
+      {report && report.map((catReport, index) => {
+        const category = catReport.category;
+        const categoryEmployees = employees.filter(emp => emp.category_id === category.id);
 
         return (
-          <Paper key={role} elevation={3} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6">{t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}</Typography>
+          <Paper key={category.id} elevation={3} sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6">{category.name}</Typography>
             <TextField
               label={t('totalAmount')}
               type="number"
               variant="outlined"
-              value={deptReport.editable_total_tip_out_amount.toFixed(2)}
+              value={catReport.editable_total_tip_out_amount.toFixed(2)}
               onChange={(e) => handleTotalAmountChange(index, e.target.value)}
               sx={{ mt: 1, mb: 2, width: '25ch' }}
               InputProps={{
@@ -277,29 +269,29 @@ const CreatePool = () => {
             
             <Box sx={{ mt: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
               <List dense>
-                {roleEmployees.map(emp => (
+                {categoryEmployees.map(emp => (
                   <ListItem
                     key={emp.id}
                     secondaryAction={
-                      selectedEmployees[role]?.[emp.id]?.selected && (
+                      selectedEmployees[category.id]?.[emp.id]?.selected && (
                         <TextField
                           type="number"
                           label={t('hoursWorked')}
                           variant="outlined"
                           size="small"
-                          value={selectedEmployees[role]?.[emp.id]?.hours || ''}
-                          onChange={(e) => handleHoursChange(role, emp.id, e.target.value)}
+                          value={selectedEmployees[category.id]?.[emp.id]?.hours || ''}
+                          onChange={(e) => handleHoursChange(category.id, emp.id, e.target.value)}
                           sx={{ width: '100px' }}
                         />
                       )
                     }
                     disablePadding
                   >
-                    <ListItemButton onClick={() => handleEmployeeSelect(role, emp.id)}>
+                    <ListItemButton onClick={() => handleEmployeeSelect(category.id, emp.id)}>
                       <ListItemIcon>
                         <Checkbox
                           edge="start"
-                          checked={selectedEmployees[role]?.[emp.id]?.selected || false}
+                          checked={selectedEmployees[category.id]?.[emp.id]?.selected || false}
                           tabIndex={-1}
                           disableRipple
                         />
@@ -310,8 +302,8 @@ const CreatePool = () => {
                 ))}
               </List>
             </Box>
-            <Button variant="contained" color="secondary" onClick={() => handleDistribute(role, deptReport.editable_total_tip_out_amount)} sx={{ mt: 2 }} disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : t('distributeFor')} {t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}
+            <Button variant="contained" color="secondary" onClick={() => handleDistribute(category, catReport.editable_total_tip_out_amount)} sx={{ mt: 2 }} disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : `${t('distributeFor')} ${category.name}`}
             </Button>
           </Paper>
         );

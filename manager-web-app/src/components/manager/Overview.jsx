@@ -15,7 +15,7 @@ import EventBusyIcon from '@mui/icons-material/EventBusy';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getPools, getTipOutRules, getEmployeeReceivedTips } from '../../api/tipApi'; // Import getTipOutRules
-import { getCompanyEmployees } from '../../api/authApi'; // Import getCompanyEmployees
+import { getCompanyEmployees, getCompanyCategories } from '../../api/authApi'; // Import getCompanyCategories
 import { getPayoutPeriods } from '../../api/payoutPeriodApi'; // Import getPayoutPeriods
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend,
@@ -43,9 +43,10 @@ const Overview = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [pools, setPools] = useState([]);
-  const [employees, setEmployees] = useState([]);     // New state for employees
-  const [rules, setRules] = useState([]);             // New state for tip-out rules
-  const [payoutPeriods, setPayoutPeriods] = useState([]); // New state for payout periods
+  const [employees, setEmployees] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [rules, setRules] = useState([]);
+  const [payoutPeriods, setPayoutPeriods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [receivedTips, setReceivedTips] = useState([]);
@@ -53,8 +54,6 @@ const Overview = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(''); // Use empty string for "All Months"
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
-  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
 
   const { filteredPools, years, months } = React.useMemo(() => {
     let currentFilteredPools = pools;
@@ -93,18 +92,19 @@ const Overview = () => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const [poolsData, employeesData, rulesData, periodsData, tipsData] = await Promise.all([
+        const [poolsData, employeesData, rulesData, periodsData, tipsData, categoriesData] = await Promise.all([
           getPools(),
           getCompanyEmployees(),
-          getTipOutRules(), // Fetch tip-out rules
+          getTipOutRules(),
           getPayoutPeriods(),
-          getEmployeeReceivedTips(user.id)
+          getEmployeeReceivedTips(user.id),
+          getCompanyCategories(),
         ]);
-        // Sort pools by created_at for chronological display in chart and to get the last created
         const sortedPools = poolsData.sort((a, b) => dayjs(a.start_date).unix() - dayjs(b.start_date).unix());
         setPools(sortedPools);
         setEmployees(employeesData);
-        setRules(rulesData);          // Set rules state
+        setCategories(categoriesData);
+        setRules(rulesData);
         setPayoutPeriods(periodsData);
         setReceivedTips(tipsData);
       } catch (err) {
@@ -117,27 +117,27 @@ const Overview = () => {
     fetchAllData();
   }, [user]);
 
-  const groupedByDateAndRole = useMemo(() => {
+  const groupedByDateAndCategory = useMemo(() => {
     const dateGroups = {};
     receivedTips.forEach(tip => {
         const date = dayjs.utc(tip.start_date).format('YYYY-MM-DD');
         if (!dateGroups[date]) {
             dateGroups[date] = {
-                roles: {},
+                categories: {},
                 dayTotal: 0,
             };
         }
 
-        const role = tip.department_name;
-        if (!dateGroups[date].roles[role]) {
-            dateGroups[date].roles[role] = {
+        const category = tip.category_name || 'Uncategorized';
+        if (!dateGroups[date].categories[category]) {
+            dateGroups[date].categories[category] = {
                 tips: [],
                 total: 0,
             };
         }
 
-        dateGroups[date].roles[role].tips.push(tip);
-        dateGroups[date].roles[role].total += Number(tip.distributed_amount);
+        dateGroups[date].categories[category].tips.push(tip);
+        dateGroups[date].categories[category].total += Number(tip.distributed_amount);
         dateGroups[date].dayTotal += Number(tip.distributed_amount);
     });
 
@@ -210,28 +210,23 @@ const Overview = () => {
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
 
-  const lastPool = pools.length > 0 ? pools[pools.length - 1] : null; // Get the last created pool
+  const lastPool = pools.length > 0 ? pools[pools.length - 1] : null;
   const openPeriod = payoutPeriods.find(p => p.status === 'CURRENT');
 
-  // Group employees by role
-  const employeesByRole = {};
+  const employeesByCategory = useMemo(() => {
+    const categoryMap = {};
+    categories.forEach(cat => {
+      categoryMap[cat.id] = { name: cat.name, employees: [] };
+    });
+    
+    employees.forEach(emp => {
+      if (emp.category_id && categoryMap[emp.category_id]) {
+        categoryMap[emp.category_id].employees.push(emp);
+      }
+    });
 
-  // Initialize with all predefined roles
-  predefinedRoles.forEach(role => {
-    employeesByRole[role] = {
-      name: t(role.toLowerCase(), { ns: 'components/manager/manageRules' }),
-      employees: []
-    };
-  });
-
-  employees.forEach(emp => {
-    if (emp.role && employeesByRole[emp.role]) {
-      employeesByRole[emp.role].employees.push(emp);
-    }
-  });
-
-  // Convert to an array for rendering, filtering out empty roles if desired
-  const rolesWithEmployees = Object.values(employeesByRole).filter(roleEntry => roleEntry.employees.length > 0);
+    return Object.values(categoryMap).filter(cat => cat.employees.length > 0);
+  }, [employees, categories]);
 
   const emptyStateStyle = {
     p: 2,
@@ -418,13 +413,7 @@ const Overview = () => {
                               }}
                           >
                               <BusinessIcon sx={{ mr: 1, fontSize: "small" }} />
-                              {t("role", {
-                                  ns: "pages/managerDashboard",
-                              })}
-                              :{" "}
-                              {t(lastPool.department_name.toLowerCase(), {
-                                  ns: "components/manager/manageRules",
-                              })}
+                              {t("category", { ns: 'components/manager/manageEmployees' })}: {lastPool.category_name}
                           </Typography>
                           <Typography
                               variant={isMobile ? "body2" : "body1"}
@@ -528,7 +517,7 @@ const Overview = () => {
                   </Grid>
               )}
               
-              {groupedByDateAndRole.length > 0 && (
+              {groupedByDateAndCategory.length > 0 && (
                 <Grid item xs={12} md={4}>
                     <Card elevation={3} sx={{height: "100%"}}>
                     <CardHeader
@@ -542,18 +531,15 @@ const Overview = () => {
                     />
                     <CardContent>
                         {(() => {
-                            const [date, { roles, dayTotal }] = groupedByDateAndRole[0];
+                            const [date, { categories, dayTotal }] = groupedByDateAndCategory[0];
                             return (
                                 <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
                                     <Typography variant={isMobile ? "subtitle2" : "h6"} component="h3" sx={{ mb: 1, color: 'black' }}>{date}</Typography>
                                     <Divider />
-                                    {Object.entries(roles).map(([role, { tips, total }], roleIndex) => (
-                                        <Box key={roleIndex} sx={{ my: 1 }}>
+                                    {Object.entries(categories).map(([category, { tips, total }], catIndex) => (
+                                        <Box key={catIndex} sx={{ my: 1 }}>
                                             <Typography variant={isMobile ? "body2" : "body1"} sx={{ color: 'black', fontWeight: 'bold' }}>
-                                                {role.startsWith('Tip-Out received from ')
-                                                    ? role.replace('Tip-Out received from ', '')
-                                                    : role}
-                                                : ${total.toFixed(2)}
+                                                {category}: ${total.toFixed(2)}
                                             </Typography>
                                             {tips.map((tip, tipIndex) => (
                                                 tip.source === 'individual' && (
@@ -579,8 +565,6 @@ const Overview = () => {
                 )}
 
               <Grid item xs={12} md={lastPool ? 4 : 12}>
-                  {" "}
-                  {/* Takes remaining space or full width if no lastPool */}
                   <Paper
                       elevation={3}
                       sx={{ p: isMobile ? 2 : 3, height: "100%" }}
@@ -593,32 +577,26 @@ const Overview = () => {
                               variant={isMobile ? "subtitle1" : "h6"}
                               component="h2"
                           >
-                              {t("employeesByRole", {
-                                  ns: "pages/managerDashboard",
-                              })}{" "}
-                              {/* New translation key */}
+                              {t("employeesByCategory", { ns: "pages/managerDashboard"})}
                           </Typography>
                       </Box>
-                      {rolesWithEmployees.length === 0 ? (
+                      {employeesByCategory.length === 0 ? (
                           <Typography variant="body1" sx={emptyStateStyle}>
-                              {t("noRolesYet", {
-                                  ns: "pages/managerDashboard",
-                              })}
-                          </Typography> /* New translation key */
+                              {t("noCategoriesYet", { ns: "pages/managerDashboard"})}
+                          </Typography>
                       ) : (
                           <List>
-                              {rolesWithEmployees.map((roleEntry) => (
-                                  <Box key={roleEntry.name} sx={{ mb: 2 }}>
+                              {employeesByCategory.map((catEntry) => (
+                                  <Box key={catEntry.name} sx={{ mb: 2 }}>
                                       <Typography
                                           variant="subtitle1"
                                           sx={{ fontWeight: "bold" }}
                                       >
-                                          {roleEntry.name} (
-                                          {roleEntry.employees.length || 0}{" "}
+                                          {catEntry.name} ({catEntry.employees.length || 0}{" "}
                                           {t("employees", {
                                               ns: "common",
                                               count:
-                                                  roleEntry.employees.length ||
+                                                  catEntry.employees.length ||
                                                   0,
                                           })}
                                           )
@@ -631,19 +609,19 @@ const Overview = () => {
                                               overflow: "auto",
                                           }}
                                       >
-                                          {roleEntry.employees.length === 0 ? (
+                                          {catEntry.employees.length === 0 ? (
                                               <ListItem>
                                                   <ListItemText
                                                       primary={t(
-                                                          "noEmployeesInRole",
+                                                          "noEmployeesInCategory",
                                                           {
                                                               ns: "pages/managerDashboard",
                                                           }
                                                       )}
                                                   />
-                                              </ListItem> /* New translation key */
+                                              </ListItem>
                                           ) : (
-                                              roleEntry.employees.map((emp) => (
+                                              catEntry.employees.map((emp) => (
                                                   <ListItem key={emp.id}>
                                                       <ListItemText
                                                           primary={`${emp.first_name} ${emp.last_name}`}
@@ -660,8 +638,6 @@ const Overview = () => {
               </Grid>
 
               <Grid item xs={12} md={12}>
-                  {" "}
-                  {/* New Grid item for Tip-Out Rules, takes full width on desktop */}{" "}
                   <Paper
                       elevation={3}
                       sx={{ p: isMobile ? 2 : 3, height: "100%" }}
@@ -676,8 +652,7 @@ const Overview = () => {
                           >
                               {t("tipOutRules", {
                                   ns: "pages/managerDashboard",
-                              })}{" "}
-                              {/* New translation key */}
+                              })}
                           </Typography>
                       </Box>
                       {rules.length === 0 ? (
@@ -685,7 +660,7 @@ const Overview = () => {
                               {t("noTipOutRules", {
                                   ns: "pages/managerDashboard",
                               })}
-                          </Typography> /* New translation key */
+                          </Typography>
                       ) : (
                           <Box
                               sx={{
@@ -695,8 +670,6 @@ const Overview = () => {
                                   gap: "16px",
                               }}
                           >
-                              {" "}
-                              {/* Added gap for spacing */}
                               {rules.map((rule) => (
                                   <Box
                                       key={rule.id}
@@ -714,8 +687,6 @@ const Overview = () => {
                                           height: "100%",
                                       }}
                                   >
-                                      {" "}
-                                      {/* Adjusted flexBasis and maxWidth for two columns with gap */}
                                       <Typography
                                           sx={{
                                               color: "#fff",

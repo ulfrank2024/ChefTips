@@ -8,12 +8,10 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import { getCompanyEmployees, inviteEmployee, removeEmployee, updateEmployeeMembership } from '../../api/authApi';
+import { getCompanyEmployees, inviteEmployee, removeEmployee, updateEmployeeMembership, getCompanyCategories } from '../../api/authApi';
 import { useAlert } from '../../context/AlertContext';
 import { useAuth } from '../../context/AuthContext';
-
 import './ManageEmployees.css';
-
 import { useTheme, useMediaQuery } from '@mui/material';
 
 const ManageEmployees = () => {
@@ -34,30 +32,25 @@ const ManageEmployees = () => {
   };
 
   const [employees, setEmployees] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all'); // New state for role filter
+  const [filterCategory, setFilterCategory] = useState('all');
 
   // Modal States
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState(null);
-  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [permissionCashOut, setPermissionCashOut] = useState(false);
   
   const [inviteEmail, setInviteEmail] = useState('');
-  const [selectedInviteKey, setSelectedInviteKey] = useState(''); // Combines role and permission
+  const [inviteCanCashOut, setInviteCanCashOut] = useState(false);
   
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState('');
   const [inviteEmailError, setInviteEmailError] = useState('');
-
-  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
-  const inviteRoles = [
-    { key: 'CUISINIER', role: 'CUISINIER', can_cash_out: false, labelKey: 'cuisinier' },
-    { key: 'SUPPORT_DE_SALLE', role: 'SERVEUR', can_cash_out: false, labelKey: 'supportDeSalle' },
-  ];
 
   // Delete Confirmation
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -66,8 +59,12 @@ const ManageEmployees = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const employeesData = await getCompanyEmployees();
+      const [employeesData, categoriesData] = await Promise.all([
+        getCompanyEmployees(),
+        getCompanyCategories()
+      ]);
       setEmployees(employeesData);
+      setCategories(categoriesData);
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -83,18 +80,12 @@ const ManageEmployees = () => {
     const nameMatch = `${employee.first_name || ''} ${employee.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
     const emailMatch = employee.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    let roleMatch = true;
-    if (filterRole === 'CAN_CASH_OUT') {
-      roleMatch = employee.can_cash_out;
-    } else if (filterRole === 'SUPPORT_DE_SALLE') {
-      roleMatch = employee.role === 'SERVEUR' && !employee.can_cash_out;
-    } else if (filterRole === 'CUISINIER') {
-      roleMatch = employee.role === 'CUISINIER';
-    } else if (filterRole !== 'all') {
-      roleMatch = employee.role === filterRole;
+    let categoryMatch = true;
+    if (filterCategory !== 'all') {
+      categoryMatch = employee.category_id === filterCategory;
     }
 
-    return (nameMatch || emailMatch) && roleMatch;
+    return (nameMatch || emailMatch) && categoryMatch;
   });
 
   const handleOpenInviteModal = () => {
@@ -105,17 +96,17 @@ const ManageEmployees = () => {
   const handleOpenEditModal = (employee) => {
     resetModalState();
     setCurrentEmployee(employee);
-    setSelectedRole(employee.role || '');
+    setSelectedCategoryId(employee.category_id || '');
     setPermissionCashOut(employee.can_cash_out);
     setIsEditModalOpen(true);
   };
 
   const resetModalState = () => {
     setInviteEmail('');
-    setSelectedRole('');
+    setInviteCanCashOut(false);
     setCurrentEmployee(null);
+    setSelectedCategoryId('');
     setPermissionCashOut(false);
-    setSelectedInviteKey('');
     setModalLoading(false);
     setModalError('');
     setInviteEmailError('');
@@ -127,21 +118,11 @@ const ManageEmployees = () => {
       setInviteEmailError(emailError);
       return;
     }
-    if (!selectedInviteKey) {
-      setModalError(t('roleRequired', { ns: 'components/manager/manageEmployees' }));
-      return;
-    }
-
-    const selectedRoleConfig = inviteRoles.find(r => r.key === selectedInviteKey);
-    if (!selectedRoleConfig) {
-      setModalError(t('invalidRoleSelection', { ns: 'components/manager/manageEmployees' }));
-      return;
-    }
 
     setModalLoading(true);
     setModalError('');
     try {
-      await inviteEmployee(inviteEmail, selectedRoleConfig.role, selectedRoleConfig.can_cash_out);
+      await inviteEmployee(inviteEmail, inviteCanCashOut);
       showAlert(t('success'), t('employeeInvitedSuccessfully', { ns: 'components/manager/manageEmployees' }));
       setIsInviteModalOpen(false);
       resetModalState();
@@ -154,10 +135,11 @@ const ManageEmployees = () => {
   };
 
   const handleEditSubmit = async () => {
+    if (!currentEmployee) return;
     setModalLoading(true);
     setModalError('');
     try {
-      const data = await updateEmployeeMembership(currentEmployee.membership_id, { role: selectedRole, can_cash_out: permissionCashOut });
+      const data = await updateEmployeeMembership(currentEmployee.membership_id, { categoryId: selectedCategoryId, can_cash_out: permissionCashOut });
       if (data.token) {
         handleTokenUpdate(data.token);
       }
@@ -190,19 +172,8 @@ const ManageEmployees = () => {
     }
   };
 
-
-
-  const getEmployeeInfo = (employee) => {
-    let roleDisplayName;
-    if (employee.role === 'SERVEUR' && !employee.can_cash_out) {
-      roleDisplayName = t('supportDeSalle', { ns: 'components/manager/manageEmployees' });
-    } else {
-      roleDisplayName = t(employee.role.toLowerCase(), { ns: 'components/manager/manageEmployees' });
-    }
-    
-    const cashOutStatus = employee.can_cash_out ? `(${t('canCashOut', { ns: 'components/manager/manageEmployees' })})` : '';
-
-    return `${roleDisplayName} ${cashOutStatus}`;
+  const getEmployeeCategoryName = (employee) => {
+    return employee.category_name || t('noCategory', { ns: 'components/manager/manageEmployees' });
   };
 
   return (
@@ -233,18 +204,17 @@ const ManageEmployees = () => {
                 sx={{ mb: isMobile ? 2 : 0 }}
               />
               <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel id="filter-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
+                <InputLabel id="filter-category-label">{t('category', { ns: 'components/manager/manageEmployees' })}</InputLabel>
                 <Select
-                  labelId="filter-role-label"
-                  value={filterRole}
-                  label={t('role', { ns: 'components/manager/manageEmployees' })}
-                  onChange={(e) => setFilterRole(e.target.value)}
+                  labelId="filter-category-label"
+                  value={filterCategory}
+                  label={t('category', { ns: 'components/manager/manageEmployees' })}
+                  onChange={(e) => setFilterCategory(e.target.value)}
                 >
                   <MenuItem value="all">{t('all', { ns: 'common' })}</MenuItem>
-                  <MenuItem value="CAN_CASH_OUT">{t('personneAyantPermission', { ns: 'components/manager/manageEmployees' })}</MenuItem>
-                  <MenuItem value="SUPPORT_DE_SALLE">{t('supportDeSalle', { ns: 'components/manager/manageEmployees' })}</MenuItem>
-                  <MenuItem value="CUISINIER">{t('cuisinier', { ns: 'components/manager/manageEmployees' })}</MenuItem>
-                 
+                  {categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Box>
@@ -282,8 +252,8 @@ const ManageEmployees = () => {
                     <ListItemText
                       primary={<Typography sx={{ color: '#fff' }}>{`${employee.first_name || ''} ${employee.last_name || ''} (${employee.email})`}</Typography>}
                       secondary={
-                        <Box component="span"> {/* Changed to span to avoid div inside p warning */}
-                          <Typography component="span" sx={{ color: '#ccc', display: 'block' }}>{getEmployeeInfo(employee)}</Typography>
+                        <Box component="span">
+                          <Typography component="span" sx={{ color: '#ccc', display: 'block' }}>{getEmployeeCategoryName(employee)}</Typography>
                           {isMobile && ( // Render actions below text on mobile
                             <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
                               <Chip
@@ -331,21 +301,10 @@ const ManageEmployees = () => {
                 error={!!inviteEmailError}
                 helperText={inviteEmailError}
               />
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="invite-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
-                <Select
-                  labelId="invite-role-label"
-                  value={selectedInviteKey}
-                  onChange={(e) => setSelectedInviteKey(e.target.value)}
-                  label={t('role', { ns: 'components/manager/manageEmployees' })}
-                >
-                  {inviteRoles.map((role) => (
-                    <MenuItem key={role.key} value={role.key}>
-                      {t(role.labelKey, { ns: 'components/manager/manageEmployees' })}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <FormControlLabel
+                control={<Switch checked={inviteCanCashOut} onChange={(e) => setInviteCanCashOut(e.target.checked)} />}
+                label={t('canCashOutPermission', { ns: 'components/manager/manageEmployees' })}
+              />
               {modalError && <Alert severity="error" sx={{ mt: 2 }}>{modalError}</Alert>}
             </DialogContent>
             <DialogActions>
@@ -363,23 +322,22 @@ const ManageEmployees = () => {
               <DialogContentText>
                 {t('editEmployeeDescription', { ns: 'components/manager/manageEmployees' })}
               </DialogContentText>
-              {currentEmployee?.role !== 'GERANT' && currentEmployee?.role !== 'manager' && (
-                <FormControl fullWidth margin="dense">
-                  <InputLabel id="edit-role-label">{t('role', { ns: 'components/manager/manageEmployees' })}</InputLabel>
+              <FormControl fullWidth margin="dense">
+                  <InputLabel id="edit-category-label">{t('category', { ns: 'components/manager/manageEmployees' })}</InputLabel>
                   <Select
-                    labelId="edit-role-label"
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                    label={t('role', { ns: 'components/manager/manageEmployees' })}
+                    labelId="edit-category-label"
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    label={t('category', { ns: 'components/manager/manageEmployees' })}
                   >
-                    {predefinedRoles.map((role) => (
-                      <MenuItem key={role} value={role}>
-                        {t(role.toLowerCase(), { ns: 'components/manager/manageEmployees' })}
+                    <MenuItem value=""><em>{t('none', { ns: 'common' })}</em></MenuItem>
+                    {categories.map((cat) => (
+                      <MenuItem key={cat.id} value={cat.id}>
+                        {cat.name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
-              )}
               <FormControlLabel
                 control={<Switch checked={permissionCashOut} onChange={(e) => setPermissionCashOut(e.target.checked)} />}
                 label={

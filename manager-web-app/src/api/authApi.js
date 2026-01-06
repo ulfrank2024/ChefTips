@@ -110,29 +110,9 @@ export const getCompanyEmployees = async () => {
     }
 };
 
-export const getCompanyDepartments = async () => {
+export const inviteEmployee = async (email, can_cash_out) => { // role removed
     try {
-        const response = await apiClient.get('/departments');
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-export const updateMembership = async (membershipId, membershipData) => {
-    try {
-        const response = await apiClient.put(`/memberships/${membershipId}`, membershipData);
-        return response.data;
-    } catch (error) {
-        handleApiError(error);
-    }
-};
-
-
-// Updated inviteEmployee
-export const inviteEmployee = async (email, role, can_cash_out) => {
-    try {
-        const response = await apiClient.post('/invite-employee', { email, role, can_cash_out });
+        const response = await apiClient.post('/invite-employee', { email, can_cash_out });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -156,6 +136,46 @@ export const updateEmployeeMembership = async (membershipId, updateData) => {
         handleApiError(error);
     }
 };
+
+
+// --- Category Management ---
+
+export const getCompanyCategories = async () => {
+    try {
+        const response = await apiClient.get('/categories');
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+export const createCategory = async (categoryData) => {
+    try {
+        const response = await apiClient.post('/categories', categoryData);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+export const updateCategory = async (categoryId, categoryData) => {
+    try {
+        const response = await apiClient.put(`/categories/${categoryId}`, categoryData);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
+export const deleteCategory = async (categoryId) => {
+    try {
+        const response = await apiClient.delete(`/categories/${categoryId}`);
+        return response.data;
+    } catch (error) {
+        handleApiError(error);
+    }
+};
+
 
 // --- User Profile & Password ---
 
