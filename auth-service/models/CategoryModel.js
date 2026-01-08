@@ -1,4 +1,4 @@
-const { pool } = require('../db');
+const pool = require('../db');
 
 class CategoryModel {
     static async createCategory(companyId, name, isTipDistributionPool = false) {
