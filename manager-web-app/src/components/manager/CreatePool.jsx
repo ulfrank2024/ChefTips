@@ -11,7 +11,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { getPayPeriodSummary, createPool, getPools } from '../../api/tipApi';
-import { getCompanyEmployees, getCompanyDepartments } from '../../api/authApi';
+import { getCompanyEmployees, getCompanyCategories } from '../../api/authApi'; // Updated import
 import { getPayoutPeriods } from '../../api/payoutPeriodApi';
 
 dayjs.extend(utc);
@@ -33,25 +33,25 @@ const CreatePool = () => {
   const [payoutPeriods, setPayoutPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState('');
   const [pools, setPools] = useState([]);
-  const [departments, setDepartments] = useState([]);
-
-  const predefinedRoles = ['CUISINIER', 'SERVEUR', 'COMMIS', 'GERANT', 'BARMAN', 'HOTE'];
+  const [categories, setCategories] = useState([]); // Renamed from departments
+  const [tipPoolCategories, setTipPoolCategories] = useState([]); // To store categories that are tip distribution pools
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [emps, periods, existingPools, depts] = await Promise.all([
+      const [emps, periods, existingPools, allCategories] = await Promise.all([
         getCompanyEmployees(),
         getPayoutPeriods(),
         getPools(), // Fetch existing pools
-        getCompanyDepartments()
+        getCompanyCategories() // Updated call
       ]);
       setEmployees(emps);
       // Filter periods to only show past periods
       const pastPeriods = periods.filter(period => dayjs.utc(period.end_date).isBefore(dayjs.utc(), 'day'));
       setPayoutPeriods(pastPeriods);
       setPools(existingPools);
-      setDepartments(depts);
+      setCategories(allCategories);
+      setTipPoolCategories(allCategories.filter(cat => cat.is_tip_distribution_pool)); // Filter for tip distribution pools
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
     } finally {
@@ -68,7 +68,7 @@ const CreatePool = () => {
     setError('');
     setSuccess('');
     try {
-      // Check for existing pools for the selected period and role
+      // Check for existing pools for the selected period and category
       const existingPoolForPeriod = pools.some(pool =>
         dayjs.utc(pool.start_date).isSame(startDate, 'day') &&
         dayjs.utc(pool.end_date).isSame(endDate, 'day')
@@ -81,16 +81,14 @@ const CreatePool = () => {
       }
 
       const reports = await Promise.all(
-        predefinedRoles.map(role => {
-          const department = departments.find(d => d.name === role);
-          if (!department) return null;
-          return getPayPeriodSummary(department.id, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
+        tipPoolCategories.map(category => { // Iterate over tipPoolCategories
+          return getPayPeriodSummary(category.id, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
         })
       );
       
       const augmentedReports = reports.filter(r => r).map((r, index) => ({
         ...r,
-        role: predefinedRoles[index],
+        category: tipPoolCategories[index].name, // Use category name
         editable_total_tip_out_amount: r.total_tip_out_amount
       }));
       setReport(augmentedReports);
@@ -101,53 +99,53 @@ const CreatePool = () => {
     }
   };
 
-  const handleTotalAmountChange = (deptIndex, newValue) => {
+  const handleTotalAmountChange = (catIndex, newValue) => { // Renamed deptIndex to catIndex
     const newReport = [...report];
     const numericValue = parseFloat(newValue) || 0;
-    newReport[deptIndex].editable_total_tip_out_amount = numericValue;
+    newReport[catIndex].editable_total_tip_out_amount = numericValue;
     setReport(newReport);
   };
 
-  const handleEmployeeSelect = (deptId, empId) => {
+  const handleEmployeeSelect = (categoryId, empId) => { // Renamed deptId to categoryId
     const newSelection = { ...selectedEmployees };
-    if (!newSelection[deptId]) newSelection[deptId] = {};
-    newSelection[deptId][empId] = { ...newSelection[deptId][empId], selected: !newSelection[deptId][empId]?.selected };
+    if (!newSelection[categoryId]) newSelection[categoryId] = {};
+    newSelection[categoryId][empId] = { ...newSelection[categoryId][empId], selected: !newSelection[categoryId][empId]?.selected };
     setSelectedEmployees(newSelection);
   };
 
-  const handleHoursChange = (deptId, empId, hours) => {
+  const handleHoursChange = (categoryId, empId, hours) => { // Renamed deptId to categoryId
     const newSelection = { ...selectedEmployees };
-    if (!newSelection[deptId]) newSelection[deptId] = {};
-    newSelection[deptId][empId] = { ...newSelection[deptId][empId], hours: Number(hours) };
+    if (!newSelection[categoryId]) newSelection[categoryId] = {};
+    newSelection[categoryId][empId] = { ...newSelection[categoryId][empId], hours: Number(hours) };
     setSelectedEmployees(newSelection);
   };
 
-  const handleDistribute = async (role, totalAmount) => {
+  const handleDistribute = async (categoryName, totalAmount) => { // Renamed role to categoryName
     setError('');
     setSuccess('');
     setLoading(true);
 
-    const department = departments.find(d => d.name === role);
-    if (!department) {
-        setError(t('errors:INVALID_DEPARTMENT'));
+    const category = categories.find(c => c.name === categoryName); // Renamed department to category
+    if (!category) {
+        setError(t('errors:INVALID_CATEGORY')); // Updated error message
         setLoading(false);
         return;
     }
 
-    // Check for existing pool for this specific role and period before distributing
-    const existingPoolForRoleAndPeriod = pools.some(pool =>
-      pool.department_name === role &&
+    // Check for existing pool for this specific category and period before distributing
+    const existingPoolForCategoryAndPeriod = pools.some(pool =>
+      pool.category_name === categoryName && // Updated to category_name
       dayjs.utc(pool.start_date).isSame(startDate, 'day') &&
       dayjs.utc(pool.end_date).isSame(endDate, 'day')
     );
 
-    if (existingPoolForRoleAndPeriod) {
-      setError(t('errors:POOL_ALREADY_EXISTS_FOR_ROLE_AND_PERIOD', { role: t(role.toLowerCase(), { ns: 'components/manager/manageRules' }) }));
+    if (existingPoolForCategoryAndPeriod) {
+      setError(t('errors:POOL_ALREADY_EXISTS_FOR_CATEGORY_AND_PERIOD', { category: categoryName })); // Updated error message
       setLoading(false);
       return;
     }
 
-    const distributions = Object.entries(selectedEmployees[role] || {})
+    const distributions = Object.entries(selectedEmployees[categoryName] || {}) // Use categoryName as key
       .filter(([, data]) => data.selected)
 
     const missingHours = distributions.some(([, data]) => data.hours === undefined || data.hours === null || data.hours === '');
@@ -173,15 +171,15 @@ const CreatePool = () => {
 
     try {
       await createPool({
-        departmentId: department.id,
+        categoryId: category.id, // Updated to categoryId
         startDate: startDate.format('YYYY-MM-DD'),
         endDate: endDate.format('YYYY-MM-DD'),
         distributions: finalDistributions,
         totalAmount: totalAmount // Add this line
       });
       setSuccess(t('DISTRIBUTION_SUCCESS', { ns: 'common' }));
-      // Reset selections for the current department and refetch data to update existing pools
-      setSelectedEmployees(prev => ({...prev, [role]: {}}));
+      // Reset selections for the current category and refetch data to update existing pools
+      setSelectedEmployees(prev => ({...prev, [categoryName]: {}}));
       fetchData(); 
     } catch (err) {
       setError(t(err.message, { ns: 'errors' }) || t('somethingWentWrong', { ns: 'common' }));
@@ -256,18 +254,18 @@ const CreatePool = () => {
         </Grid>
       </Paper>
 
-      {report && report.map((deptReport, index) => {
-        const role = predefinedRoles[index];
-        const roleEmployees = employees.filter(emp => emp.role === role);
+      {report && report.map((catReport, index) => { // Renamed deptReport to catReport
+        const category = tipPoolCategories[index]; // Use tipPoolCategories for iteration
+        const categoryEmployees = employees.filter(emp => emp.category_id === category.id); // Filter by category_id
 
         return (
-          <Paper key={role} elevation={3} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6">{t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}</Typography>
+          <Paper key={category.id} elevation={3} sx={{ p: 3, mb: 3 }}> {/* Use category.id as key */}
+            <Typography variant="h6">{t(category.name.toLowerCase(), { ns: 'components/manager/manageRules' })}</Typography> {/* Use category.name */}
             <TextField
               label={t('totalAmount')}
               type="number"
               variant="outlined"
-              value={deptReport.editable_total_tip_out_amount.toFixed(2)}
+              value={catReport.editable_total_tip_out_amount.toFixed(2)}
               onChange={(e) => handleTotalAmountChange(index, e.target.value)}
               sx={{ mt: 1, mb: 2, width: '25ch' }}
               InputProps={{
@@ -277,29 +275,29 @@ const CreatePool = () => {
             
             <Box sx={{ mt: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
               <List dense>
-                {roleEmployees.map(emp => (
+                {categoryEmployees.map(emp => (
                   <ListItem
                     key={emp.id}
                     secondaryAction={
-                      selectedEmployees[role]?.[emp.id]?.selected && (
+                      selectedEmployees[category.name]?.[emp.id]?.selected && ( // Use category.name as key
                         <TextField
                           type="number"
                           label={t('hoursWorked')}
                           variant="outlined"
                           size="small"
-                          value={selectedEmployees[role]?.[emp.id]?.hours || ''}
-                          onChange={(e) => handleHoursChange(role, emp.id, e.target.value)}
+                          value={selectedEmployees[category.name]?.[emp.id]?.hours || ''} // Use category.name as key
+                          onChange={(e) => handleHoursChange(category.name, emp.id, e.target.value)} // Use category.name as key
                           sx={{ width: '100px' }}
                         />
                       )
                     }
                     disablePadding
                   >
-                    <ListItemButton onClick={() => handleEmployeeSelect(role, emp.id)}>
+                    <ListItemButton onClick={() => handleEmployeeSelect(category.name, emp.id)}> {/* Use category.name as key */}
                       <ListItemIcon>
                         <Checkbox
                           edge="start"
-                          checked={selectedEmployees[role]?.[emp.id]?.selected || false}
+                          checked={selectedEmployees[category.name]?.[emp.id]?.selected || false} // Use category.name as key
                           tabIndex={-1}
                           disableRipple
                         />
@@ -310,8 +308,8 @@ const CreatePool = () => {
                 ))}
               </List>
             </Box>
-            <Button variant="contained" color="secondary" onClick={() => handleDistribute(role, deptReport.editable_total_tip_out_amount)} sx={{ mt: 2 }} disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : t('distributeFor')} {t(role.toLowerCase(), { ns: 'components/manager/manageRules' })}
+            <Button variant="contained" color="secondary" onClick={() => handleDistribute(category.name, catReport.editable_total_tip_out_amount)} sx={{ mt: 2 }} disabled={loading}> {/* Use category.name */}
+              {loading ? <CircularProgress size={24} /> : t('distributeFor')} {t(category.name.toLowerCase(), { ns: 'components/manager/manageRules' })} {/* Use category.name */}
             </Button>
           </Paper>
         );

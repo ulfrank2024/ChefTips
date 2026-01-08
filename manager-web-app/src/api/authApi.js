@@ -110,9 +110,9 @@ export const getCompanyEmployees = async () => {
     }
 };
 
-export const getCompanyDepartments = async () => {
+export const getCompanyCategories = async () => {
     try {
-        const response = await apiClient.get('/departments');
+        const response = await apiClient.get('/categories');
         return response.data;
     } catch (error) {
         handleApiError(error);

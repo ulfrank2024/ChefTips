@@ -12,4 +12,7 @@ router.get('/companies/:companyId', authenticateAdmin, subscriptionController.ge
 router.put('/:subscriptionId/plan', authenticateAdmin, subscriptionController.updateSubscriptionPlan);
 router.put('/:subscriptionId/trial', authenticateAdmin, subscriptionController.updateTrialEndDate);
 
+// New route for manager-web-app to get subscription status by companyId
+router.get('/status/:companyId', subscriptionController.getSubscriptionByCompanyId);
+
 module.exports = router;
