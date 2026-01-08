@@ -27,6 +27,19 @@ const signup = async (req, res) => {
         console.log(`Utilisateur créé/récupéré avec l'ID: ${user.id}`);
         if (!existingUser) { await UserModel.updatePassword(user.id, password); }
 
+        console.log('--- Signup Debug ---');
+        console.log('CategoryModel.getCategoriesByCompany called from signupController.js');
+        // Check the 'pool' that CategoryModel is using (indirectly)
+        try {
+            const poolCheck = require('../db');
+            console.log('Pool imported in signupController.js:', !!poolCheck);
+            // Additionally, check if poolCheck.query is defined
+            console.log('poolCheck.query defined:', !!poolCheck.query);
+        } catch (e) {
+            console.error('Error importing pool in signupController.js:', e.message);
+        }
+        console.log('--- End Signup Debug ---');
+
         // Find or create a default "Manager" category for the new company
         let managerCategory = (await CategoryModel.getCategoriesByCompany(company.id))
                                 .find(cat => cat.name.toLowerCase() === 'manager');
