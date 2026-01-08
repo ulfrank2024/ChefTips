@@ -2,6 +2,7 @@ const { UserModel } = require("../models/userModel");
 const { CompanyModel } = require("../models/companyModel");
 const { MembershipModel } = require("../models/membershipModel");
 const { TokenModel } = require("../models/tokenModel");
+const CategoryModel = require("../models/CategoryModel"); // Import CategoryModel
 const { sendEmail } = require("../services/emailService");
 const { createTrialSubscription } = require("../services/billingService"); // Import billingService
 
@@ -26,8 +27,19 @@ const signup = async (req, res) => {
         console.log(`Utilisateur créé/récupéré avec l'ID: ${user.id}`);
         if (!existingUser) { await UserModel.updatePassword(user.id, password); }
 
-        await MembershipModel.createMembership(user.id, company.id, 'manager');
-        console.log('Adhésion créée');
+        // Find or create a default "Manager" category for the new company
+        let managerCategory = (await CategoryModel.getCategoriesByCompany(company.id))
+                                .find(cat => cat.name.toLowerCase() === 'manager');
+        
+        if (!managerCategory) {
+            managerCategory = await CategoryModel.createCategory(company.id, 'Manager', false); // Manager is not a tip distribution pool
+            console.log(`Catégorie 'Manager' créée avec l'ID: ${managerCategory.id}`);
+        } else {
+            console.log(`Catégorie 'Manager' trouvée avec l'ID: ${managerCategory.id}`);
+        }
+
+        await MembershipModel.createMembership(user.id, company.id, managerCategory.id, true); // Pass categoryId (UUID) and set can_cash_out to true for managers
+        console.log('Adhésion créée avec la catégorie Manager');
 
         // Call billingService to create a trial subscription for the new company
         await createTrialSubscription(company.id, company.name, email);
@@ -45,7 +57,7 @@ const signup = async (req, res) => {
             currentYear: new Date().getFullYear(),
         };
 
-                await sendEmail(email, 'signup', templateData, 'en');
+        await sendEmail(email, 'signup', templateData, 'en');
         console.log('Email de vérification envoyé');
 
         res.status(201).json({ success_code: "SIGNUP_SUCCESS_VERIFICATION_SENT" });
