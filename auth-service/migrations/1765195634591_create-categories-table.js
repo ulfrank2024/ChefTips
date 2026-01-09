@@ -10,6 +10,9 @@ const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 const up = (pgm) => {
+    // Enable uuid-ossp extension if not already enabled
+    pgm.sql('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+
     // 1. Create categories table
     pgm.createTable('categories', {
         id: {
