@@ -18,7 +18,7 @@ const up = (pgm) => {
         id: {
             type: 'uuid',
             primaryKey: true,
-            defaultExpression: 'uuid_generate_v4()',
+            default: pgm.func('uuid_generate_v4()'), // Changed from defaultExpression
         },
         company_id: {
             type: 'uuid',
